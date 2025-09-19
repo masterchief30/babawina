@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   GAME_CANVAS_SIZE,
@@ -128,7 +128,7 @@ export function MobileGameCanvas({
   }
 
   // Crosshair nudging with arrow keys or on-screen buttons
-  const nudgeCrosshair = (direction: 'up' | 'down' | 'left' | 'right') => {
+  const nudgeCrosshair = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (!crosshairPosition) return
 
     const nudgeAmount = 0.005 // Small movement in unit coordinates
@@ -151,7 +151,7 @@ export function MobileGameCanvas({
     }
 
     setCrosshairPosition({ u: newU, v: newV })
-  }
+  }, [crosshairPosition])
 
   // Submit entry
   const handleSubmitEntry = async () => {

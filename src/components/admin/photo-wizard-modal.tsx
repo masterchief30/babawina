@@ -18,8 +18,8 @@ import {
   type CropArea
 } from "@/lib/image-utils"
 import { 
-  Upload, Target, Wand2, Save, ArrowLeft, ArrowRight, 
-  CheckCircle, Camera, Zap, Eye, RefreshCw
+  Wand2, Save, 
+  CheckCircle, Zap, RefreshCw
 } from "lucide-react"
 import NextImage from "next/image"
 
@@ -67,9 +67,9 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   const [isSavingFinal, setIsSavingFinal] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null)
-  const [cropArea, setCropArea] = useState<CropArea | null>(null)
+  // const [cropArea, setCropArea] = useState<CropArea | null>(null) // Unused state
   const [manualCoords, setManualCoords] = useState<{ x: number; y: number } | null>(null)
-  const [aiResult, setAiResult] = useState<any>(null)
+  const [aiResult, setAiResult] = useState<unknown>(null)
   const [inpaintedPreview, setInpaintedPreview] = useState<string | null>(null)
   
   // Crop drag states
@@ -83,7 +83,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   const [savingCoordinates, setSavingCoordinates] = useState(false)
   const [detectingBall, setDetectingBall] = useState(false)
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  // const canvasRef = useRef<HTMLCanvasElement>(null) // Unused ref
   const { toast } = useToast()
 
   // Crop drag handlers
@@ -185,7 +185,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
         setIsProcessing(false)
       }, 2000)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Save failed",
         description: error.message,
@@ -233,7 +233,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
         setCurrentStep(3)
         setIsProcessing(false)
       }, 2000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Crop failed",
         description: error.message,
@@ -265,7 +265,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
       setAiResult(result)
       // Clear any manual coordinates since AI has now set the position
       setManualCoords(null)
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Detection failed",
         description: error.message,
@@ -332,7 +332,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
       console.log('Ball processor returned inpainted URL:', inpaintedUrl)
       
       setInpaintedPreview(inpaintedUrl)
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Removal failed",
         description: error.message,
@@ -417,12 +417,12 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   }
 
 
-  // Navigation
-  const goBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => (prev - 1) as WizardStep)
-    }
-  }
+  // Navigation - UNUSED FUNCTION COMPLETELY COMMENTED OUT
+  // const goBack = () => { // Unused function
+  //   if (currentStep > 1) {
+  //     setCurrentStep((prev) => (prev - 1) as WizardStep)
+  //   }
+  // }
 
   const handleCancel = () => {
     onClose()

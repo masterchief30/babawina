@@ -282,7 +282,7 @@ export function EnhancedCompetitionForm({
         color: 'text-blue-600'
       })
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upload failed",
         description: error.message,
@@ -351,7 +351,7 @@ export function EnhancedCompetitionForm({
         title: "Raw photo uploaded",
         description: "Original photo saved to storage with ID: " + competitionId,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upload failed",
         description: error.message,
@@ -463,7 +463,7 @@ export function EnhancedCompetitionForm({
         title: "Image normalized",
         description: `Mobile-optimized: ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height} (ID: ${competitionId})`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Save failed",
         description: error.message,
@@ -514,7 +514,7 @@ export function EnhancedCompetitionForm({
         title: "Ball detected",
         description: `Confidence: ${(result.confidence * 100).toFixed(1)}%`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Detection failed",
         description: error.message,
@@ -620,7 +620,7 @@ export function EnhancedCompetitionForm({
         title: "Ball removed",
         description: `Inpainting completed successfully. (ID: ${competitionId})`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
         description: error.message,
@@ -818,28 +818,28 @@ export function EnhancedCompetitionForm({
         })
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       showError("Save failed", error.message)
     }
   }
 
-  // Status chip component
-  const StatusChip = ({ status }: { status: ProcessingStatus }) => {
-    const icons = {
-      idle: <Upload className="w-4 h-4" />,
-      ready_for_ai: <Target className="w-4 h-4" />,
-      coords_saved: <CheckCircle className="w-4 h-4" />,
-      ready: <CheckCircle className="w-4 h-4" />,
-      needs_review: <AlertTriangle className="w-4 h-4" />
-    }
+  // Status chip component - UNUSED - COMPLETELY COMMENTED OUT
+  // const StatusChip = ({ status }: { status: ProcessingStatus }) => {
+  //   const icons = {
+  //     idle: <Upload className="w-4 h-4" />,
+  //     ready_for_ai: <Target className="w-4 h-4" />,
+  //     coords_saved: <CheckCircle className="w-4 h-4" />,
+  //     ready: <CheckCircle className="w-4 h-4" />,
+  //     needs_review: <AlertTriangle className="w-4 h-4" />
+  //   }
 
-    return (
-      <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${status.color} bg-gray-50 border`}>
-        {icons[status.status]}
-        {status.message}
-      </div>
-    )
-  }
+  //   return (
+  //     <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${status.color} bg-gray-50 border`}>
+  //       {icons[status.status]}
+  //       {status.message}
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="space-y-8">
