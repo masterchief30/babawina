@@ -174,7 +174,7 @@ export function EnhancedCompetitionForm({
         }
       : null
   )
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [isProcessing] = useState(false)
   const [manualCoords, setManualCoords] = useState<{ x: number; y: number } | null>(() =>
     editMode && initialData?.judged_x_norm && initialData?.judged_y_norm
       ? { x: initialData.judged_x_norm, y: initialData.judged_y_norm }
@@ -565,7 +565,7 @@ export function EnhancedCompetitionForm({
         // If error (likely missing columns), try without display photo fields
         if (updateError && updateError.message?.includes('column')) {
           console.log('Display photo columns not found, updating without them')
-          const { display_photo_path, display_photo_alt, ...dataWithoutDisplay } = competitionData
+          const { ...dataWithoutDisplay } = competitionData
           console.log('Data without display fields:', dataWithoutDisplay)
           const { error: fallbackError } = await supabase
             .from('competitions')
