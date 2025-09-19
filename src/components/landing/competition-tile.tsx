@@ -167,12 +167,12 @@ export function CompetitionTile({
 
           {/* Play Now - Outlined button that fills on hover */}
           <motion.div 
-            className="relative w-full overflow-hidden rounded-lg cursor-pointer"
+            className="relative w-full overflow-hidden rounded-lg cursor-pointer group/button"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative w-full border-2 border-blue-600 text-blue-600 group-hover:text-white group-hover:border-transparent font-bold py-4 px-4 rounded-lg flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-300">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
+            <div className="relative w-full border-2 border-blue-600 text-blue-600 group-hover/button:text-white group-hover/button:border-transparent font-bold py-4 px-4 rounded-lg flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-300">
               <Zap className="w-4 h-4" />
               <span>PLAY NOW</span>
             </div>
