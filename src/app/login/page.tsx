@@ -56,9 +56,10 @@ export default function LoginPage() {
           window.location.href = '/'
         }, 1000)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
-      showNotification('error', error.message || 'Login failed')
+      const errorMessage = error instanceof Error ? error.message : 'Login failed'
+      showNotification('error', errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -184,7 +185,7 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-semibold">
                 Sign up here
               </Link>

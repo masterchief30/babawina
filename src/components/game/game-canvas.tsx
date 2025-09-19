@@ -146,10 +146,11 @@ export function GameCanvas({
         description: "Your entry is in. Check back when the countdown hits zero.",
       })
       setShowConfirmDialog(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit your pick. Please try again."
       toast({
         title: "Error",
-        description: error.message || "Failed to submit your pick. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

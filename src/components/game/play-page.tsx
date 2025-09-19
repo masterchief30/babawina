@@ -30,6 +30,7 @@ interface PlayPageProps {
 export function PlayPage({ competition, user, hasExistingEntry }: PlayPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  // Remove unused variable warning by using toast in error handling
 
   const handleSubmitEntry = async (x: number, y: number) => {
     if (hasExistingEntry) {
@@ -57,8 +58,9 @@ export function PlayPage({ competition, user, hasExistingEntry }: PlayPageProps)
       // Redirect to success page or home
       window.location.href = "/"
       
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to submit entry")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit entry"
+      throw new Error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -91,7 +93,7 @@ export function PlayPage({ competition, user, hasExistingEntry }: PlayPageProps)
         <div className="text-center max-w-md mx-auto p-6">
           <h1 className="text-2xl font-bold mb-4">Entry Submitted!</h1>
           <p className="text-muted-foreground mb-6">
-            You've already submitted your entry for this competition. 
+            You&apos;ve already submitted your entry for this competition. 
             Check back when the countdown hits zero to see the results!
           </p>
           <Link href="/">

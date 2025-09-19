@@ -116,7 +116,8 @@ export default function CheckoutPage() {
       localStorage.removeItem('checkoutData')
       
       // Show success modal
-      setSuccessMessage(`${entry.entries.length} ${entry.entries.length === 1 ? 'entry' : 'entries'} submitted successfully!`)
+      const entryText = entry.entries.length === 1 ? 'entry' : 'entries'
+      setSuccessMessage(`${entry.entries.length} ${entryText} submitted successfully!`)
       setShowSuccessModal(true)
       
       // Auto redirect after 3 seconds

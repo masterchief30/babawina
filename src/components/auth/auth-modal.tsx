@@ -79,10 +79,10 @@ export function AuthModal({ isOpen, onClose, onSuccess, fromSoccerBall = false }
       reset()
       onClose()
       onSuccess?.()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message || "Something went wrong. Please try again.",
+        description: error instanceof Error ? error.message : "Something went wrong. Please try again.",
         variant: "destructive",
       })
     } finally {

@@ -86,8 +86,9 @@ export function CompetitionTilesGrid() {
         }
 
         setCompetitions(data || [])
-      } catch (err: any) {
-        setError(err.message || 'Failed to load competitions')
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load competitions'
+        setError(errorMessage)
         console.error('Error fetching competitions:', err)
       } finally {
         setLoading(false)
