@@ -24,7 +24,7 @@ import {
 } from "@/lib/image-utils"
 import { PhotoWizardModal } from "./photo-wizard-modal"
 import { DisplayPhotoCropper } from "./display-photo-cropper"
-import { Upload, Target, Wand2, Save, Eye, RefreshCw, AlertTriangle, CheckCircle, Camera } from "lucide-react"
+import { Upload, Save, RefreshCw, AlertTriangle } from "lucide-react"
 import Image from "next/image"
 
 interface CompetitionData {
@@ -56,7 +56,7 @@ interface ProcessingStatus {
 
 interface EnhancedCompetitionFormProps {
   editMode?: boolean
-  initialData?: any
+  initialData?: any // Keep as any for now to avoid breaking all property access
   competitionId?: string
 }
 
@@ -125,7 +125,11 @@ export function EnhancedCompetitionForm({
           scale_x: initialData.norm_scale_x,
           scale_y: initialData.norm_scale_y,
           offset_x: initialData.norm_offset_x || 0,
-          offset_y: initialData.norm_offset_y || 0
+          offset_y: initialData.norm_offset_y || 0,
+          raw_width: initialData.raw_image_width || 0,
+          raw_height: initialData.raw_image_height || 0,
+          normalized_width: initialData.normalized_width || 960,
+          normalized_height: initialData.normalized_height || 540
         }
       : null
   )
@@ -285,7 +289,7 @@ export function EnhancedCompetitionForm({
     } catch (error: unknown) {
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     }
@@ -327,38 +331,38 @@ export function EnhancedCompetitionForm({
     multiple: false
   })
 
-  // Upload raw image to Supabase with proper ID
-  const handleUploadRaw = async () => {
-    if (!rawFile) return
+  // Upload raw image to Supabase with proper ID - UNUSED FUNCTION COMPLETELY COMMENTED OUT
+  // const handleUploadRaw = async () => { 
+  //   if (!rawFile) return
 
-    try {
-      // Generate unique competition ID for this session
-      const competitionId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-      const fileName = `${competitionId}_raw.${rawFile.name.split('.').pop()}`
+  //   try {
+  //     // Generate unique competition ID for this session
+  //     const competitionId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  //     const fileName = `${competitionId}_raw.${rawFile.name.split('.').pop()}`
       
-      const { error } = await supabase.storage
-        .from('competition-raw')
-        .upload(fileName, rawFile)
+  //     const { error } = await supabase.storage
+  //       .from('competition-raw')
+  //       .upload(fileName, rawFile)
 
-      if (error) throw error
+  //     if (error) throw error
 
-      setRawImagePath(fileName)
+  //     setRawImagePath(fileName)
       
-      // Store the competition ID for later use
-      sessionStorage.setItem('currentCompetitionId', competitionId)
+  //     // Store the competition ID for later use
+  //     sessionStorage.setItem('currentCompetitionId', competitionId)
       
-      toast({
-        title: "Raw photo uploaded",
-        description: "Original photo saved to storage with ID: " + competitionId,
-      })
-    } catch (error: unknown) {
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive"
-      })
-    }
-  }
+  //     toast({
+  //       title: "Raw photo uploaded",
+  //       description: "Original photo saved to storage with ID: " + competitionId,
+  //     })
+  //   } catch (error: unknown) {
+  //     toast({
+  //       title: "Upload failed",
+  //       description: error.message,
+  //       variant: "destructive"
+  //     })
+  //   }
+  // }
 
   // Handle photo wizard
   const handleProcessPhoto = () => {
@@ -432,45 +436,45 @@ export function EnhancedCompetitionForm({
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-display/${displayPhotoPath}`
   }
 
-  // Handle normalized image save
-  const handleNormalizedSave = async (blob: Blob, transform: NormalizationTransform) => {
-    try {
-      // Get the competition ID from session
-      const competitionId = sessionStorage.getItem('currentCompetitionId') || `comp_${Date.now()}`
-      const fileName = `${competitionId}_normalized.jpg`
+  // Handle normalized image save - UNUSED FUNCTION COMPLETELY COMMENTED OUT
+  // const handleNormalizedSave = async (blob: Blob, transform: NormalizationTransform) => {
+  //   try {
+  //     // Get the competition ID from session
+  //     const competitionId = sessionStorage.getItem('currentCompetitionId') || `comp_${Date.now()}`
+  //     const fileName = `${competitionId}_normalized.jpg`
       
-      const { error } = await supabase.storage
-        .from('competition-images')
-        .upload(`normalized/${fileName}`, blob)
+  //     const { error } = await supabase.storage
+  //       .from('competition-images')
+  //       .upload(`normalized/${fileName}`, blob)
 
-      if (error) throw error
+  //     if (error) throw error
 
-      // Create local URL for preview
-      const url = URL.createObjectURL(blob)
+  //     // Create local URL for preview
+  //     const url = URL.createObjectURL(blob)
       
-      setNormalizedBlob(blob)
-      setNormalizedImageUrl(url)
-      setNormalizedImagePath(`normalized/${fileName}`)
-      setNormalizationTransform(transform)
+  //     setNormalizedBlob(blob)
+  //     setNormalizedImageUrl(url)
+  //     setNormalizedImagePath(`normalized/${fileName}`)
+  //     setNormalizationTransform(transform)
       
-      setProcessingStatus({
-        status: 'ready_for_ai',
-        message: 'Mobile-optimized image ready for AI processing.',
-        color: 'text-green-600'
-      })
+  //     setProcessingStatus({
+  //       status: 'ready_for_ai',
+  //       message: 'Mobile-optimized image ready for AI processing.',
+  //       color: 'text-green-600'
+  //     })
 
-      toast({
-        title: "Image normalized",
-        description: `Mobile-optimized: ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height} (ID: ${competitionId})`,
-      })
-    } catch (error: unknown) {
-      toast({
-        title: "Save failed",
-        description: error.message,
-        variant: "destructive"
-      })
-    }
-  }
+  //     toast({
+  //       title: "Image normalized",
+  //       description: `Mobile-optimized: ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height} (ID: ${competitionId})`,
+  //     })
+  //   } catch (error: unknown) {
+  //     toast({
+  //       title: "Save failed",
+  //       description: error.message,
+  //       variant: "destructive"
+  //     })
+  //   }
+  // }
 
   // AI Ball Detection
   const handleGetCoordinates = async () => {
@@ -517,7 +521,7 @@ export function EnhancedCompetitionForm({
     } catch (error: unknown) {
       toast({
         title: "Detection failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     } finally {
@@ -623,7 +627,7 @@ export function EnhancedCompetitionForm({
     } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     } finally {
@@ -758,7 +762,8 @@ export function EnhancedCompetitionForm({
         // If error (likely missing columns), try without display photo fields
         if (updateError && updateError.message?.includes('column')) {
           console.log('Display photo columns not found, updating without them')
-          const { display_photo_path, display_photo_alt, ...dataWithoutDisplay } = competitionData
+          // const { display_photo_path, display_photo_alt, ...dataWithoutDisplay } = competitionData // Unused vars
+          const { ...dataWithoutDisplay } = competitionData
           console.log('Data without display fields:', dataWithoutDisplay)
           const { error: fallbackError } = await supabase
             .from('competitions')
@@ -819,7 +824,7 @@ export function EnhancedCompetitionForm({
       }
 
     } catch (error: unknown) {
-      showError("Save failed", error.message)
+      showError("Save failed", error instanceof Error ? error.message : 'Unknown error occurred')
     }
   }
 
@@ -945,7 +950,7 @@ export function EnhancedCompetitionForm({
             <select
               id="status"
               value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'live' | 'closed' | 'judged' }))}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="draft">Draft</option>

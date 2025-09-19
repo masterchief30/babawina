@@ -226,7 +226,7 @@ export function MobileGameCanvas({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [crosshairPosition, disabled])
+  }, [crosshairPosition, disabled, nudgeCrosshair])
 
   return (
     <div className="space-y-4">

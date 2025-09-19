@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -12,10 +12,8 @@ import {
   validateMobileUpload,
   validateMobileDimensions,
   normalizedToUnitCoords,
-  GAME_CANVAS_SIZE,
   type NormalizationTransform,
   type ImageDimensions,
-  type CropArea
 } from "@/lib/image-utils"
 import { 
   Wand2, Save, 
@@ -188,7 +186,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     } catch (error: unknown) {
       toast({
         title: "Save failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
       setIsProcessing(false)
@@ -236,7 +234,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     } catch (error: unknown) {
       toast({
         title: "Crop failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
       setIsProcessing(false)
@@ -268,7 +266,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     } catch (error: unknown) {
       toast({
         title: "Detection failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     } finally {
@@ -278,7 +276,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
   // Step 3: Save Coordinates
   const handleSaveCoordinates = () => {
-    const coords = manualCoords || aiResult?.centroid
+    const coords = manualCoords || (aiResult as any)?.centroid
     if (!coords) {
       toast({
         title: "No coordinates",
@@ -335,7 +333,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     } catch (error: unknown) {
       toast({
         title: "Removal failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     } finally {
@@ -584,7 +582,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                 <div className="relative">
                   {/* Full original image as background (dimmed) */}
                   <NextImage
-                    src={imageUrl}
+                    src={imageUrl || '/placeholder-image.jpg'}
                     alt="Original photo"
                     width={800}
                     height={600}
@@ -611,12 +609,12 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                   />
                   
                   {/* Fixed crosshair - positioned within the cropped area */}
-                  {(manualCoords || aiResult) && (
+                  {(manualCoords || !!aiResult) && (
                     <div
                       className="absolute pointer-events-none z-10"
                       style={{
-                        left: `${cropPosition.left + ((manualCoords?.x || aiResult?.centroid.x || 0) / 960) * cropPosition.width}%`,
-                        top: `${cropPosition.top + ((manualCoords?.y || aiResult?.centroid.y || 0) / 540) * cropPosition.height}%`,
+                        left: `${cropPosition.left + ((manualCoords?.x || (aiResult as any)?.centroid?.x || 0) / 960) * cropPosition.width}%`,
+                        top: `${cropPosition.top + ((manualCoords?.y || (aiResult as any)?.centroid?.y || 0) / 540) * cropPosition.height}%`,
                         transform: 'translate(-50%, -50%)'
                       }}
                     >
@@ -658,17 +656,17 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                     {detectingBall ? 'Detecting...' : 'Use AI Detection'}
                   </Button>
 
-                  {(manualCoords || aiResult) && (
+                  {(manualCoords || !!aiResult) && (
                     <div className="bg-emerald-50 p-4 rounded-lg w-48">
                       <p className="font-medium text-emerald-800 text-sm">
-                        Ball center: ({Math.round((manualCoords?.x || aiResult?.centroid.x || 0))}, {Math.round((manualCoords?.y || aiResult?.centroid.y || 0))})
+                        Ball center: ({Math.round((manualCoords?.x || (aiResult as any)?.centroid?.x || 0))}, {Math.round((manualCoords?.y || (aiResult as any)?.centroid?.y || 0))})
                       </p>
                       <div className="mt-2 text-xs">
                         {manualCoords && (
                           <span className="text-blue-600 font-medium">📍 Manual Position</span>
                         )}
-                        {aiResult && !manualCoords && (
-                          <span className="text-emerald-600 font-medium">🤖 AI Detection ({(aiResult.confidence * 100).toFixed(1)}% confidence)</span>
+                        {!!aiResult && !manualCoords && (
+                          <span className="text-emerald-600 font-medium">🤖 AI Detection ({((aiResult as any)?.confidence * 100).toFixed(1)}% confidence)</span>
                         )}
                       </div>
                     </div>
