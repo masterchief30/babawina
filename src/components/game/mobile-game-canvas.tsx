@@ -1,14 +1,10 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { 
   GAME_CANVAS_SIZE,
-  normalizedToUnitCoords,
-  unitToNormalizedCoords,
-  validateNormalizedCoords,
-  generateResponsiveSrcSet,
-  generateResponsiveSizes
+  unitToNormalizedCoords
 } from "@/lib/image-utils"
 import { Button } from "@/components/ui/button"
 import { Target, ZoomIn, ZoomOut, RotateCcw, ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react"
@@ -23,13 +19,13 @@ interface MobileGameCanvasProps {
 
 export function MobileGameCanvas({ 
   imageUrl, 
-  competitionId, 
+  // competitionId, // Unused prop 
   onSubmitEntry, 
   disabled = false 
 }: MobileGameCanvasProps) {
   const [crosshairPosition, setCrosshairPosition] = useState<{ u: number; v: number } | null>(null)
   const [zoom, setZoom] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
+  // const [pan, setPan] = useState({ x: 0, y: 0 }) // Unused state
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -178,10 +174,11 @@ export function MobileGameCanvas({
       })
       
       setShowConfirmation(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Submission failed"
       toast({
         title: "Submission failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {

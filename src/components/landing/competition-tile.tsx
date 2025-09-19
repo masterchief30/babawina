@@ -1,8 +1,8 @@
 "use client"
 
-// import Image from "next/image" // Unused import
+import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { Zap } from "lucide-react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
@@ -23,13 +23,13 @@ interface CompetitionTileProps {
   featured?: boolean
 }
 
-interface TimeRemaining {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-  isExpired: boolean
-}
+// interface TimeRemaining { // Unused interface
+//   days: number
+//   hours: number
+//   minutes: number
+//   seconds: number
+//   isExpired: boolean
+// }
 
 export function CompetitionTile({
   id,
@@ -146,9 +146,11 @@ export function CompetitionTile({
 
         {/* Image Section - Full width, auto height to preserve aspect ratio */}
         <div className="relative w-full bg-white">
-          <img
+          <Image
             src={imageUrl}
             alt={imageAlt}
+            width={400}
+            height={300}
             className="w-full h-auto"
             loading={featured ? "eager" : "lazy"}
           />

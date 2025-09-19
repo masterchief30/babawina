@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { PartyPopper } from "lucide-react"
+// import { PartyPopper } from "lucide-react" // Unused import
 
 const authSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -32,7 +32,7 @@ interface AuthModalProps {
   fromSoccerBall?: boolean
 }
 
-export function AuthModal({ isOpen, onClose, onSuccess, fromSoccerBall = false }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
@@ -99,7 +99,7 @@ export function AuthModal({ isOpen, onClose, onSuccess, fromSoccerBall = false }
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px] bg-white text-gray-900">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-gray-900">Let's get you in the game</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-gray-900">Let&apos;s get you in the game</DialogTitle>
           <DialogDescription className="text-gray-600">
             {isLogin 
               ? "Sign in to your account to start playing" 

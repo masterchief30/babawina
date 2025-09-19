@@ -5,7 +5,7 @@ import { User } from "@supabase/supabase-js"
 import { GameCanvas } from "./game-canvas"
 import { supabase } from "@/lib/supabase"
 import { hashIP } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
+// import { useToast } from "@/hooks/use-toast" // Unused import
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"

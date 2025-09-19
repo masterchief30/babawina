@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
@@ -20,7 +21,7 @@ import {
   Upload, Target, Wand2, Save, ArrowLeft, ArrowRight, 
   CheckCircle, Camera, Zap, Eye, RefreshCw
 } from "lucide-react"
-import Image from "next/image"
+import NextImage from "next/image"
 
 interface PhotoWizardModalProps {
   isOpen: boolean
@@ -582,7 +583,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                 {/* Image with crosshair - only clickable in cropped area */}
                 <div className="relative">
                   {/* Full original image as background (dimmed) */}
-                  <img
+                  <NextImage
                     src={imageUrl}
                     alt="Original photo"
                     width={800}
