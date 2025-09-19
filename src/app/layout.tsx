@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BabaWina - Win Big with Spot-the-Ball",
+  title: "BabaWina - Win Big with Spot-the-Ball Competition",
   description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
-  keywords: ["spot the ball", "competition", "south africa", "win prizes", "game"],
+  keywords: ["spot the ball", "south africa competition", "win prizes", "gaming competition", "online games", "win cars", "daily competitions", "babawina", "south african games", "prize competitions", "skill games", "win money"],
   authors: [{ name: "BabaWina" }],
   creator: "BabaWina",
   publisher: "BabaWina",
@@ -33,13 +33,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_ZA",
     url: "/",
-    title: "BabaWina - Win Big with Spot-the-Ball",
+    title: "BabaWina - Win Big with Spot-the-Ball Competition",
     description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
     siteName: "BabaWina",
   },
   twitter: {
     card: "summary_large_image",
-    title: "BabaWina - Win Big with Spot-the-Ball",
+    title: "BabaWina - Win Big with Spot-the-Ball Competition",
     description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
   },
   robots: {

@@ -6,7 +6,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CompetitionTilesGrid } from "@/components/landing/competition-tiles-grid"
 import { useAuth } from "@/contexts/AuthContext"
-import { Trophy, Target, Users, Shield, CheckCircle, Sparkles, Zap, Star, ArrowRight, Play, Crown, Gift, Clock, TrendingUp, Award, Gamepad2, Rocket } from "lucide-react"
+import { Trophy, Target, Users, ArrowRight, Crown, Rocket } from "lucide-react"
 import { motion } from "framer-motion"
 
 // Soccer Ball Component (Mobile + Desktop)
@@ -19,7 +19,7 @@ function MobileSoccerBall({ user }: { user: unknown }) {
     
     const updatePosition = () => {
       const screenWidth = getScreenWidth()
-      const screenHeight = window.innerHeight
+      // Remove unused screenHeight variable
       
       console.log('Updating ball position...') // Debug log
       
@@ -193,9 +193,11 @@ function MobileSoccerBall({ user }: { user: unknown }) {
               ease: "linear" // Constant speed
             }}
           >
-            <img
+            <Image
               src="/images/hero/Soccerball.svg.png"
               alt="Soccer ball"
+              width={48}
+              height={48}
               className="w-12 h-12 lg:w-10 lg:h-10 drop-shadow-lg pointer-events-none"
               onError={(e) => {
                 // Fallback to different possible names
@@ -271,9 +273,11 @@ export function HomePage() {
         <div className="container mx-auto px-4 lg:px-8 h-16 lg:h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 lg:gap-3">
             <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl lg:rounded-2xl overflow-hidden shadow-lg">
-              <img 
+              <Image 
                 src="/images/hero/mascot002.png" 
                 alt="BabaWina Mascot" 
+                width={48}
+                height={48}
                 className="w-full h-full object-cover"
               />
             </div>
