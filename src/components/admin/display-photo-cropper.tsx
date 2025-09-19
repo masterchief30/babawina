@@ -325,11 +325,11 @@ export function DisplayPhotoCropper({
       setTimeout(() => {
         onClose()
       }, 1500)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Display photo upload error:', error)
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to save photo. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to save photo. Please try again.",
         variant: "destructive"
       })
     } finally {

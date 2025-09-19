@@ -161,7 +161,7 @@ export default function PrivacyPage() {
             We do not use third-party advertising cookies.
           </p>
 
-          <h2>8. Children's Privacy</h2>
+          <h2>8. Children&apos;s Privacy</h2>
           <p>
             Our service is not intended for users under 18 years of age. We do not knowingly collect personal information from children under 18.
           </p>
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
           <div className="mt-12 p-6 bg-muted/30 rounded-lg">
             <p className="text-sm text-muted-foreground mb-0">
               <strong>Your Privacy Matters:</strong> We are committed to protecting your personal information 
-              and being transparent about how we use it. If you have any concerns, please don't hesitate to contact us.
+              and being transparent about how we use it. If you have any concerns, please don&apos;t hesitate to contact us.
             </p>
           </div>
         </div>

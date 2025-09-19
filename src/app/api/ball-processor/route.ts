@@ -48,20 +48,20 @@ async function detectBall(imageUrl: string): Promise<{
           text_threshold: 0.2
         }
       }
-    ) as any
+    ) as unknown
     
     // Check if we found any balls
-    if (!output?.detections || output.detections.length === 0) {
+    if (!(output as any)?.detections || (output as any).detections.length === 0) {
       throw new Error("No ball detected in image")
     }
     
     // Get the detection with highest confidence
-    const bestDetection = output.detections.reduce((best: any, current: any) => 
-      (current.confidence > best.confidence) ? current : best
+    const bestDetection = (output as any).detections.reduce((best: unknown, current: unknown) => 
+      ((current as any).confidence > (best as any).confidence) ? current : best
     )
     
     // Convert Grounding DINO bbox format [x1, y1, x2, y2] to our format
-    const [x1, y1, x2, y2] = bestDetection.bbox
+    const [x1, y1, x2, y2] = (bestDetection as any).bbox
     const bbox = {
       x: x1,
       y: y1,
@@ -130,7 +130,7 @@ async function generateMask(
           point_labels: "1"
         }
       }
-    ) as any
+    ) as unknown
     
   } catch (error) {
     console.error("SAM mask generation failed:", error)
@@ -162,10 +162,10 @@ async function inpaintImage(
         prompt: "Remove the football and replace it with natural background. Keep the scene realistic and seamless.",
         image_input: [imageUrl]
       }
-    }) as any
+    }) as unknown
     
     // Get the output URL
-    const outputUrl = output.url ? output.url() : output
+    const outputUrl = (output as any).url ? (output as any).url() : output
     
     if (!outputUrl) {
       throw new Error("Failed to get image URL")
@@ -264,13 +264,13 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(response)
     
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Ball processor error:", error)
     
     return NextResponse.json(
       { 
         ok: false, 
-        error: error.message || "Internal server error" 
+        error: error instanceof Error ? error.message : "Internal server error" 
       },
       { status: 500 }
     )

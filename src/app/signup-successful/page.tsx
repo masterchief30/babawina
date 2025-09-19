@@ -194,7 +194,7 @@ export default function SignupSuccessfulPage() {
               className="mt-6 text-center"
             >
               <p className="text-sm text-gray-500">
-                Didn't receive the email? Check your spam folder.
+                Didn&apos;t receive the email? Check your spam folder.
               </p>
             </motion.div>
           </motion.div>

@@ -92,7 +92,7 @@ export function AdminLoginPage() {
           window.location.replace("/admin/dashboard")
         }, 350)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       showNotification('error', 'Login Failed - Invalid Credentials')
     } finally {
       setIsLoading(false)

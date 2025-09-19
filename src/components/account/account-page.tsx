@@ -81,7 +81,7 @@ export function AccountPage({ user, profile, entries }: AccountPageProps) {
         title: "Profile updated",
         description: "Your display name has been updated successfully.",
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message,
@@ -113,7 +113,7 @@ export function AccountPage({ user, profile, entries }: AccountPageProps) {
       })
 
       window.location.href = "/"
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: "Failed to delete account. Please contact support.",
@@ -242,7 +242,7 @@ export function AccountPage({ user, profile, entries }: AccountPageProps) {
                     <Target className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                     <h3 className="text-lg font-semibold mb-2">No entries yet</h3>
                     <p className="text-muted-foreground mb-6">
-                      You haven't participated in any competitions yet.
+                      You haven&apos;t participated in any competitions yet.
                     </p>
                     <Link href="/">
                       <Button variant="accent">

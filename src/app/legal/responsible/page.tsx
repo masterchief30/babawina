@@ -31,7 +31,7 @@ export default function ResponsiblePage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6">Responsible Play</h1>
           <p className="text-xl text-muted-foreground mb-12">
-            We're committed to providing a safe and enjoyable gaming environment for all our users.
+            We&apos;re committed to providing a safe and enjoyable gaming environment for all our users.
           </p>
 
           <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -53,7 +53,7 @@ export default function ResponsiblePage() {
                 </li>
                 <li className="flex items-start gap-2">
                   <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
-                  <span>Don't chase losses with bigger bets</span>
+                  <span>Don&apos;t chase losses with bigger bets</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
@@ -97,7 +97,7 @@ export default function ResponsiblePage() {
           <div className="bg-gradient-to-r from-red-50 to-red-100 rounded-xl p-8 border border-red-200 mb-12">
             <h2 className="text-2xl font-semibold mb-6 text-red-900">Get Help</h2>
             <p className="text-red-800 mb-6">
-              If you're concerned about your gaming habits, help is available. These organizations provide 
+              If you&apos;re concerned about your gaming habits, help is available. These organizations provide 
               confidential support and resources:
             </p>
 
@@ -195,7 +195,7 @@ export default function ResponsiblePage() {
           <div className="mt-12 text-center">
             <h2 className="text-2xl font-semibold mb-4">Need Support?</h2>
             <p className="text-muted-foreground mb-6">
-              If you have concerns about your gaming or need assistance, we're here to help.
+              If you have concerns about your gaming or need assistance, we&apos;re here to help.
             </p>
             <a href="mailto:support@babawina.co.za">
               <Button variant="accent">

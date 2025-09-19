@@ -86,7 +86,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
 
       setShowCreateForm(false)
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message,
@@ -124,7 +124,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
       })
 
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upload failed",
         description: error.message,
@@ -183,7 +183,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
       })
 
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Detection failed",
         description: error.message,
@@ -243,7 +243,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
       })
 
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
         description: error.message,
@@ -275,7 +275,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
       })
 
       window.location.reload()
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error",
         description: error.message,

@@ -405,7 +405,7 @@ export default function ProfilePage() {
                       <div className="text-center py-12">
                         <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">No Competitions Yet</h3>
-                        <p className="text-gray-600">You haven't entered any competitions yet. Start playing to see your entries here!</p>
+                        <p className="text-gray-600">You haven&apos;t entered any competitions yet. Start playing to see your entries here!</p>
                       </div>
                     ) : (
                       <div className="overflow-x-auto">
@@ -584,7 +584,7 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                           <div>
                             <Label htmlFor="deleteConfirmation" className="text-red-700">
-                              Type "delete account" to confirm:
+                              Type &quot;delete account&quot; to confirm:
                             </Label>
                             <Input
                               id="deleteConfirmation"

@@ -139,7 +139,7 @@ export function CreateCompetitionForm() {
         title: "Photo uploaded",
         description: "Raw photo uploaded successfully.",
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Upload failed",
         description: error.message,
@@ -180,7 +180,7 @@ export function CreateCompetitionForm() {
         title: "Ball detected",
         description: `Confidence: ${(result.confidence * 100).toFixed(1)}%`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Detection failed",
         description: error.message,
@@ -223,7 +223,7 @@ export function CreateCompetitionForm() {
         title: "Ball removed",
         description: "Inpainting completed successfully.",
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
         description: error.message,
@@ -317,7 +317,7 @@ export function CreateCompetitionForm() {
       setInpaintedImageUrl(null)
       setShowComparison(false)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Save failed",
         description: error.message,
@@ -426,7 +426,7 @@ export function CreateCompetitionForm() {
             <select
               id="status"
               value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'draft' | 'live' | 'closed' | 'judged' }))}
               className="w-full p-2 border border-gray-300 rounded-md"
             >
               <option value="draft">Draft</option>

@@ -300,10 +300,10 @@ export function CropNormalizeModal({ isOpen, onClose, file, onSave }: CropNormal
         title: "Image normalized",
         description: `Cropped and resized to ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height}`,
       })
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Normalization failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
         variant: "destructive"
       })
     } finally {
