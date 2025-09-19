@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Zap } from "lucide-react"
 import { motion } from "framer-motion"
+import { useAuth } from "@/contexts/AuthContext"
 
 interface CompetitionTileProps {
   id: string
@@ -44,6 +45,7 @@ export function CompetitionTile({
   entry_count = Math.floor(Math.random() * 500) + 100,
   featured = false
 }: CompetitionTileProps) {
+  const { user } = useAuth()
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
@@ -121,8 +123,17 @@ export function CompetitionTile({
   const imageUrl = getImageUrl()
   const imageAlt = display_photo_alt || `${title} competition image`
 
+  // Handle click based on authentication status
+  const handleTileClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault()
+      window.location.href = '/login'
+    }
+    // If user is authenticated, let the Link handle navigation to /play/${id}
+  }
+
   return (
-    <Link href={`/play/${id}`} className="block cursor-pointer">
+    <Link href={`/play/${id}`} className="block cursor-pointer" onClick={handleTileClick}>
       <motion.div
         whileTap={{ scale: 0.98 }}
         className="group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-shadow duration-300 hover:shadow-2xl h-full mx-auto shadow-lg"

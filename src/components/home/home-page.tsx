@@ -9,7 +9,7 @@ import { Trophy, Target, Users, Shield, CheckCircle, Sparkles, Zap, Star, ArrowR
 import { motion } from "framer-motion"
 
 // Soccer Ball Component (Mobile + Desktop)
-function MobileSoccerBall() {
+function MobileSoccerBall({ user }: { user: any }) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   
@@ -60,10 +60,12 @@ function MobileSoccerBall() {
       setShowConfetti(false)
     }, 2000)
     
-    // Redirect to signup page after confetti
-    setTimeout(() => {
-      window.location.href = '/signup'
-    }, 1000)
+    // Only redirect to signup if user is not signed in
+    if (!user) {
+      setTimeout(() => {
+        window.location.href = '/signup'
+      }, 1000)
+    }
   }
 
   return (
@@ -231,7 +233,11 @@ export function HomePage() {
     if (!user) {
       window.location.href = "/signup"
     } else {
-      window.location.href = "/play"
+      // Scroll to competitions section for signed-in users
+      const competitionsSection = document.getElementById('competitions')
+      if (competitionsSection) {
+        competitionsSection.scrollIntoView({ behavior: 'smooth' })
+      }
     }
   }
 
@@ -378,7 +384,7 @@ export function HomePage() {
 
         {/* Football Animation - Visible on all devices */}
         <div className="absolute inset-0 pointer-events-none z-50">
-          <MobileSoccerBall />
+          <MobileSoccerBall user={user} />
         </div>
 
          {/* Models and Mascot positioned with bottom aligned to golden section end - Responsive sizes */}
@@ -445,21 +451,18 @@ export function HomePage() {
                   </h1>
 
 
-                  {/* CTAs - Only show for non-authenticated users */}
-                  {!user && (
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center px-4"
+                  {/* CTAs - Show for all users */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+                    <Button
+                      onClick={handlePlayNow}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 md:px-8 py-4 md:py-6 rounded-full text-sm sm:text-base md:text-lg shadow-2xl flex items-center gap-3 group w-full sm:w-auto"
+                      style={{ boxShadow: '0 20px 40px rgba(37, 99, 235, 0.3)' }}
                     >
-                      <Button
-                        onClick={handlePlayNow}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 md:px-8 py-4 md:py-6 rounded-full text-sm sm:text-base md:text-lg shadow-2xl flex items-center gap-3 group w-full sm:w-auto"
-                        style={{ boxShadow: '0 20px 40px rgba(37, 99, 235, 0.3)' }}
-                      >
-                        <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
-                        START PLAYING
-                        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    </div>
-                  )}
+                      <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
+                      START PLAYING
+                      <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </div>
                 </div>
                 </div>
                 
@@ -584,32 +587,30 @@ export function HomePage() {
       </section>
 
 
-      {/* Final CTA - Only show for non-authenticated users */}
-      {!user && (
-        <section className="py-20 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
-          <div className="container mx-auto max-w-4xl text-center">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+      {/* Final CTA - Show for all users */}
+      <section className="py-20 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
+        <div className="container mx-auto max-w-4xl text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+          >
+            <h2 className="text-5xl font-black text-white mb-6">
+              Ready to Win Big?
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              {user ? "Choose your competition and start playing!" : "Join thousands of winners today"}
+            </p>
+            <Button
+              onClick={handlePlayNow}
+              className="bg-amber-500 hover:bg-amber-600 text-white font-black px-12 py-7 rounded-full text-lg shadow-2xl inline-flex items-center gap-3"
             >
-              <h2 className="text-5xl font-black text-white mb-6">
-                Ready to Win Big?
-              </h2>
-              <p className="text-xl text-blue-100 mb-8">
-                Join thousands of winners today
-              </p>
-              <Button
-                onClick={handlePlayNow}
-                className="bg-amber-500 hover:bg-amber-600 text-white font-black px-12 py-7 rounded-full text-lg shadow-2xl inline-flex items-center gap-3"
-              >
-                <Trophy className="w-6 h-6" />
-                START WINNING NOW
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-              </motion.div>
-        </div>
-      </section>
-      )}
+              <Trophy className="w-6 h-6" />
+              START WINNING NOW
+              <ArrowRight className="w-5 h-5" />
+            </Button>
+            </motion.div>
+      </div>
+    </section>
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16 px-4">
