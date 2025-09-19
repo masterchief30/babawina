@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { createClient } from "@supabase/supabase-js"
-import { Crop, Upload, Save, Move, CheckCircle, XCircle } from "lucide-react"
-import Image from "next/image"
+import { Crop, Upload, Save, Move } from "lucide-react"
+// import Image from "next/image" // Unused
 import { useDropzone } from "react-dropzone"
 
 interface DisplayPhotoCropperProps {

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+// import { useRouter } from "next/navigation" // Unused
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,7 +20,7 @@ export function AdminLoginPage() {
     type: 'success' | 'error'
     message: string
   }>({ show: false, type: 'success', message: '' })
-  const router = useRouter()
+  // const router = useRouter() // Unused
 
   // Show notification for 0.3 seconds
   const showNotification = (type: 'success' | 'error', message: string) => {
@@ -92,7 +92,7 @@ export function AdminLoginPage() {
           window.location.replace("/admin/dashboard")
         }, 350)
       }
-    } catch (error: unknown) {
+    } catch {
       showNotification('error', 'Login Failed - Invalid Credentials')
     } finally {
       setIsLoading(false)

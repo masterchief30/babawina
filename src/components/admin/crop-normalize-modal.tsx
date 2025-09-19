@@ -15,7 +15,7 @@ import {
   type NormalizationTransform,
   GAME_CANVAS_SIZE
 } from "@/lib/image-utils"
-import { RotateCcw, ZoomIn, ZoomOut, Move, Grid3X3, Smartphone } from "lucide-react"
+import { RotateCcw, ZoomIn, ZoomOut, Grid3X3, Smartphone } from "lucide-react"
 
 interface CropNormalizeModalProps {
   isOpen: boolean

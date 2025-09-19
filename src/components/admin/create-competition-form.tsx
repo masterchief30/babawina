@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { generateSlug } from "@/lib/utils"
-import { Upload, Target, Wand2, Save, Eye } from "lucide-react"
+import { Upload, Target, Wand2, Save } from "lucide-react"
 import Image from "next/image"
 
 interface CompetitionData {

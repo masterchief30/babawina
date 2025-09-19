@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { Zap } from "lucide-react"
 import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/AuthContext"
@@ -23,13 +23,13 @@ interface CompetitionTileProps {
   featured?: boolean
 }
 
-interface TimeRemaining {
-  days: number
-  hours: number
-  minutes: number
-  seconds: number
-  isExpired: boolean
-}
+// interface TimeRemaining { // Unused
+//   days: number
+//   hours: number
+//   minutes: number
+//   seconds: number
+//   isExpired: boolean
+// }
 
 export function CompetitionTile({
   id,
@@ -46,13 +46,13 @@ export function CompetitionTile({
   featured = false
 }: CompetitionTileProps) {
   const { user } = useAuth()
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isExpired: false
-  })
+  // const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({ // Unused
+  //   days: 0,
+  //   hours: 0,
+  //   minutes: 0,
+  //   seconds: 0,
+  //   isExpired: false
+  // })
 
   // Calculate time remaining
   useEffect(() => {
