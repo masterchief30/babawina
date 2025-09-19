@@ -114,7 +114,7 @@ export function AdminCompetitionTile({
           src={imageUrl}
           alt={imageAlt}
           fill
-          className="object-cover"
+          className="object-contain"
           sizes="(max-width: 768px) 100vw, 33vw"
           onError={(e) => {
             console.error('Image failed to load:', imageUrl)
