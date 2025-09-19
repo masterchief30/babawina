@@ -1,0 +1,39 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient Background -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="overlayGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.4" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="600" height="400" fill="url(#bgGradient)"/>
+  <rect width="600" height="400" fill="url(#overlayGradient)"/>
+  
+  <!-- Football/Soccer Ball -->
+  <g transform="translate(300, 200)">
+    <!-- Ball Shadow -->
+    <ellipse cx="0" cy="40" rx="35" ry="8" fill="#000000" opacity="0.2"/>
+    
+    <!-- Ball -->
+    <circle cx="0" cy="0" r="30" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    
+    <!-- Ball Pattern -->
+    <path d="M-15,-10 L-5,-18 L5,-18 L15,-10 L10,0 L15,10 L5,18 L-5,18 L-15,10 L-10,0 Z" fill="#1F2937"/>
+    <path d="M-15,-10 L-10,0 M-5,-18 L-10,0 M5,-18 L-10,0 M15,-10 L10,0 M15,-10 L15,10 M10,0 L15,10 M10,0 L5,18 M15,10 L5,18 M15,10 L-5,18 M5,18 L-5,18 M5,18 L-15,10 M-5,18 L-15,10 M-5,18 L-10,0 M-15,10 L-10,0" stroke="#374151" stroke-width="1" fill="none"/>
+  </g>
+  
+  <!-- Stylish Text -->
+  <text x="300" y="320" font-family="Arial, sans-serif" font-size="28" font-weight="700" fill="#FFFFFF" text-anchor="middle">SPOT THE BALL</text>
+  <text x="300" y="350" font-family="Arial, sans-serif" font-size="16" fill="#E5E7EB" text-anchor="middle">Competition Image Coming Soon</text>
+  
+  <!-- Decorative Elements -->
+  <circle cx="100" cy="100" r="3" fill="#FFFFFF" opacity="0.6"/>
+  <circle cx="500" cy="80" r="2" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="150" cy="350" r="2" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="450" cy="320" r="3" fill="#FFFFFF" opacity="0.3"/>
+</svg>
