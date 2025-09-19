@@ -14,6 +14,8 @@ interface Competition {
   prize_value_rand: number
   entry_price_rand: number
   image_inpainted_path: string | null
+  display_photo_path: string | null
+  display_photo_alt: string | null
   status: 'draft' | 'live' | 'closed' | 'judged'
   starts_at: string
   ends_at: string
@@ -197,6 +199,8 @@ export function AdminCompetitionsGrid() {
               prize_value_rand={competition.prize_value_rand}
               entry_price_rand={competition.entry_price_rand}
               image_inpainted_path={competition.image_inpainted_path}
+              display_photo_path={competition.display_photo_path}
+              display_photo_alt={competition.display_photo_alt}
               status={competition.status}
               starts_at={competition.starts_at}
               ends_at={competition.ends_at}

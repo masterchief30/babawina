@@ -14,6 +14,8 @@ interface AdminCompetitionTileProps {
   prize_value_rand: number
   entry_price_rand: number
   image_inpainted_path?: string
+  display_photo_path?: string
+  display_photo_alt?: string
   status: 'draft' | 'live' | 'closed' | 'judged'
   starts_at: string
   ends_at: string
@@ -29,6 +31,8 @@ export function AdminCompetitionTile({
   prize_value_rand,
   entry_price_rand,
   image_inpainted_path,
+  display_photo_path,
+  display_photo_alt,
   status,
   starts_at,
   ends_at,
@@ -70,10 +74,27 @@ export function AdminCompetitionTile({
     }
   }
 
-  // Image URL
-  const imageUrl = image_inpainted_path 
-    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-inpainted/${image_inpainted_path}`
-    : '/placeholder-competition.svg'
+  // Image URL - prioritize display photo, then inpainted photo, then placeholder
+  const getImageUrl = () => {
+    if (display_photo_path) {
+      if (display_photo_path.startsWith('http')) {
+        return display_photo_path
+      }
+      return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-display/${display_photo_path}`
+    }
+    
+    if (image_inpainted_path) {
+      if (image_inpainted_path.startsWith('http')) {
+        return image_inpainted_path
+      }
+      return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-inpainted/${image_inpainted_path}`
+    }
+    
+    return '/placeholder-competition.svg'
+  }
+
+  const imageUrl = getImageUrl()
+  const imageAlt = display_photo_alt || `${title} competition image`
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this competition? This action cannot be undone.')) {
@@ -91,10 +112,14 @@ export function AdminCompetitionTile({
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
         <Image
           src={imageUrl}
-          alt={title}
+          alt={imageAlt}
           fill
           className="object-cover"
           sizes="(max-width: 768px) 100vw, 33vw"
+          onError={(e) => {
+            console.error('Image failed to load:', imageUrl)
+            e.currentTarget.src = '/placeholder-competition.svg'
+          }}
         />
         
         {/* Status Badge */}

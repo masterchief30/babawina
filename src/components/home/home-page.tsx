@@ -210,11 +210,11 @@ export function HomePage() {
               className="text-5xl md:text-7xl font-black leading-tight"
             >
               <span className="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 bg-clip-text text-transparent">
-                Spot The Ball.
+                Find The Ball.
               </span>
               <br />
               <span className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 bg-clip-text text-transparent animate-pulse">
-                Win Big Prizes.
+                Win Amazing Prizes.
               </span>
             </motion.h1>
 
