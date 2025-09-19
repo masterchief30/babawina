@@ -119,7 +119,7 @@ export default function ProfilePage() {
       // Step 4: Group entries by competition and count them
       const competitionStatsMap = new Map<string, UserCompetitionStats>()
       
-      userEntries.forEach((entry: any) => {
+      userEntries.forEach((entry: Record<string, unknown>) => {
         const competition = competitions?.find(c => c.id === entry.competition_id)
         if (!competition) {
           console.warn('Competition not found for entry:', entry)
@@ -146,15 +146,15 @@ export default function ProfilePage() {
         
         const stats = competitionStatsMap.get(competitionId)!
         stats.entry_count += 1
-        stats.total_spent += entry.entry_price_paid || 30
+        stats.total_spent += (entry.entry_price_paid as number) || 30
         stats.entries.push({
-          id: entry.id,
-          competition_id: entry.competition_id,
-          guess_x: entry.guess_x,
-          guess_y: entry.guess_y,
-          entry_price_paid: entry.entry_price_paid || 30,
-          created_at: entry.created_at,
-          is_winner: entry.is_winner || false,
+          id: entry.id as string,
+          competition_id: entry.competition_id as string,
+          guess_x: entry.guess_x as number,
+          guess_y: entry.guess_y as number,
+          entry_price_paid: (entry.entry_price_paid as number) || 30,
+          created_at: entry.created_at as string,
+          is_winner: (entry.is_winner as boolean) || false,
           competition: stats.competition
         })
       })
@@ -163,7 +163,7 @@ export default function ProfilePage() {
       console.log('Final competition stats:', competitionStats)
       setUserCompetitions(competitionStats)
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching user competitions:', error)
       showNotification('error', 'Unable to load your competitions. Please try again.')
       setUserCompetitions([])
@@ -207,9 +207,10 @@ export default function ProfilePage() {
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Password update error:', error)
-      showNotification('error', error.message || 'Failed to update password')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update password'
+      showNotification('error', errorMessage)
     } finally {
       setIsUpdatingPassword(false)
     }
@@ -238,9 +239,10 @@ export default function ProfilePage() {
       setTimeout(() => {
         window.location.href = '/'
       }, 2000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Account deletion error:', error)
-      showNotification('error', error.message || 'Failed to delete account')
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete account'
+      showNotification('error', errorMessage)
     } finally {
       setIsDeletingAccount(false)
     }

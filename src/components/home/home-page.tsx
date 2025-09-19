@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CompetitionTilesGrid } from "@/components/landing/competition-tiles-grid"
 import { useAuth } from "@/contexts/AuthContext"
@@ -9,7 +10,7 @@ import { Trophy, Target, Users, Shield, CheckCircle, Sparkles, Zap, Star, ArrowR
 import { motion } from "framer-motion"
 
 // Soccer Ball Component (Mobile + Desktop)
-function MobileSoccerBall({ user }: { user: any }) {
+function MobileSoccerBall({ user }: { user: unknown }) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   
@@ -479,7 +480,7 @@ export function HomePage() {
           {/* Description Text */}
           <div className="text-center mb-8">
             <p className="text-lg lg:text-xl text-white font-medium">
-              South Africa's most exciting gaming competition. Winners every week!
+              South Africa&apos;s most exciting gaming competition. Winners every week!
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -619,16 +620,18 @@ export function HomePage() {
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-10 h-10 rounded-xl overflow-hidden">
-                  <img 
+                  <Image 
                     src="/images/hero/mascot002.png" 
                     alt="BabaWina Mascot" 
+                    width={40}
+                    height={40}
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="text-lg font-bold">BabaWina</span>
               </div>
               <p className="text-sm text-gray-400">
-                South Africa's #1 gaming competition platform
+                South Africa&apos;s #1 gaming competition platform
               </p>
             </div>
             

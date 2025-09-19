@@ -55,8 +55,8 @@ export function WinnersPage({ competitions }: WinnersPageProps) {
     return getInitials(name)
   }
 
-  const getLocation = (email: string) => {
-    // Mock location based on email domain or random SA cities
+  const getLocation = () => {
+    // Mock location - random SA cities
     const cities = ["Cape Town", "Johannesburg", "Durban", "Pretoria", "Port Elizabeth", "Bloemfontein"]
     return cities[Math.floor(Math.random() * cities.length)]
   }
@@ -197,7 +197,7 @@ export function WinnersPage({ competitions }: WinnersPageProps) {
             <div className="bg-gradient-to-r from-accent/10 to-accent/5 rounded-2xl p-8 border">
               <h2 className="text-2xl font-bold mb-4">Ready for the Next Challenge?</h2>
               <p className="text-muted-foreground mb-6">
-                New competitions are starting soon. Don't miss your chance to win!
+                New competitions are starting soon. Don&apos;t miss your chance to win!
               </p>
               <Link href="/">
                 <Button variant="accent" size="lg">

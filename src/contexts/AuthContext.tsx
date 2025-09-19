@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('Supabase signOut successful, clearing local state')
       setSession(null)
       setUser(null)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Sign out error:', error)
       // Even if there's an error, clear local state to ensure UI updates
       console.log('Clearing local state due to error')
@@ -114,7 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null)
       
       // Only throw if it's not a session-related error
-      if (!error.message?.includes('session') && !error.message?.includes('Auth session missing')) {
+      const errorMessage = error instanceof Error ? error.message : ''
+      if (!errorMessage.includes('session') && !errorMessage.includes('Auth session missing')) {
         throw error
       }
     }
