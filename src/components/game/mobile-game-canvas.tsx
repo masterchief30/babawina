@@ -25,7 +25,7 @@ export function MobileGameCanvas({
 }: MobileGameCanvasProps) {
   const [crosshairPosition, setCrosshairPosition] = useState<{ u: number; v: number } | null>(null)
   const [zoom, setZoom] = useState(1)
-  // const [pan, setPan] = useState({ x: 0, y: 0 }) // Unused state
+  const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -240,7 +240,7 @@ export function MobileGameCanvas({
             alt="Game Image"
             fill
             className="object-cover"
-            sizes={generateResponsiveSizes()}
+            sizes="100vw"
             priority
             quality={85}
           />

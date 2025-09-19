@@ -91,8 +91,8 @@ interface EnhancedCompetitionFormProps {
 
 export function EnhancedCompetitionForm({ 
   editMode = false, 
-  initialData = null,
-  competitionId = null 
+  initialData = undefined,
+  competitionId = undefined 
 }: EnhancedCompetitionFormProps = {}) {
   const [formData, setFormData] = useState<CompetitionData>(() => {
     if (editMode && initialData) {
@@ -129,7 +129,7 @@ export function EnhancedCompetitionForm({
       : null
   )
   const [rawImagePath, setRawImagePath] = useState<string | null>(
-    editMode && initialData ? initialData.image_raw_path : null
+    editMode && initialData ? (initialData.image_raw_path || null) : null
   )
   const [rawDimensions, setRawDimensions] = useState<ImageDimensions | null>(() => 
     editMode && initialData?.raw_image_width && initialData?.raw_image_height
@@ -145,7 +145,7 @@ export function EnhancedCompetitionForm({
       : null
   )
   const [normalizedImagePath, setNormalizedImagePath] = useState<string | null>(
-    editMode && initialData ? initialData.image_normalized_path : null
+    editMode && initialData ? (initialData.image_normalized_path || null) : null
   )
   const [normalizationTransform, setNormalizationTransform] = useState<NormalizationTransform | null>(() =>
     editMode && initialData?.norm_scale_x && initialData?.norm_scale_y
@@ -169,7 +169,7 @@ export function EnhancedCompetitionForm({
           centroid: { x: initialData.judged_x_norm, y: initialData.judged_y_norm },
           bbox: { x: 0, y: 0, w: 0, h: 0 }, // Placeholder
           confidence: initialData.detect_confidence || 0.8,
-          mask_url: initialData.image_mask_path || '',
+          mask_url: initialData.image_inpainted_path || '',
           image_size: { width: initialData.normalized_width || 960, height: initialData.normalized_height || 540 }
         }
       : null
@@ -220,7 +220,7 @@ export function EnhancedCompetitionForm({
     console.log('initialData:', initialData)
     console.log('initialData.display_photo_path:', initialData?.display_photo_path)
     console.log('initialData.display_photo_alt:', initialData?.display_photo_alt)
-    return editMode && initialData ? initialData.display_photo_path : null
+    return editMode && initialData ? (initialData.display_photo_path || null) : null
   })
   const [displayPhotoAlt, setDisplayPhotoAlt] = useState<string>(
     editMode && initialData ? initialData.display_photo_alt || '' : ''

@@ -84,7 +84,7 @@ export function AccountPage({ user, profile, entries }: AccountPageProps) {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to update profile",
         variant: "destructive",
       })
     } finally {

@@ -198,9 +198,9 @@ export function AdminCompetitionsGrid() {
               prize_short={competition.prize_short}
               prize_value_rand={competition.prize_value_rand}
               entry_price_rand={competition.entry_price_rand}
-              image_inpainted_path={competition.image_inpainted_path}
-              display_photo_path={competition.display_photo_path}
-              display_photo_alt={competition.display_photo_alt}
+              image_inpainted_path={competition.image_inpainted_path || undefined}
+              display_photo_path={competition.display_photo_path || undefined}
+              display_photo_alt={competition.display_photo_alt || undefined}
               status={competition.status}
               starts_at={competition.starts_at}
               ends_at={competition.ends_at}

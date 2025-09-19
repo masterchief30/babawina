@@ -143,7 +143,7 @@ export function WinnersPage({ competitions }: WinnersPageProps) {
                                 {getRankIcon(winner.rank)}
                                 <div>
                                   <div className="font-semibold">
-                                    {getDisplayName(winner)} • {getLocation(winner.profiles.email)}
+                                    {getDisplayName(winner)} • {getLocation()}
                                   </div>
                                   <div className="text-sm text-muted-foreground">
                                     Distance: {formatDistance(winner.distance)}

@@ -142,7 +142,7 @@ export function CreateCompetitionForm() {
     } catch (error: unknown) {
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       })
     }
@@ -183,7 +183,7 @@ export function CreateCompetitionForm() {
     } catch (error: unknown) {
       toast({
         title: "Detection failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       })
     } finally {
@@ -226,7 +226,7 @@ export function CreateCompetitionForm() {
     } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       })
     } finally {
@@ -320,7 +320,7 @@ export function CreateCompetitionForm() {
     } catch (error: unknown) {
       toast({
         title: "Save failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive"
       })
     }

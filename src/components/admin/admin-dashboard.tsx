@@ -89,7 +89,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Failed to create competition",
         variant: "destructive",
       })
     }
@@ -127,7 +127,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
     } catch (error: unknown) {
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       })
     } finally {
@@ -186,7 +186,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
     } catch (error: unknown) {
       toast({
         title: "Detection failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       })
 
@@ -246,7 +246,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
     } catch (error: unknown) {
       toast({
         title: "Inpainting failed",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       })
 
@@ -278,7 +278,7 @@ export function AdminDashboard({ competitions, user }: AdminDashboardProps) {
     } catch (error: unknown) {
       toast({
         title: "Error",
-        description: error.message,
+        description: error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       })
     }

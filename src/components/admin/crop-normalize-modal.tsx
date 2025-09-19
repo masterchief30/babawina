@@ -234,7 +234,7 @@ export function CropNormalizeModal({ isOpen, onClose, file, onSave }: CropNormal
     setDragStart(position)
   }
 
-  const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasEvent>) => {
+  const handlePointerMove = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     e.preventDefault()
     if (!isDragging || !dragStart || !cropArea || !imageDimensions) return
 
