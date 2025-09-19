@@ -635,12 +635,17 @@ export function HomePage() {
             <div>
               <h4 className="font-bold mb-4 text-amber-400">Play</h4>
               <div className="space-y-2">
-                <Link href="/competitions" className="block text-sm text-gray-400 hover:text-amber-400">
+                <button 
+                  onClick={() => {
+                    const competitionsSection = document.getElementById('competitions')
+                    if (competitionsSection) {
+                      competitionsSection.scrollIntoView({ behavior: 'smooth' })
+                    }
+                  }}
+                  className="block text-sm text-gray-400 hover:text-amber-400 text-left"
+                >
                   Competitions
-                </Link>
-                <Link href="/winners" className="block text-sm text-gray-400 hover:text-amber-400">
-                  Winners
-                </Link>
+                </button>
               </div>
             </div>
             

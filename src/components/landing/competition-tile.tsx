@@ -139,8 +139,8 @@ export function CompetitionTile({
         className="group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-shadow duration-300 hover:shadow-2xl h-full mx-auto shadow-lg"
         style={{ maxWidth: '336px' }}
       >
-        {/* Time Badge - Gradient like ENDS TONIGHT */}
-        <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-pink-500 to-red-600 text-white px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shadow-lg">
+        {/* Time Badge - Green gradient */}
+        <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shadow-lg">
           {formatTimeDisplay().toUpperCase()}
         </div>
 
@@ -154,8 +154,8 @@ export function CompetitionTile({
           />
         </div>
 
-        {/* Title - Red background with gradient, white text */}
-        <div className="bg-gradient-to-r from-red-600 to-red-500 px-4 py-3">
+        {/* Title - Green background with gradient, white text */}
+        <div className="bg-gradient-to-r from-green-600 to-green-500 px-4 py-3">
           <h3 className="text-white font-bold text-base uppercase tracking-wide text-center drop-shadow-sm">
             {title.replace(/^Win (a|an) /i, 'WIN ')} for {formatPrice(entry_price_rand)}
           </h3>

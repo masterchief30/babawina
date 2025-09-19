@@ -1,0 +1,33 @@
+{
+  "name": "BabaWina - Win Big with Spot-the-Ball",
+  "short_name": "BabaWina",
+  "description": "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#FFD700",
+  "background_color": "#FFD700",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/"
+}

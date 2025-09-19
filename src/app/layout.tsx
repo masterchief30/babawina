@@ -17,6 +17,18 @@ export const metadata: Metadata = {
   creator: "BabaWina",
   publisher: "BabaWina",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.babawina.co.za"),
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.svg", sizes: "180x180", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+  },
   openGraph: {
     type: "website",
     locale: "en_ZA",
@@ -50,6 +62,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={inter.variable}>
+      <head>
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#FFD700" />
+        <meta name="msapplication-TileColor" content="#FFD700" />
+      </head>
       <body className="font-sans antialiased">
         <AuthProvider>
           {children}

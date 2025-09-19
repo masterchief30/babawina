@@ -26,6 +26,7 @@ interface CompetitionEntry {
   guess_y: number
   entry_price_paid: number
   created_at: string
+  is_winner?: boolean
   competition: Competition
 }
 
@@ -153,6 +154,7 @@ export default function ProfilePage() {
           guess_y: entry.guess_y,
           entry_price_paid: entry.entry_price_paid || 30,
           created_at: entry.created_at,
+          is_winner: entry.is_winner || false,
           competition: stats.competition
         })
       })
@@ -404,91 +406,79 @@ export default function ProfilePage() {
                         <p className="text-gray-600">You haven't entered any competitions yet. Start playing to see your entries here!</p>
                       </div>
                     ) : (
-                      <div className="space-y-6">
-                        {userCompetitions.map((stats) => (
-                          <div key={stats.competition.id} className="bg-gray-50 rounded-lg p-4 md:p-6">
-                            <div className="flex flex-col md:flex-row gap-4">
-                              {/* Competition Image */}
-                              <div className="md:w-32 md:h-32 flex-shrink-0">
-                                <img
-                                  src={stats.competition.display_photo_path || '/placeholder-competition.jpg'}
-                                  alt={stats.competition.prize_name}
-                                  className="w-full h-32 object-contain rounded-lg bg-white"
-                                />
-                              </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full bg-white rounded-lg shadow-sm">
+                          <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Hat Prize</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">End Date</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Number Guesses</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Spent</th>
+                              <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Win</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {userCompetitions.map((stats) => {
+                              const hasWinner = stats.entries.some(entry => entry.is_winner)
+                              const endDate = new Date(stats.competition.end_date)
+                              const isValidDate = !isNaN(endDate.getTime())
+                              const isFinished = isValidDate ? endDate < new Date() : true // Assume finished if invalid date
                               
-                              {/* Competition Details */}
-                              <div className="flex-1">
-                                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                                  <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                      {stats.competition.title}
-                                    </h3>
-                                    <p className="text-blue-600 font-medium mb-2">
-                                      Prize: {stats.competition.prize_name}
-                                    </p>
-                                    <p className="text-sm text-gray-600 mb-2">
-                                      Ends: {new Date(stats.competition.end_date).toLocaleDateString('en-ZA', {
-                                        year: 'numeric',
-                                        month: 'short',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </p>
-                                    <div className="flex items-center gap-2">
-                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        stats.competition.is_active
-                                          ? 'bg-green-100 text-green-800'
-                                          : 'bg-gray-100 text-gray-800'
-                                      }`}>
-                                        {stats.competition.is_active ? 'Active' : 'Finished'}
+                              console.log('Competition:', stats.competition.title, 'End date:', stats.competition.end_date, 'Parsed:', endDate, 'Valid:', isValidDate, 'Finished:', isFinished, 'Has winner:', hasWinner)
+                              
+                              return (
+                                <tr key={stats.competition.id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                                    {stats.competition.title}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-700">
+                                    {stats.competition.prize_name}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-700">
+                                    {isValidDate ? endDate.toLocaleDateString('en-ZA', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric'
+                                    }) : 'Invalid Date'}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                      stats.competition.is_active && !isFinished
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {stats.competition.is_active && !isFinished ? 'Active' : 'Finished'}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
+                                    {stats.entry_count}
+                                  </td>
+                                  <td className="px-4 py-3 text-sm text-gray-900 font-semibold">
+                                    R{stats.total_spent}
+                                  </td>
+                                  <td className="px-4 py-3">
+                                    {/* Show win status based on is_winner field, regardless of competition status */}
+                                    {hasWinner ? (
+                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                                        ✓ Won
                                       </span>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Entry Stats */}
-                                  <div className="bg-white rounded-lg p-4 min-w-[200px]">
-                                    <div className="text-center">
-                                      <div className="text-2xl font-bold text-blue-600 mb-1">
-                                        {stats.entry_count}
-                                      </div>
-                                      <div className="text-sm text-gray-600 mb-3">
-                                        {stats.entry_count === 1 ? 'Entry' : 'Entries'}
-                                      </div>
-                                      <div className="text-lg font-semibold text-gray-900">
-                                        R{stats.total_spent}
-                                      </div>
-                                      <div className="text-xs text-gray-500">Total Spent</div>
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                {/* Entry Details */}
-                                <div className="mt-4 pt-4 border-t border-gray-200">
-                                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Your Guesses:</h4>
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                                    {stats.entries.slice(0, 6).map((entry, index) => (
-                                      <div key={entry.id} className="bg-white rounded p-2 text-xs">
-                                        <div className="flex items-center justify-between">
-                                          <span className="font-mono text-gray-700">
-                                            #{index + 1}: ({entry.guess_x.toFixed(1)}%, {entry.guess_y.toFixed(1)}%)
-                                          </span>
-                                          <span className="text-gray-500">R{entry.entry_price_paid}</span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                    {stats.entries.length > 6 && (
-                                      <div className="bg-gray-100 rounded p-2 text-xs text-center text-gray-600">
-                                        +{stats.entries.length - 6} more
-                                      </div>
+                                    ) : isFinished ? (
+                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                                        ✗ Lost
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                                        ⏳ Pending
+                                      </span>
                                     )}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                                  </td>
+                                </tr>
+                              )
+                            })}
+                          </tbody>
+                        </table>
                       </div>
                     )}
                   </div>
