@@ -271,7 +271,7 @@ export function generateInpaintedFilename(originalName: string): string {
 /**
  * Generate a filename for mask images
  */
-export function generateMaskFilename(originalName: string): string {
+export function generateMaskFilename(_originalName: string): string {
   const timestamp = Date.now()
   return `mask_${timestamp}.png`
 }

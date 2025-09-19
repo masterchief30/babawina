@@ -32,7 +32,7 @@ export function CompetitionTilesGrid() {
     const fetchCompetitions = async () => {
       try {
         // First try with display photo fields
-        let { data, error } = await supabase
+        const { data: initialData, error } = await supabase
           .from('competitions')
           .select(`
             id,
@@ -52,6 +52,8 @@ export function CompetitionTilesGrid() {
           .gte('ends_at', new Date().toISOString())
           .order('ends_at', { ascending: true })
           .limit(9) // Show max 9 competitions for 3x3 grid
+
+        let data = initialData
 
         // If error (likely missing columns), try without display photo fields
         if (error) {
