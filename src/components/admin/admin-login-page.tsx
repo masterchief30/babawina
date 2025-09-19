@@ -6,9 +6,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
-import { ArrowLeft, Shield } from "lucide-react"
+import { ArrowLeft, Shield, CheckCircle, XCircle } from "lucide-react"
 
 const ADMIN_EMAIL = "mg@gogaudi.de"
 
@@ -16,19 +15,27 @@ export function AdminLoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
+  const [notification, setNotification] = useState<{
+    show: boolean
+    type: 'success' | 'error'
+    message: string
+  }>({ show: false, type: 'success', message: '' })
   const router = useRouter()
+
+  // Show notification for 0.3 seconds
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ show: true, type, message })
+    setTimeout(() => {
+      setNotification(prev => ({ ...prev, show: false }))
+    }, 300) // 0.3 seconds
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     // Check if email is the allowed admin email
     if (email !== ADMIN_EMAIL) {
-      toast({
-        title: "Access Denied",
-        description: "Only authorized administrators can access this panel.",
-        variant: "destructive",
-      })
+      showNotification('error', 'Access Denied - Unauthorized Email')
       return
     }
 
@@ -78,20 +85,15 @@ export function AdminLoginPage() {
           if (updateError) throw updateError
         }
 
-        toast({
-          title: "Welcome, Admin!",
-          description: "Redirecting to admin panel...",
-        })
+        showNotification('success', 'Login Successful!')
 
-        // Force redirect immediately
-        window.location.replace("/admin/dashboard")
+        // Redirect after notification
+        setTimeout(() => {
+          window.location.replace("/admin/dashboard")
+        }, 350)
       }
     } catch (error: any) {
-      toast({
-        title: "Login Failed",
-        description: error.message || "Invalid credentials. Please try again.",
-        variant: "destructive",
-      })
+      showNotification('error', 'Login Failed - Invalid Credentials')
     } finally {
       setIsLoading(false)
     }
@@ -166,6 +168,22 @@ export function AdminLoginPage() {
           </Link>
         </div>
       </div>
+
+      {/* Custom Notification - White box with green tick or red X */}
+      {notification.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+            {notification.type === 'success' ? (
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+            ) : (
+              <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            )}
+            <p className="text-lg font-semibold text-gray-900">
+              {notification.message}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

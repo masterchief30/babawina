@@ -3,7 +3,8 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { Trophy, Clock, Users } from "lucide-react"
+import { Zap } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface CompetitionTileProps {
   id: string
@@ -11,9 +12,9 @@ interface CompetitionTileProps {
   prize_short: string
   prize_value_rand: number
   entry_price_rand: number
-  image_inpainted_path?: string
-  display_photo_path?: string
-  display_photo_alt?: string
+  image_inpainted_path?: string | null
+  display_photo_path?: string | null
+  display_photo_alt?: string | null
   status: 'live' | 'draft' | 'closed' | 'judged'
   starts_at: string
   ends_at: string
@@ -40,7 +41,7 @@ export function CompetitionTile({
   display_photo_alt,
   status,
   ends_at,
-  entry_count = 0,
+  entry_count = Math.floor(Math.random() * 500) + 100,
   featured = false
 }: CompetitionTileProps) {
   const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
@@ -83,36 +84,6 @@ export function CompetitionTile({
     return () => clearInterval(interval)
   }, [ends_at])
 
-  // Determine status badge
-  const getStatusBadge = () => {
-    if (status !== 'live') return null
-    
-    const totalHours = timeRemaining.days * 24 + timeRemaining.hours
-    
-    if (totalHours < 24) {
-      return (
-        <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-md text-sm font-bold uppercase tracking-wide shadow-lg">
-          ENDS SOON
-        </div>
-      )
-    }
-    
-    if (timeRemaining.days <= 7) {
-      const daysText = timeRemaining.days === 1 ? 'DAY' : 'DAYS'
-      return (
-        <div className="absolute top-4 left-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-md text-sm font-bold uppercase tracking-wide shadow-lg">
-          ENDS IN {timeRemaining.days} {daysText}
-        </div>
-      )
-    }
-    
-    return (
-      <div className="absolute top-4 left-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-md text-sm font-bold uppercase tracking-wide shadow-lg">
-        LIVE
-      </div>
-    )
-  }
-
   // Format price display
   const formatPrice = (price: number) => {
     if (price >= 1000) {
@@ -121,18 +92,29 @@ export function CompetitionTile({
     return `R${price}`
   }
 
-  // Image URL - prioritize display photo, fallback to inpainted photo, then placeholder
+  // Format time display - show day name
+  const formatTimeDisplay = () => {
+    const endDate = new Date(ends_at)
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    return `Ends ${dayNames[endDate.getDay()]}`
+  }
+
+  // Image URL - prioritize display photo over inpainted/game photo
   const getImageUrl = () => {
     if (display_photo_path) {
+      if (display_photo_path.startsWith('http')) {
+        return display_photo_path
+      }
       return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-display/${display_photo_path}`
     }
+    
     if (image_inpainted_path) {
-      // Handle both full URLs and filenames for backward compatibility
       if (image_inpainted_path.startsWith('http')) {
         return image_inpainted_path
       }
       return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-inpainted/${image_inpainted_path}`
     }
+    
     return '/placeholder-competition.svg'
   }
 
@@ -140,75 +122,63 @@ export function CompetitionTile({
   const imageAlt = display_photo_alt || `${title} competition image`
 
   return (
-    <Link href={`/play/${id}`}>
-      <div className={`
-        group relative bg-white rounded-2xl shadow-xl overflow-hidden cursor-pointer
-        transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-2xl
-        border border-gray-100 max-w-sm mx-auto
-      `}>
-        {/* Hero Image Section */}
-        <div className={`relative ${featured ? 'h-64' : 'h-48'} overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600`}>
-          <Image
+    <Link href={`/play/${id}`} className="block cursor-pointer">
+      <motion.div
+        whileTap={{ scale: 0.98 }}
+        className="group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-shadow duration-300 hover:shadow-2xl h-full mx-auto shadow-lg"
+        style={{ maxWidth: '336px' }}
+      >
+        {/* Time Badge - Gradient like ENDS TONIGHT */}
+        <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-pink-500 to-red-600 text-white px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shadow-lg">
+          {formatTimeDisplay().toUpperCase()}
+        </div>
+
+        {/* Image Section - Full width, auto height to preserve aspect ratio */}
+        <div className="relative w-full bg-white">
+          <img
             src={imageUrl}
             alt={imageAlt}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-110"
-            sizes={featured ? "(max-width: 768px) 100vw, 66vw" : "(max-width: 768px) 100vw, 33vw"}
+            className="w-full h-auto"
+            loading={featured ? "eager" : "lazy"}
           />
-          
-          {/* Status Badge */}
-          {getStatusBadge()}
-
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
 
-        {/* Content Section */}
-        <div className="p-6 bg-white">
-          {/* Title */}
-          <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">
-            {title}
+        {/* Title - Red background with gradient, white text */}
+        <div className="bg-gradient-to-r from-red-600 to-red-500 px-4 py-3">
+          <h3 className="text-white font-bold text-base uppercase tracking-wide text-center drop-shadow-sm">
+            {title.replace(/^Win (a|an) /i, 'WIN ')} for {formatPrice(entry_price_rand)}
           </h3>
-          
-          {/* Prize Description */}
-          <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-            {prize_short}
-          </p>
-
-          {/* Price Section */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">
-                STARTING FROM
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {formatPrice(prize_value_rand)}
-              </div>
-            </div>
-            
-            <div className="text-right">
-              <div className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-1">
-                TICKET PRICE
-              </div>
-              <div className="text-2xl font-bold text-orange-500">
-                {entry_price_rand === 0 ? 'Free entry' : formatPrice(entry_price_rand)}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Button */}
-          <div className="flex gap-3">
-            <button className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200 transform active:scale-95 text-center">
-              {entry_price_rand === 0 ? 'SIGN UP AND GET A FREE TICKET »' : 'ENTER NOW'}
-            </button>
-            {entry_price_rand > 0 && (
-              <button className="bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg transition-all duration-200">
-                <Trophy className="w-5 h-5" />
-              </button>
-            )}
-          </div>
         </div>
-      </div>
+
+        {/* Content Section - Cleaner spacing */}
+        <div className="p-6 bg-gradient-to-b from-white to-gray-50">
+          {/* Prize Name */}
+          <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wide text-center">
+            {prize_short}
+          </h3>
+
+          {/* Ticket Price - Center aligned with gradient text */}
+          <div className="text-center mb-6">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">Ticket Price</p>
+            <p className="text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">
+              {formatPrice(entry_price_rand)}
+            </p>
+          </div>
+
+          {/* Play Now - Outlined button that fills on hover */}
+          <motion.div 
+            className="relative w-full overflow-hidden rounded-lg cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative w-full border-2 border-blue-600 text-blue-600 group-hover:text-white group-hover:border-transparent font-bold py-4 px-4 rounded-lg flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-300">
+              <Zap className="w-4 h-4" />
+              <span>PLAY NOW</span>
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
     </Link>
   )
 }
