@@ -46,6 +46,13 @@ interface WizardData {
   transform: NormalizationTransform | null
 }
 
+interface AiResult {
+  ok: boolean
+  centroid?: { x: number; y: number }
+  confidence?: number
+  error?: string
+}
+
 type WizardStep = 1 | 2 | 3 | 4
 
 export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWizardModalProps) {
@@ -65,9 +72,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   const [isSavingFinal, setIsSavingFinal] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null)
-  // const [cropArea, setCropArea] = useState<CropArea | null>(null) // Unused state
   const [manualCoords, setManualCoords] = useState<{ x: number; y: number } | null>(null)
-  const [aiResult, setAiResult] = useState<unknown>(null)
+  const [aiResult, setAiResult] = useState<AiResult | null>(null)
   const [inpaintedPreview, setInpaintedPreview] = useState<string | null>(null)
   
   // Crop drag states
@@ -81,7 +87,6 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   const [savingCoordinates, setSavingCoordinates] = useState(false)
   const [detectingBall, setDetectingBall] = useState(false)
 
-  // const canvasRef = useRef<HTMLCanvasElement>(null) // Unused ref
   const { toast } = useToast()
 
   // Crop drag handlers
@@ -276,7 +281,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
   // Step 3: Save Coordinates
   const handleSaveCoordinates = () => {
-    const coords = manualCoords || (aiResult as any)?.centroid
+    const coords = manualCoords || aiResult?.centroid
     if (!coords) {
       toast({
         title: "No coordinates",
@@ -413,14 +418,6 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     setShowMouseCrosshair(false)
     setMouseCoords(null)
   }
-
-
-  // Navigation - UNUSED FUNCTION COMPLETELY COMMENTED OUT
-  // const goBack = () => { // Unused function
-  //   if (currentStep > 1) {
-  //     setCurrentStep((prev) => (prev - 1) as WizardStep)
-  //   }
-  // }
 
   const handleCancel = () => {
     onClose()
@@ -609,12 +606,12 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                   />
                   
                   {/* Fixed crosshair - positioned within the cropped area */}
-                  {(manualCoords || !!aiResult) && (
+                  {(manualCoords || !!aiResult?.centroid) && (
                     <div
                       className="absolute pointer-events-none z-10"
                       style={{
-                        left: `${cropPosition.left + ((manualCoords?.x || (aiResult as any)?.centroid?.x || 0) / 960) * cropPosition.width}%`,
-                        top: `${cropPosition.top + ((manualCoords?.y || (aiResult as any)?.centroid?.y || 0) / 540) * cropPosition.height}%`,
+                        left: `${cropPosition.left + ((manualCoords?.x || aiResult?.centroid?.x || 0) / 960) * cropPosition.width}%`,
+                        top: `${cropPosition.top + ((manualCoords?.y || aiResult?.centroid?.y || 0) / 540) * cropPosition.height}%`,
                         transform: 'translate(-50%, -50%)'
                       }}
                     >
@@ -656,17 +653,17 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                     {detectingBall ? 'Detecting...' : 'Use AI Detection'}
                   </Button>
 
-                  {(manualCoords || !!aiResult) && (
+                  {(manualCoords || !!aiResult?.centroid) && (
                     <div className="bg-emerald-50 p-4 rounded-lg w-48">
                       <p className="font-medium text-emerald-800 text-sm">
-                        Ball center: ({Math.round((manualCoords?.x || (aiResult as any)?.centroid?.x || 0))}, {Math.round((manualCoords?.y || (aiResult as any)?.centroid?.y || 0))})
+                        Ball center: ({Math.round((manualCoords?.x || aiResult?.centroid?.x || 0))}, {Math.round((manualCoords?.y || aiResult?.centroid?.y || 0))})
                       </p>
                       <div className="mt-2 text-xs">
                         {manualCoords && (
                           <span className="text-blue-600 font-medium">📍 Manual Position</span>
                         )}
-                        {!!aiResult && !manualCoords && (
-                          <span className="text-emerald-600 font-medium">🤖 AI Detection ({((aiResult as any)?.confidence * 100).toFixed(1)}% confidence)</span>
+                        {!!aiResult?.centroid && !manualCoords && (
+                          <span className="text-emerald-600 font-medium">🤖 AI Detection ({((aiResult.confidence || 0) * 100).toFixed(1)}% confidence)</span>
                         )}
                       </div>
                     </div>
@@ -772,7 +769,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
           {currentStep === 3 && (
             <Button 
               onClick={handleSaveCoordinates} 
-              disabled={!manualCoords && !aiResult}
+              disabled={!manualCoords && !aiResult?.centroid}
               className="bg-gray-700 hover:bg-emerald-600 text-white px-8 py-3"
             >
               <CheckCircle className="w-4 h-4 mr-2" />

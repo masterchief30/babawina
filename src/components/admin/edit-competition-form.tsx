@@ -47,7 +47,7 @@ export function EditCompetitionForm({ competitionId }: EditCompetitionFormProps)
   const [competitionData, setCompetitionData] = useState<CompetitionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const { notification, showSuccess, showError, close } = useCenterNotification()
+  const { notification, showError, close } = useCenterNotification()
   const router = useRouter()
 
   // Fetch competition data
@@ -67,9 +67,10 @@ export function EditCompetitionForm({ competitionId }: EditCompetitionFormProps)
         }
 
         setCompetitionData(data)
-      } catch (err: any) {
-        setError(err.message)
-        showError("Failed to load competition", err.message)
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+        setError(errorMessage)
+        showError("Failed to load competition", errorMessage)
       } finally {
         setLoading(false)
       }

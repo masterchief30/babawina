@@ -13,7 +13,6 @@ import { generateSlug } from "@/lib/utils"
 import { 
   fixImageOrientation, 
   getImageDimensions,
-  generateNormalizedFilename,
   normalizedToUnitCoords,
   validateNormalizedCoords,
   validateMobileUpload,
@@ -54,9 +53,39 @@ interface ProcessingStatus {
   color: string
 }
 
+interface InitialData {
+  title?: string
+  prize_short?: string
+  prize_value_rand?: number
+  entry_price_rand?: number
+  starts_at?: string
+  ends_at?: string
+  per_user_entry_limit?: number
+  status?: 'draft' | 'live' | 'closed' | 'judged'
+  image_raw_path?: string
+  image_normalized_path?: string
+  image_inpainted_path?: string
+  display_photo_path?: string
+  display_photo_alt?: string
+  raw_image_width?: number
+  raw_image_height?: number
+  normalized_width?: number
+  normalized_height?: number
+  norm_scale_x?: number
+  norm_scale_y?: number
+  norm_offset_x?: number
+  norm_offset_y?: number
+  judged_x_norm?: number
+  judged_y_norm?: number
+  judged_u?: number
+  judged_v?: number
+  detect_confidence?: number
+  processing_status?: string
+}
+
 interface EnhancedCompetitionFormProps {
   editMode?: boolean
-  initialData?: any // Keep as any for now to avoid breaking all property access
+  initialData?: InitialData
   competitionId?: string
 }
 
@@ -110,7 +139,6 @@ export function EnhancedCompetitionForm({
 
   // Normalization states
   const [showWizard, setShowWizard] = useState(false)
-  const [normalizedBlob, setNormalizedBlob] = useState<Blob | null>(null)
   const [normalizedImageUrl, setNormalizedImageUrl] = useState<string | null>(() =>
     editMode && initialData?.image_normalized_path
       ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-images/${initialData.image_normalized_path}`
@@ -271,7 +299,6 @@ export function EnhancedCompetitionForm({
       setRawImageUrl(URL.createObjectURL(orientedFile))
       
       // Reset processing states
-      setNormalizedBlob(null)
       setNormalizedImageUrl(null)
       setNormalizedImagePath(null)
       setNormalizationTransform(null)
@@ -330,39 +357,6 @@ export function EnhancedCompetitionForm({
     },
     multiple: false
   })
-
-  // Upload raw image to Supabase with proper ID - UNUSED FUNCTION COMPLETELY COMMENTED OUT
-  // const handleUploadRaw = async () => { 
-  //   if (!rawFile) return
-
-  //   try {
-  //     // Generate unique competition ID for this session
-  //     const competitionId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  //     const fileName = `${competitionId}_raw.${rawFile.name.split('.').pop()}`
-      
-  //     const { error } = await supabase.storage
-  //       .from('competition-raw')
-  //       .upload(fileName, rawFile)
-
-  //     if (error) throw error
-
-  //     setRawImagePath(fileName)
-      
-  //     // Store the competition ID for later use
-  //     sessionStorage.setItem('currentCompetitionId', competitionId)
-      
-  //     toast({
-  //       title: "Raw photo uploaded",
-  //       description: "Original photo saved to storage with ID: " + competitionId,
-  //     })
-  //   } catch (error: unknown) {
-  //     toast({
-  //       title: "Upload failed",
-  //       description: error.message,
-  //       variant: "destructive"
-  //     })
-  //   }
-  // }
 
   // Handle photo wizard
   const handleProcessPhoto = () => {
@@ -436,109 +430,6 @@ export function EnhancedCompetitionForm({
     return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-display/${displayPhotoPath}`
   }
 
-  // Handle normalized image save - UNUSED FUNCTION COMPLETELY COMMENTED OUT
-  // const handleNormalizedSave = async (blob: Blob, transform: NormalizationTransform) => {
-  //   try {
-  //     // Get the competition ID from session
-  //     const competitionId = sessionStorage.getItem('currentCompetitionId') || `comp_${Date.now()}`
-  //     const fileName = `${competitionId}_normalized.jpg`
-      
-  //     const { error } = await supabase.storage
-  //       .from('competition-images')
-  //       .upload(`normalized/${fileName}`, blob)
-
-  //     if (error) throw error
-
-  //     // Create local URL for preview
-  //     const url = URL.createObjectURL(blob)
-      
-  //     setNormalizedBlob(blob)
-  //     setNormalizedImageUrl(url)
-  //     setNormalizedImagePath(`normalized/${fileName}`)
-  //     setNormalizationTransform(transform)
-      
-  //     setProcessingStatus({
-  //       status: 'ready_for_ai',
-  //       message: 'Mobile-optimized image ready for AI processing.',
-  //       color: 'text-green-600'
-  //     })
-
-  //     toast({
-  //       title: "Image normalized",
-  //       description: `Mobile-optimized: ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height} (ID: ${competitionId})`,
-  //     })
-  //   } catch (error: unknown) {
-  //     toast({
-  //       title: "Save failed",
-  //       description: error.message,
-  //       variant: "destructive"
-  //     })
-  //   }
-  // }
-
-  // AI Ball Detection
-  const handleGetCoordinates = async () => {
-    if (!normalizedImagePath) {
-      toast({
-        title: "No normalized image",
-        description: "Please crop and normalize the image first.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsProcessing(true)
-    try {
-      const response = await fetch('/api/ball-processor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-images/${normalizedImagePath}`,
-          do_inpaint: false,
-          competition_id: Date.now().toString() // Temporary ID
-        })
-      })
-
-      const result = await response.json()
-      if (!result.ok) throw new Error(result.error)
-
-      setProcessingResult(result)
-      
-      // Set status based on confidence
-      const status = result.confidence < 0.6 ? 'needs_review' : 'coords_saved'
-      setProcessingStatus({
-        status,
-        message: status === 'needs_review' 
-          ? `Low confidence (${(result.confidence * 100).toFixed(1)}%). Please review and adjust.`
-          : `Ball detected with ${(result.confidence * 100).toFixed(1)}% confidence.`,
-        color: status === 'needs_review' ? 'text-orange-600' : 'text-green-600'
-      })
-
-      toast({
-        title: "Ball detected",
-        description: `Confidence: ${(result.confidence * 100).toFixed(1)}%`,
-      })
-    } catch (error: unknown) {
-      toast({
-        title: "Detection failed",
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        variant: "destructive"
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  // Manual coordinate setting
-  const handleManualSet = () => {
-    if (!normalizedImageUrl) return
-    
-    toast({
-      title: "Manual mode",
-      description: "Click on the image to set the ball center.",
-    })
-  }
-
   // Handle canvas click for manual coordinate setting
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = normalizedCanvasRef.current
@@ -559,94 +450,6 @@ export function EnhancedCompetitionForm({
         color: 'text-green-600'
       })
     }
-  }
-
-  // Save coordinates
-  const handleSaveCoordinates = () => {
-    const coords = manualCoords || processingResult?.centroid
-    if (!coords) {
-      toast({
-        title: "No coordinates",
-        description: "Please detect or manually set coordinates first.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setProcessingStatus({
-      status: 'coords_saved',
-      message: 'Coordinates saved. Ready for ball removal.',
-      color: 'text-green-600'
-    })
-
-    toast({
-      title: "Coordinates saved",
-      description: `Ball center: (${Math.round(coords.x)}, ${Math.round(coords.y)})`,
-    })
-  }
-
-  // AI Ball Removal
-  const handleRemoveBall = async () => {
-    if (!normalizedImagePath || !processingResult) {
-      toast({
-        title: "Prerequisites missing",
-        description: "Please detect ball coordinates first.",
-        variant: "destructive"
-      })
-      return
-    }
-
-    setIsProcessing(true)
-    try {
-      const competitionId = sessionStorage.getItem('currentCompetitionId') || `comp_${Date.now()}`
-      
-      const response = await fetch('/api/ball-processor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image_url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-images/${normalizedImagePath}`,
-          do_inpaint: true,
-          competition_id: competitionId
-        })
-      })
-
-      const result = await response.json()
-      if (!result.ok) throw new Error(result.error)
-
-      // The API should return the actual Supabase URL for the inpainted image
-      const inpaintedFileName = `${competitionId}_inpainted.jpg`
-      const inpaintedUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/competition-inpainted/${inpaintedFileName}`
-      
-      setInpaintedImageUrl(inpaintedUrl)
-      setShowComparison(true)
-
-      toast({
-        title: "Ball removed",
-        description: `Inpainting completed successfully. (ID: ${competitionId})`,
-      })
-    } catch (error: unknown) {
-      toast({
-        title: "Inpainting failed",
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        variant: "destructive"
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  // Accept inpainted result
-  const handleAcceptInpainted = () => {
-    setProcessingStatus({
-      status: 'ready',
-      message: 'Competition ready for publishing!',
-      color: 'text-green-600'
-    })
-
-    toast({
-      title: "Inpainted image accepted",
-      description: "Competition is ready to go live.",
-    })
   }
 
   // Save Competition
@@ -762,8 +565,7 @@ export function EnhancedCompetitionForm({
         // If error (likely missing columns), try without display photo fields
         if (updateError && updateError.message?.includes('column')) {
           console.log('Display photo columns not found, updating without them')
-          // const { display_photo_path, display_photo_alt, ...dataWithoutDisplay } = competitionData // Unused vars
-          const { ...dataWithoutDisplay } = competitionData
+          const { display_photo_path, display_photo_alt, ...dataWithoutDisplay } = competitionData
           console.log('Data without display fields:', dataWithoutDisplay)
           const { error: fallbackError } = await supabase
             .from('competitions')
@@ -808,7 +610,6 @@ export function EnhancedCompetitionForm({
         setRawImageUrl(null)
         setRawImagePath(null)
         setRawDimensions(null)
-        setNormalizedBlob(null)
         setNormalizedImageUrl(null)
         setNormalizedImagePath(null)
         setNormalizationTransform(null)
@@ -827,24 +628,6 @@ export function EnhancedCompetitionForm({
       showError("Save failed", error instanceof Error ? error.message : 'Unknown error occurred')
     }
   }
-
-  // Status chip component - UNUSED - COMPLETELY COMMENTED OUT
-  // const StatusChip = ({ status }: { status: ProcessingStatus }) => {
-  //   const icons = {
-  //     idle: <Upload className="w-4 h-4" />,
-  //     ready_for_ai: <Target className="w-4 h-4" />,
-  //     coords_saved: <CheckCircle className="w-4 h-4" />,
-  //     ready: <CheckCircle className="w-4 h-4" />,
-  //     needs_review: <AlertTriangle className="w-4 h-4" />
-  //   }
-
-  //   return (
-  //     <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${status.color} bg-gray-50 border`}>
-  //       {icons[status.status]}
-  //       {status.message}
-  //     </div>
-  //   )
-  // }
 
   return (
     <div className="space-y-8">
@@ -1084,7 +867,6 @@ export function EnhancedCompetitionForm({
                   setRawDimensions(null)
                   setRawImagePath(null)
                   // Reset all other states
-                  setNormalizedBlob(null)
                   setNormalizedImageUrl(null)
                   setNormalizedImagePath(null)
                   setNormalizationTransform(null)
@@ -1204,7 +986,6 @@ export function EnhancedCompetitionForm({
                     setRawImageUrl(null)
                     setRawImagePath(null)
                     setRawDimensions(null)
-                    setNormalizedBlob(null)
                     setNormalizedImageUrl(null)
                     setNormalizedImagePath(null)
                     setNormalizationTransform(null)
