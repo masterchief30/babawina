@@ -1,6 +1,6 @@
 "use client"
 
-import Image from "next/image"
+// import Image from "next/image" // Unused import
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import { Zap } from "lucide-react"
@@ -35,24 +35,24 @@ export function CompetitionTile({
   id,
   title,
   prize_short,
-  prize_value_rand,
+  // prize_value_rand, // Unused
   entry_price_rand,
   image_inpainted_path,
   display_photo_path,
   display_photo_alt,
-  status,
+  // status, // Unused
   ends_at,
-  entry_count = Math.floor(Math.random() * 500) + 100,
+  // entry_count = Math.floor(Math.random() * 500) + 100, // Unused
   featured = false
 }: CompetitionTileProps) {
   const { user } = useAuth()
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-    isExpired: false
-  })
+  // const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
+  //   days: 0,
+  //   hours: 0,
+  //   minutes: 0,
+  //   seconds: 0,
+  //   isExpired: false
+  // }) // Unused state
 
   // Calculate time remaining
   useEffect(() => {

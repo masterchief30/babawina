@@ -388,7 +388,7 @@ export function MobileGameCanvas({
             <div className="text-center p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
               <p className="text-emerald-800 font-medium">Ready to submit your entry?</p>
               <p className="text-sm text-emerald-700 mt-1">
-                You've placed your crosshair. Double-check the position and submit when ready.
+                You&apos;ve placed your crosshair. Double-check the position and submit when ready.
               </p>
             </div>
             

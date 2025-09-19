@@ -29,8 +29,8 @@ interface PlayPageProps {
 
 export function PlayPage({ competition, user, hasExistingEntry }: PlayPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const { toast } = useToast()
-  // Remove unused variable warning by using toast in error handling
+  // Remove unused toast import since error handling is done in GameCanvas
+  // const { toast } = useToast()
 
   const handleSubmitEntry = async (x: number, y: number) => {
     if (hasExistingEntry) {

@@ -396,9 +396,11 @@ export function HomePage() {
          <div className="absolute left-0 right-0 z-20" style={{ bottom: '128px' }}>
            {/* Model 1 - Girl (Far Left) - Much smaller on mobile */}
            <div className="absolute bottom-0 left-1 sm:left-4 lg:left-8 z-10">
-             <img
+             <Image
                src="/images/hero/model01.png"
                alt="Winner with PS5"
+               width={400}
+               height={500}
                className="h-[120px] sm:h-[200px] md:h-[280px] lg:h-[500px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.25))',
@@ -408,9 +410,11 @@ export function HomePage() {
            
            {/* Model 2 - Man (Left-Center) - Hidden on very small screens */}
            <div className="hidden sm:block absolute bottom-0 left-[120px] sm:left-[160px] md:left-[280px] lg:left-[380px] z-20">
-             <img
+             <Image
                src="/images/hero/model02.png"
                alt="Winner celebrating"
+               width={400}
+               height={504}
                className="h-[180px] sm:h-[240px] md:h-[340px] lg:h-[504px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.2))',
@@ -420,9 +424,11 @@ export function HomePage() {
 
            {/* Mascot - Right Side - Much smaller on mobile */}
            <div className="absolute bottom-0 right-1 sm:right-4 lg:right-8 xl:right-16 z-30">
-             <img
+             <Image
                src="/images/hero/mascot01.png"
                alt="BabaWina Mascot"
+               width={400}
+               height={480}
                className="h-[100px] sm:h-[160px] md:h-[240px] lg:h-[420px] xl:h-[480px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 40px 80px rgba(0,0,0,0.25))',
