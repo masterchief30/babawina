@@ -151,13 +151,17 @@ async function inpaintImage(
   const supabaseAdmin = getSupabaseAdmin()
   
   try {
-    console.log("Temporarily using original image as inpainted result")
+    console.log("Using Nano Banana with optimized football removal prompt")
     
-    // Use Google Nano Banana for inpainting - expects array of images
+    // Use Google Nano Banana with very specific prompt for consistent ball removal
     const output = await replicate.run("google/nano-banana", {
       input: {
-        prompt: "Remove the football and replace it with natural background. Keep the scene realistic and seamless.",
-        image_input: [imageUrl]
+        prompt: "Delete the soccer ball. Replace it with grass field texture that matches the surrounding ground. No ball should remain visible.",
+        image_input: [imageUrl],
+        negative_prompt: "ball, soccer ball, football, sphere, round object, white ball",
+        num_inference_steps: 30,
+        guidance_scale: 8.0,
+        strength: 0.9
       }
     }) as unknown
     

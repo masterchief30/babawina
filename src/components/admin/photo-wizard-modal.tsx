@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
@@ -441,6 +441,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
       <DialogContent className="max-w-[1200px] h-[800px] overflow-hidden bg-white p-0 [&>button]:text-white [&>button]:w-10 [&>button]:h-10 [&>button]:font-bold [&>button]:text-2xl">
+        <DialogTitle className="sr-only">Photo Processing Wizard</DialogTitle>
         {/* Header with Progress */}
         <div className="bg-gradient-to-r from-emerald-500 to-blue-500 text-white p-6">
           <div className="flex items-center justify-between mb-4">
