@@ -8,9 +8,10 @@ import { CompetitionTilesGrid } from "@/components/landing/competition-tiles-gri
 import { useAuth } from "@/contexts/AuthContext"
 import { Trophy, Target, Users, ArrowRight, Crown, Rocket } from "lucide-react"
 import { motion } from "framer-motion"
+import { User } from "@supabase/supabase-js"
 
 // Soccer Ball Component (Mobile + Desktop)
-function MobileSoccerBall({ user }: { user: unknown }) {
+function MobileSoccerBall({ user }: { user: User | null }) {
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [showConfetti, setShowConfetti] = useState(false)
   
@@ -392,44 +393,44 @@ export function HomePage() {
           <MobileSoccerBall user={user} />
         </div>
 
-         {/* Models and Mascot positioned with bottom aligned to golden section end - Responsive sizes */}
-         <div className="absolute left-0 right-0 z-20" style={{ bottom: '128px' }}>
-           {/* Model 1 - Girl (Far Left) - Much smaller on mobile */}
-           <div className="absolute bottom-0 left-1 sm:left-4 lg:left-8 z-10">
+         {/* Models and Mascot positioned with bottom aligned to golden section end - Hidden on mobile */}
+         <div className="hidden lg:block absolute left-0 right-0 z-20" style={{ bottom: '128px' }}>
+           {/* Model 1 - Girl (Far Left) */}
+           <div className="absolute bottom-0 left-8 z-10">
              <Image
                src="/images/hero/model01.png"
                alt="Winner with PS5"
                width={400}
                height={500}
-               className="h-[120px] sm:h-[200px] md:h-[280px] lg:h-[500px] w-auto object-contain"
+               className="h-[500px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.25))',
                }}
              />
            </div>
            
-           {/* Model 2 - Man (Left-Center) - Hidden on very small screens */}
-           <div className="hidden sm:block absolute bottom-0 left-[120px] sm:left-[160px] md:left-[280px] lg:left-[380px] z-20">
+           {/* Model 2 - Man (Left-Center) */}
+           <div className="absolute bottom-0 left-[380px] z-20">
              <Image
                src="/images/hero/model02.png"
                alt="Winner celebrating"
                width={400}
                height={504}
-               className="h-[180px] sm:h-[240px] md:h-[340px] lg:h-[504px] w-auto object-contain"
+               className="h-[504px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 30px 60px rgba(0,0,0,0.2))',
                }}
              />
            </div>
 
-           {/* Mascot - Right Side - Much smaller on mobile */}
-           <div className="absolute bottom-0 right-1 sm:right-4 lg:right-8 xl:right-16 z-30">
+           {/* Mascot - Right Side */}
+           <div className="absolute bottom-0 right-8 xl:right-16 z-30">
              <Image
                src="/images/hero/mascot01.png"
                alt="BabaWina Mascot"
                width={400}
                height={480}
-               className="h-[100px] sm:h-[160px] md:h-[240px] lg:h-[420px] xl:h-[480px] w-auto object-contain"
+               className="h-[420px] xl:h-[480px] w-auto object-contain"
                style={{ 
                  filter: 'drop-shadow(0 40px 80px rgba(0,0,0,0.25))',
                }}
@@ -438,11 +439,11 @@ export function HomePage() {
          </div>
 
         {/* Content */}
-        <div className="relative z-40 container mx-auto px-4 lg:px-8 min-h-screen flex items-start pt-12 lg:items-start lg:pt-32">
+        <div className="relative z-40 container mx-auto px-4 lg:px-8 min-h-screen flex items-center lg:items-start lg:pt-32">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center w-full">
 
              {/* Center - Main Content */}
-             <div className="col-span-1 lg:col-span-5 lg:col-start-5 text-center pt-4 sm:pt-8 lg:pt-0 px-2 sm:px-4 lg:px-0 pb-20 sm:pb-32 lg:pb-0 relative z-50">
+             <div className="col-span-1 lg:col-span-5 lg:col-start-5 text-center flex flex-col justify-center min-h-screen lg:min-h-0 lg:pt-0 relative z-50 -mt-32 lg:mt-0">
                  
                  {/* Content Container */}
                  <div className="relative z-10">
@@ -453,33 +454,33 @@ export function HomePage() {
                       className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black mb-6 leading-tight whitespace-nowrap text-white"
                     >
                       Find The Ball
-                    </span>
+              </span>
                     <span 
-                      className="block text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black leading-tight pb-2 whitespace-nowrap text-blue-600"
+                      className="block text-2xl sm:text-3xl md:text-3xl lg:text-5xl xl:text-6xl font-black leading-tight pb-2 whitespace-nowrap text-blue-600"
                     >
                       Win Amazing Prizes
-                    </span>
+              </span>
                   </h1>
 
 
                   {/* CTAs - Show for all users */}
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
-                    <Button
-                      onClick={handlePlayNow}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  onClick={handlePlayNow}
                       className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 md:px-8 py-4 md:py-6 rounded-full text-sm sm:text-base md:text-lg shadow-2xl flex items-center gap-3 group w-full sm:w-auto"
                       style={{ boxShadow: '0 20px 40px rgba(37, 99, 235, 0.3)' }}
                     >
                       <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
                       START PLAYING
                       <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
+                </Button>
+                  </div>
                   </div>
                 </div>
+                
+                  </div>
                 </div>
                 
-              </div>
-        </div>
-
         {/* Bottom Wave Transition */}
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-blue-600 to-transparent z-10" />
       </section>
@@ -487,34 +488,43 @@ export function HomePage() {
       {/* Stats Section - Clean Integration */}
       <section className="relative bg-blue-600 py-8 -mt-32">
         <div className="relative z-20 container mx-auto px-4 lg:px-8">
-          {/* Description Text */}
-          <div className="text-center mb-8">
-            <p className="text-lg lg:text-xl text-white font-medium">
+          {/* Mobile: Only Description Text */}
+          <div className="text-center lg:hidden py-4">
+            <p className="text-lg text-white font-medium">
               South Africa&apos;s most exciting gaming competition. Winners every week!
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              { label: "Active Players", value: "12,847", icon: Users, color: "text-amber-400" },
-              { label: "Total Prizes", value: "R3.2M", icon: Trophy, color: "text-amber-400" },
-              { label: "Winners This Month", value: "47", icon: Crown, color: "text-amber-400" }
+          
+          {/* Desktop: Description + Stats */}
+          <div className="hidden lg:block">
+            <div className="text-center mb-8">
+              <p className="text-lg lg:text-xl text-white font-medium">
+                South Africa&apos;s most exciting gaming competition. Winners every week!
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { label: "Active Players", value: "12,847", icon: Users, color: "text-amber-400" },
+                { label: "Total Prizes", value: "R3.2M", icon: Trophy, color: "text-amber-400" },
+                { label: "Winners This Month", value: "47", icon: Crown, color: "text-amber-400" }
             ].map((stat, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 30 }}
+                  initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 className="text-center"
               >
-                <stat.icon className={`w-12 h-12 ${stat.color} mx-auto mb-3`} />
-                <div className="text-4xl lg:text-5xl font-black text-white mb-1">
+                  <stat.icon className={`w-12 h-12 ${stat.color} mx-auto mb-3`} />
+                  <div className="text-4xl lg:text-5xl font-black text-white mb-1">
                   {stat.value}
                 </div>
-                <div className="text-blue-200 text-sm font-semibold uppercase tracking-wide">
-                  {stat.label}
-                </div>
+                  <div className="text-blue-200 text-sm font-semibold uppercase tracking-wide">
+                    {stat.label}
+                  </div>
               </motion.div>
             ))}
+            </div>
           </div>
         </div>
       </section>
@@ -601,9 +611,9 @@ export function HomePage() {
       {/* Final CTA - Show for all users */}
       <section className="py-20 px-4 bg-gradient-to-r from-blue-700 to-blue-600">
         <div className="container mx-auto max-w-4xl text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
           >
             <h2 className="text-5xl font-black text-white mb-6">
               Ready to Win Big?
@@ -619,17 +629,17 @@ export function HomePage() {
               START WINNING NOW
               <ArrowRight className="w-5 h-5" />
             </Button>
-            </motion.div>
-      </div>
-    </section>
+              </motion.div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-16 px-4">
+      <footer className="bg-gray-900 text-white py-8 lg:py-16 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-8 mb-6 lg:mb-8">
+            <div className="lg:col-span-1">
+              <div className="flex items-center gap-2 mb-2 lg:mb-4">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl overflow-hidden">
                   <Image 
                     src="/images/hero/mascot002.png" 
                     alt="BabaWina Mascot" 
@@ -638,16 +648,16 @@ export function HomePage() {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-lg font-bold">BabaWina</span>
+                <span className="text-base lg:text-lg font-bold">BabaWina</span>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-xs lg:text-sm text-gray-400 mb-4 lg:mb-0">
                 South Africa&apos;s #1 gaming competition platform
               </p>
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-amber-400">Play</h4>
-              <div className="space-y-2">
+              <h4 className="font-bold mb-2 lg:mb-4 text-amber-400 text-sm lg:text-base">Play</h4>
+              <div className="space-y-1 lg:space-y-2 mb-4 lg:mb-0">
                 <button 
                   onClick={() => {
                     const competitionsSection = document.getElementById('competitions')
@@ -655,7 +665,7 @@ export function HomePage() {
                       competitionsSection.scrollIntoView({ behavior: 'smooth' })
                     }
                   }}
-                  className="block text-sm text-gray-400 hover:text-amber-400 text-left"
+                  className="block text-xs lg:text-sm text-gray-400 hover:text-amber-400 text-left"
                 >
                   Competitions
                 </button>
@@ -663,30 +673,30 @@ export function HomePage() {
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-amber-400">Legal</h4>
-              <div className="space-y-2">
-                <Link href="/terms" className="block text-sm text-gray-400 hover:text-amber-400">
+              <h4 className="font-bold mb-2 lg:mb-4 text-amber-400 text-sm lg:text-base">Legal</h4>
+              <div className="space-y-1 lg:space-y-2 mb-4 lg:mb-0">
+                <Link href="/terms" className="block text-xs lg:text-sm text-gray-400 hover:text-amber-400">
                   Terms & Conditions
                 </Link>
-                <Link href="/privacy" className="block text-sm text-gray-400 hover:text-amber-400">
+                <Link href="/privacy" className="block text-xs lg:text-sm text-gray-400 hover:text-amber-400">
                   Privacy Policy
                 </Link>
               </div>
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-amber-400">Contact</h4>
-              <a href="mailto:support@babawina.co.za" className="block text-sm text-gray-400 hover:text-amber-400">
+              <h4 className="font-bold mb-2 lg:mb-4 text-amber-400 text-sm lg:text-base">Contact</h4>
+              <a href="mailto:support@babawina.co.za" className="block text-xs lg:text-sm text-gray-400 hover:text-amber-400 mb-2 lg:mb-0">
                 support@babawina.co.za
               </a>
-              <p className="text-sm text-gray-500 mt-4">
+              <p className="text-xs lg:text-sm text-gray-500 mt-2 lg:mt-4">
                 18+ Only • Play Responsibly
               </p>
             </div>
           </div>
           
-          <div className="border-t border-gray-800 pt-8 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="border-t border-gray-800 pt-4 lg:pt-8 text-center">
+            <p className="text-xs lg:text-sm text-gray-500">
               © 2025 BabaWina. All rights reserved. Made with ❤️ in South Africa 🇿🇦
             </p>
           </div>

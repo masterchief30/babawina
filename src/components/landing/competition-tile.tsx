@@ -156,24 +156,24 @@ export function CompetitionTile({
           />
         </div>
 
-        {/* Title - Green background with gradient, white text */}
-        <div className="bg-gradient-to-r from-green-600 to-green-500 px-4 py-3">
-          <h3 className="text-white font-bold text-base uppercase tracking-wide text-center drop-shadow-sm">
+        {/* Title - Green background with gradient, white text - Fixed height */}
+        <div className="bg-gradient-to-r from-green-600 to-green-500 px-2 py-2 h-8 lg:h-14 flex items-center justify-center">
+          <h3 className="text-white font-bold text-xs lg:text-base uppercase tracking-wide text-center drop-shadow-sm leading-tight">
             {title.replace(/^Win (a|an) /i, 'WIN ')} for {formatPrice(entry_price_rand)}
           </h3>
         </div>
 
         {/* Content Section - Cleaner spacing */}
-        <div className="p-6 bg-gradient-to-b from-white to-gray-50">
+        <div className="p-4 lg:p-6 bg-gradient-to-b from-white to-gray-50">
           {/* Prize Name */}
-          <h3 className="text-lg font-bold text-gray-900 mb-4 uppercase tracking-wide text-center">
+          <h3 className="text-base lg:text-lg font-bold text-gray-900 mb-2 lg:mb-4 uppercase tracking-wide text-center">
             {prize_short}
           </h3>
 
           {/* Ticket Price - Center aligned with gradient text */}
-          <div className="text-center mb-6">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 font-semibold">Ticket Price</p>
-            <p className="text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">
+          <div className="text-center mb-4 lg:mb-6">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 lg:mb-2 font-semibold">Ticket Price</p>
+            <p className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">
               {formatPrice(entry_price_rand)}
             </p>
           </div>
@@ -185,7 +185,7 @@ export function CompetitionTile({
             whileTap={{ scale: 0.98 }}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-500 opacity-0 group-hover/button:opacity-100 transition-opacity duration-300" />
-            <div className="relative w-full border-2 border-blue-600 text-blue-600 group-hover/button:text-white group-hover/button:border-transparent font-bold py-4 px-4 rounded-lg flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-300">
+            <div className="relative w-full border-2 border-blue-600 text-blue-600 group-hover/button:text-white group-hover/button:border-transparent font-bold py-3 lg:py-4 px-4 rounded-lg flex items-center justify-center gap-2 text-sm uppercase tracking-wider transition-all duration-300">
               <Zap className="w-4 h-4" />
               <span>PLAY NOW</span>
             </div>

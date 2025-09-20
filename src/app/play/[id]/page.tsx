@@ -225,12 +225,31 @@ export default function PlayCompetitionPage() {
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="p-6 border-b">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{competition.title}</h1>
-                <p className="text-gray-600">Click anywhere on the image to place your guess where the ball is hidden!</p>
+                <div className="flex justify-between items-center">
+                  <p className="text-gray-600">Click anywhere on the image to place your guess where the ball is hidden!</p>
+                  {/* Delete Last Crosshair Button - Always visible */}
+                  <button
+                    onClick={() => {
+                      if (gameEntries.length > 0) {
+                        removeEntry(gameEntries[gameEntries.length - 1].id)
+                      }
+                    }}
+                    disabled={gameEntries.length === 0}
+                    className={`px-4 py-2 rounded text-base font-medium transition-colors ${
+                      gameEntries.length > 0 
+                        ? 'bg-red-500 hover:bg-red-600 text-white' 
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                    title={gameEntries.length > 0 ? "Delete last crosshair" : "No crosshairs to delete"}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
               
               {/* Game Image */}
               <div className="relative bg-gray-100">
+                
                 <div
                   className="relative select-none flex items-center justify-center"
                   style={{ 
@@ -264,10 +283,10 @@ export default function PlayCompetitionPage() {
                     >
                       {/* Simple Crosshair marker - no center dot */}
                       <div className="relative">
-                        {/* Horizontal line */}
-                        <div className="absolute w-8 h-0.5 bg-red-500 shadow-lg" style={{ left: '-16px', top: '-1px' }} />
-                        {/* Vertical line */}
-                        <div className="absolute w-0.5 h-8 bg-red-500 shadow-lg" style={{ left: '-1px', top: '-16px' }} />
+                        {/* Horizontal line - ultra thin */}
+                        <div className="absolute w-8 shadow-lg" style={{ left: '-16px', top: '0px', height: '0.5px', backgroundColor: '#ef4444' }} />
+                        {/* Vertical line - ultra thin */}
+                        <div className="absolute h-8 shadow-lg" style={{ left: '0px', top: '-16px', width: '0.5px', backgroundColor: '#ef4444' }} />
                       </div>
                     </motion.div>
                   ))}
@@ -294,7 +313,7 @@ export default function PlayCompetitionPage() {
               <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
                   <Target className="w-5 h-5" />
-                  DREAM CAR TICKETS
+                  {competition.title.toUpperCase()}
                 </h2>
               </div>
               
