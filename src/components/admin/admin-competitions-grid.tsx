@@ -206,7 +206,6 @@ export function AdminCompetitionsGrid() {
               status={competition.status}
               starts_at={competition.starts_at}
               ends_at={competition.ends_at}
-              created_at={competition.created_at}
               onDelete={fetchCompetitions}
             />
           ))}
