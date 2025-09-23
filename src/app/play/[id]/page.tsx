@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { ArrowLeft, Target, Plus, Minus, ShoppingCart, Trophy, Clock } from "lucide-react"
+import { ArrowLeft, Target, Plus, Minus, ShoppingCart, Trophy } from "lucide-react"
 import Link from "next/link"
 
 interface Competition {
@@ -40,7 +40,7 @@ export default function PlayCompetitionPage() {
   const [competition, setCompetition] = useState<Competition | null>(null)
   const [gameEntries, setGameEntries] = useState<GameEntry[]>([])
   const [isLoadingCompetition, setIsLoadingCompetition] = useState(true)
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const [, setImageLoaded] = useState(false)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showCoordinates, setShowCoordinates] = useState(false)
 
@@ -275,7 +275,7 @@ export default function PlayCompetitionPage() {
                   />
                   
                   {/* Show crosshair markers for placed entries */}
-                  {gameEntries.map((entry, index) => (
+                  {gameEntries.map((entry) => (
                     <motion.div
                       key={entry.id}
                       initial={{ scale: 0, opacity: 0 }}
