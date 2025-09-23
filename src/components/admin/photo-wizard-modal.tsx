@@ -617,10 +617,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                       }}
                     >
                       {/* Crosshair lines */}
-                      <div className="absolute w-8 h-0.5 bg-red-500 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
-                      <div className="absolute h-8 w-0.5 bg-red-500 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
-                      {/* Center dot */}
-                      <div className="absolute w-2 h-2 bg-red-500 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-white shadow-lg"></div>
+                      <div className="absolute w-8 h-px bg-red-500 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
+                      <div className="absolute h-8 w-px bg-red-500 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
                     </div>
                   )}
 
@@ -635,10 +633,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                       }}
                     >
                       {/* Preview crosshair lines */}
-                      <div className="absolute w-6 h-0.5 bg-yellow-400 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
-                      <div className="absolute h-6 w-0.5 bg-yellow-400 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
-                      {/* Preview center dot */}
-                      <div className="absolute w-1.5 h-1.5 bg-yellow-400 rounded-full top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border border-white shadow-lg"></div>
+                      <div className="absolute w-6 h-px bg-yellow-400 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
+                      <div className="absolute h-6 w-px bg-yellow-400 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 shadow-lg"></div>
                     </div>
                   )}
                 </div>
@@ -657,7 +653,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                   {(manualCoords || !!aiResult?.centroid) && (
                     <div className="bg-emerald-50 p-4 rounded-lg w-48">
                       <p className="font-medium text-emerald-800 text-sm">
-                        Ball center: ({Math.round((manualCoords?.x || aiResult?.centroid?.x || 0))}, {Math.round((manualCoords?.y || aiResult?.centroid?.y || 0))})
+                        Ball center: ({(manualCoords?.x || aiResult?.centroid?.x || 0).toFixed(1)}, {(manualCoords?.y || aiResult?.centroid?.y || 0).toFixed(1)})
                       </p>
                       <div className="mt-2 text-xs">
                         {manualCoords && (
@@ -677,15 +673,6 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
           {/* Step 4: Ball Removal */}
           {currentStep === 4 && (
             <div className="space-y-8">
-              {isSavingFinal && (
-                <div className="absolute inset-0 bg-white flex items-center justify-center z-50">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-emerald-600 mx-auto mb-6"></div>
-                    <h3 className="text-2xl font-bold text-emerald-600 mb-2">Photo Processing Complete!</h3>
-                    <p className="text-gray-600">Competition is ready to go live...</p>
-                  </div>
-                </div>
-              )}
               <div className="grid md:grid-cols-2 gap-8">
                 <div className="text-center">
                   <h4 className="font-medium mb-4 text-lg">Original (with ball)</h4>

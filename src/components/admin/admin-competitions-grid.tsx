@@ -29,30 +29,32 @@ export function AdminCompetitionsGrid() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   // Fetch all competitions
-  useEffect(() => {
-    const fetchCompetitions = async () => {
-      try {
-        let query = supabase
-          .from('competitions')
-          .select('*')
-          .order('created_at', { ascending: false })
+  const fetchCompetitions = async () => {
+    try {
+      setLoading(true)
+      let query = supabase
+        .from('competitions')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-        if (statusFilter !== 'all') {
-          query = query.eq('status', statusFilter)
-        }
-
-        const { data, error } = await query
-
-        if (error) throw error
-
-        setCompetitions(data || [])
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : 'Unknown error occurred')
-        console.error('Error fetching competitions:', err)
-      } finally {
-        setLoading(false)
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter)
       }
+
+      const { data, error } = await query
+
+      if (error) throw error
+
+      setCompetitions(data || [])
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      console.error('Error fetching competitions:', err)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
 
     fetchCompetitions()
 
@@ -205,6 +207,7 @@ export function AdminCompetitionsGrid() {
               starts_at={competition.starts_at}
               ends_at={competition.ends_at}
               created_at={competition.created_at}
+              onDelete={fetchCompetitions}
             />
           ))}
         </div>

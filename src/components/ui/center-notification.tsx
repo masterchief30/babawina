@@ -39,6 +39,21 @@ export function CenterNotification({
     }
   }, [isOpen, autoClose, autoCloseDelay, onClose])
 
+  // Add ESC key functionality
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsVisible(false)
+        setTimeout(onClose, 300)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
@@ -50,12 +65,16 @@ export function CenterNotification({
       >
         <div className="text-center">
           {/* Icon */}
-          <div className="mb-4">
-            {type === 'success' ? (
-              <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
-            ) : (
-              <X className="w-16 h-16 text-red-500 mx-auto" />
-            )}
+          <div className="mb-6">
+            <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center ${
+              type === 'success' ? 'bg-green-100' : 'bg-red-100'
+            }`}>
+              {type === 'success' ? (
+                <CheckCircle className="w-12 h-12 text-green-600" />
+              ) : (
+                <X className="w-12 h-12 text-red-600" />
+              )}
+            </div>
           </div>
           
           {/* Title */}

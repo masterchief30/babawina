@@ -401,13 +401,20 @@ export function CreateCompetitionForm() {
           </div>
 
           <div>
-            <Label htmlFor="ends_at">End Date & Time</Label>
+            <Label htmlFor="ends_at">End Date</Label>
             <Input
               id="ends_at"
-              type="datetime-local"
-              value={formData.ends_at}
-              onChange={(e) => setFormData(prev => ({ ...prev, ends_at: e.target.value }))}
+              type="date"
+              value={formData.ends_at ? formData.ends_at.split('T')[0] : ''}
+              onChange={(e) => {
+                // Set end time to 6 PM UTC on the selected date
+                const endDateTime = e.target.value + 'T18:00:00'
+                setFormData(prev => ({ ...prev, ends_at: endDateTime }))
+              }}
             />
+            <p className="text-sm text-gray-500 mt-1">
+              Competitions end at 6:00 PM UTC on the selected date
+            </p>
           </div>
 
           <div>

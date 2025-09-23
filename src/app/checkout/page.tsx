@@ -237,8 +237,8 @@ export default function CheckoutPage() {
                                   <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
                                     {index + 1}
                                   </span>
-                                  <span className="font-mono text-gray-700">
-                                    X: {gameEntry.x.toFixed(1)}%, Y: {gameEntry.y.toFixed(1)}%
+                                  <span className="text-gray-700">
+                                    Entry #{index + 1}
                                   </span>
                                 </div>
                                 <div className="text-gray-600">
@@ -330,7 +330,7 @@ export default function CheckoutPage() {
                     ) : (
                       <div className="flex items-center gap-2">
                         <CheckCircle className="w-5 h-5" />
-                        Complete Order (Beta)
+                        Test For Free
                       </div>
                     )}
                   </Button>

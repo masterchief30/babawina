@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -8,14 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { User, Lock, Trash2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, Trophy, Target } from 'lucide-react'
+import { User, Lock, Trash2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, Trophy, Target, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface Competition {
   id: string
   title: string
   prize_name: string
   display_photo_path: string | null
-  end_date: string
+  ends_at: string
   is_active: boolean
 }
 
@@ -26,7 +26,7 @@ interface CompetitionEntry {
   guess_y: number
   entry_price_paid: number
   created_at: string
-  is_winner?: boolean
+  is_winner: boolean | null
   competition: Competition
 }
 
@@ -52,6 +52,7 @@ export default function ProfilePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [userCompetitions, setUserCompetitions] = useState<UserCompetitionStats[]>([])
   const [loadingCompetitions, setLoadingCompetitions] = useState(false)
+  const [expandedCompetitions, setExpandedCompetitions] = useState<Set<string>>(new Set())
   const [notification, setNotification] = useState<{
     show: boolean
     type: 'success' | 'error'
@@ -133,10 +134,10 @@ export default function ProfilePage() {
             competition: {
               id: competition.id,
               title: competition.title || 'Untitled Competition',
-              prize_name: competition.prize_name || competition.title || 'Prize',
+              prize_name: competition.prize_short || competition.title || 'Prize',
               display_photo_path: competition.display_photo_path,
-              end_date: competition.end_date,
-              is_active: competition.is_active || false
+              ends_at: competition.ends_at,
+              is_active: competition.status === 'live'
             },
             entry_count: 0,
             total_spent: 0,
@@ -146,15 +147,17 @@ export default function ProfilePage() {
         
         const stats = competitionStatsMap.get(competitionId)!
         stats.entry_count += 1
-        stats.total_spent += (entry.entry_price_paid as number) || 30
+        const entryPrice = (entry.entry_price_paid as number) || 0
+        console.log('Entry price for entry:', entry.id, 'is:', entryPrice)
+        stats.total_spent += entryPrice
         stats.entries.push({
           id: entry.id as string,
           competition_id: entry.competition_id as string,
           guess_x: entry.guess_x as number,
           guess_y: entry.guess_y as number,
-          entry_price_paid: (entry.entry_price_paid as number) || 30,
+          entry_price_paid: (entry.entry_price_paid as number) || 0,
           created_at: entry.created_at as string,
-          is_winner: (entry.is_winner as boolean) || false,
+          is_winner: entry.is_winner as boolean | null,
           competition: stats.competition
         })
       })
@@ -177,6 +180,18 @@ export default function ProfilePage() {
     setTimeout(() => {
       setNotification({ show: false, type: 'success', message: '' })
     }, 3000)
+  }
+
+  const toggleCompetitionExpansion = (competitionId: string) => {
+    setExpandedCompetitions(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(competitionId)) {
+        newSet.delete(competitionId)
+      } else {
+        newSet.add(competitionId)
+      }
+      return newSet
+    })
   }
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
@@ -423,18 +438,29 @@ export default function ProfilePage() {
                           </thead>
                           <tbody className="divide-y divide-gray-200">
                             {userCompetitions.map((stats) => {
-                              const hasWinner = stats.entries.some(entry => entry.is_winner)
-                              const endDate = new Date(stats.competition.end_date)
+                              const hasWinner = stats.entries.some(entry => entry.is_winner === true)
+                              const hasResults = stats.entries.some(entry => entry.is_winner !== null)
+                              const endDate = new Date(stats.competition.ends_at)
                               const isValidDate = !isNaN(endDate.getTime())
                               const isFinished = isValidDate ? endDate < new Date() : true // Assume finished if invalid date
                               
-                              console.log('Competition:', stats.competition.title, 'End date:', stats.competition.end_date, 'Parsed:', endDate, 'Valid:', isValidDate, 'Finished:', isFinished, 'Has winner:', hasWinner)
+                              console.log('Competition:', stats.competition.title, 'End date:', stats.competition.ends_at, 'Parsed:', endDate, 'Valid:', isValidDate, 'Finished:', isFinished, 'Has winner:', hasWinner)
+                              
+                              const isExpanded = expandedCompetitions.has(stats.competition.id)
                               
                               return (
-                                <tr key={stats.competition.id} className="hover:bg-gray-50">
-                                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">
-                                    {stats.competition.title}
-                                  </td>
+                                <React.Fragment key={stats.competition.id}>
+                                  <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => toggleCompetitionExpansion(stats.competition.id)}>
+                                    <td className="px-4 py-3 text-sm text-gray-900 font-medium">
+                                      <div className="flex items-center gap-2">
+                                        {isExpanded ? (
+                                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                                        ) : (
+                                          <ChevronRight className="w-4 h-4 text-gray-400" />
+                                        )}
+                                        {stats.competition.title}
+                                      </div>
+                                    </td>
                                   <td className="px-4 py-3 text-sm text-gray-700">
                                     {stats.competition.prize_name}
                                   </td>
@@ -443,7 +469,7 @@ export default function ProfilePage() {
                                       year: 'numeric',
                                       month: 'short',
                                       day: 'numeric'
-                                    }) : 'Invalid Date'}
+                                    }) : 'TBD'}
                                   </td>
                                   <td className="px-4 py-3">
                                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
@@ -461,22 +487,69 @@ export default function ProfilePage() {
                                     R{stats.total_spent}
                                   </td>
                                   <td className="px-4 py-3">
-                                    {/* Show win status based on is_winner field, regardless of competition status */}
+                                    {/* Show win status based on is_winner field */}
                                     {hasWinner ? (
-                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                        ✓ Won
+                                      <span className="text-green-600 font-semibold">
+                                        Yes
                                       </span>
-                                    ) : isFinished ? (
-                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
-                                        ✗ Lost
+                                    ) : hasResults ? (
+                                      <span className="text-red-600 font-semibold">
+                                        No
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                        ⏳ Pending
+                                      <span className="text-yellow-600 font-semibold">
+                                        Pending
                                       </span>
                                     )}
                                   </td>
                                 </tr>
+                                
+                                {/* Expanded section showing individual entries */}
+                                {isExpanded && (
+                                  <tr>
+                                    <td colSpan={7} className="px-4 py-3 bg-gray-50">
+                                      <div className="space-y-2">
+                                        <h4 className="font-semibold text-gray-700 text-sm mb-3">Individual Entries:</h4>
+                                        <div className="grid gap-2">
+                                          {stats.entries.map((entry, index) => (
+                                            <div key={entry.id} className="flex items-center justify-between bg-white rounded p-3 shadow-sm">
+                                              <div className="flex items-center gap-3">
+                                                <span className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                                                  {index + 1}
+                                                </span>
+                                                <span className="text-sm text-gray-700">
+                                                  Entry #{index + 1}
+                                                </span>
+                                                <span className="text-xs text-gray-500">
+                                                  {new Date(entry.created_at).toLocaleDateString()}
+                                                </span>
+                                              </div>
+                                              <div className="flex items-center gap-4">
+                                                <span className="text-sm text-gray-600">
+                                                  R{entry.entry_price_paid}
+                                                </span>
+                                                <span className={`text-sm font-semibold ${
+                                                  entry.is_winner === true 
+                                                    ? 'text-green-600' 
+                                                    : entry.is_winner === false 
+                                                      ? 'text-red-600' 
+                                                      : 'text-yellow-600'
+                                                }`}>
+                                                  {entry.is_winner === true 
+                                                    ? 'Yes' 
+                                                    : entry.is_winner === false 
+                                                      ? 'No' 
+                                                      : 'Pending'}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                                </React.Fragment>
                               )
                             })}
                           </tbody>

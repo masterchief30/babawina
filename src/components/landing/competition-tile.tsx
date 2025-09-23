@@ -159,7 +159,7 @@ export function CompetitionTile({
         {/* Title - Green background with gradient, white text - Fixed height */}
         <div className="bg-gradient-to-r from-green-600 to-green-500 px-2 py-2 h-8 lg:h-14 flex items-center justify-center">
           <h3 className="text-white font-bold text-xs lg:text-base uppercase tracking-wide text-center drop-shadow-sm leading-tight">
-            {title.replace(/^Win (a|an) /i, 'WIN ')} for {formatPrice(entry_price_rand)}
+            {title.replace(/^Win (a|an) /i, 'WIN ')}
           </h3>
         </div>
 
@@ -174,7 +174,7 @@ export function CompetitionTile({
           <div className="text-center mb-4 lg:mb-6">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-1 lg:mb-2 font-semibold">Ticket Price</p>
             <p className="text-2xl lg:text-3xl font-black bg-gradient-to-r from-orange-600 to-amber-500 bg-clip-text text-transparent">
-              {formatPrice(entry_price_rand)}
+              {entry_price_rand === 0 ? 'FOR FREE' : formatPrice(entry_price_rand)}
             </p>
           </div>
 

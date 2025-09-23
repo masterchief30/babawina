@@ -261,14 +261,21 @@ export function HomePage() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       
+      {/* Test Banner */}
+      <div className="bg-green-600 text-white text-center py-4 px-4 relative z-40">
+        <p className="font-bold text-base md:text-lg font-mono tracking-wide">
+          Test for free until 3 October 2025
+        </p>
+      </div>
+      
       {/* Header - Minimal and Clean */}
       <motion.header 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        className={`fixed left-0 right-0 z-50 transition-all duration-500 ${
           scrolled 
-            ? 'bg-white/95 backdrop-blur-xl shadow-md' 
-            : 'bg-transparent'
+            ? 'top-0 bg-white/95 backdrop-blur-xl shadow-md' 
+            : 'top-14 bg-transparent'
         }`}
       >
         <div className="container mx-auto px-4 lg:px-8 h-16 lg:h-20 flex items-center justify-between">
@@ -504,9 +511,9 @@ export function HomePage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {[
-                { label: "Active Players", value: "12,847", icon: Users, color: "text-amber-400" },
-                { label: "Total Prizes", value: "R3.2M", icon: Trophy, color: "text-amber-400" },
-                { label: "Winners This Month", value: "47", icon: Crown, color: "text-amber-400" }
+                { label: "Test Players", value: "100+", icon: Users, color: "text-amber-400" },
+                { label: "Future Prizes", value: "R1M+", icon: Trophy, color: "text-amber-400" },
+                { label: "Winners Every Month", value: "10+", icon: Crown, color: "text-amber-400" }
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -537,7 +544,7 @@ export function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <span className="text-amber-600 font-black text-sm uppercase tracking-wider">Choose Your Game</span>
+            <span className="text-amber-600 font-black text-sm uppercase tracking-wider">Try For Free</span>
             <h2 className="text-4xl md:text-5xl font-black mt-2 bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
               Live Competitions
             </h2>

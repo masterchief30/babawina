@@ -15,6 +15,7 @@ interface Competition {
   prize_short: string
   prize_value_rand: number
   entry_price_rand: number
+  per_user_entry_limit: number
   image_inpainted_path: string | null
   image_normalized_path: string | null
   display_photo_path: string | null
@@ -106,6 +107,11 @@ export default function PlayCompetitionPage() {
   // Handle image click to add entry
   const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     if (!competition) return
+
+    // Check entry limit before adding
+    if (competition.per_user_entry_limit !== 999999 && gameEntries.length >= competition.per_user_entry_limit) {
+      return
+    }
 
     const rect = event.currentTarget.getBoundingClientRect()
     const x = ((event.clientX - rect.left) / rect.width) * 100
@@ -332,7 +338,9 @@ export default function PlayCompetitionPage() {
                   </h3>
                   <div className="text-center">
                     <span className="text-2xl font-bold text-blue-600">
-                      {gameEntries.length} of 1
+                      {competition && competition.per_user_entry_limit === 999999 
+                        ? gameEntries.length 
+                        : `${gameEntries.length} of ${competition.per_user_entry_limit}`}
                     </span>
                   </div>
                 </div>
@@ -357,7 +365,13 @@ export default function PlayCompetitionPage() {
                     <Button
                       size="sm"
                       className="bg-orange-500 hover:bg-orange-600 text-white"
+                      disabled={competition && competition.per_user_entry_limit !== 999999 && gameEntries.length >= competition.per_user_entry_limit}
                       onClick={() => {
+                        // Check entry limit before adding
+                        if (competition && competition.per_user_entry_limit !== 999999 && gameEntries.length >= competition.per_user_entry_limit) {
+                          return
+                        }
+                        
                         // Simulate a click in the center of the image
                         const centerEntry: GameEntry = {
                           id: `entry-${Date.now()}-${Math.random()}`,
@@ -380,6 +394,16 @@ export default function PlayCompetitionPage() {
                   >
                     Delete
                   </Button>
+
+                  {/* Entry limit info */}
+                  {competition && competition.per_user_entry_limit !== 999999 && (
+                    <div className="text-center text-xs text-gray-500 mt-2">
+                      {gameEntries.length} of {competition.per_user_entry_limit} entries
+                      {gameEntries.length >= competition.per_user_entry_limit && (
+                        <div className="text-orange-600 font-medium mt-1">Entry limit reached</div>
+                      )}
+                    </div>
+                  )}
                   
                 </div>
 

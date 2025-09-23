@@ -153,8 +153,10 @@ async function inpaintImage(
   try {
     console.log("Using Nano Banana with optimized football removal prompt")
     
-    // Use Google Nano Banana with very specific prompt for consistent ball removal
-    const output = await replicate.run("google/nano-banana", {
+    // Use Google Nano Banana with optimized football removal prompt
+    console.log("Starting Replicate prediction...")
+    const prediction = await replicate.predictions.create({
+      model: "google/nano-banana",
       input: {
         prompt: "Delete the soccer ball. Replace it with grass field texture that matches the surrounding ground. No ball should remain visible.",
         image_input: [imageUrl],
@@ -163,14 +165,60 @@ async function inpaintImage(
         guidance_scale: 8.0,
         strength: 0.9
       }
-    }) as unknown
+    })
     
-    // Get the output URL
-    const outputUrl = (output as unknown as { url?: () => string }).url ? (output as unknown as { url: () => string }).url() : output
+    console.log("Prediction created:", prediction.id)
+    
+    // Wait for the prediction to complete
+    let output = prediction
+    while (output.status !== "succeeded" && output.status !== "failed") {
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      output = await replicate.predictions.get(prediction.id)
+      console.log("Prediction status:", output.status)
+    }
+    
+    if (output.status === "failed") {
+      throw new Error(`Replicate prediction failed: ${output.error}`)
+    }
+    
+    console.log("Raw Replicate response type:", typeof output)
+    console.log("Raw Replicate response:", JSON.stringify(output, null, 2))
+    
+    // Get the output URL - handle Replicate prediction response format
+    console.log("Replicate output:", JSON.stringify(output, null, 2))
+    
+    let outputUrl: string | null = null
+    
+    // Handle Replicate prediction response format
+    if (output && typeof output === 'object') {
+      const obj = output as any
+      
+      // Check if it's a prediction object with an output field
+      if (obj.output && typeof obj.output === 'string') {
+        outputUrl = obj.output
+      }
+      // Check if it's a direct string response
+      else if (typeof output === 'string') {
+        outputUrl = output
+      }
+      // Check if it's an array response
+      else if (Array.isArray(obj.output) && obj.output.length > 0) {
+        outputUrl = obj.output[0]
+      }
+      // Fallback to other common property names
+      else {
+        outputUrl = obj.url || obj.image || obj.result || obj[0]
+      }
+    } else if (typeof output === 'string') {
+      outputUrl = output
+    }
     
     if (!outputUrl || typeof outputUrl !== 'string') {
-      throw new Error("Failed to get image URL")
+      console.error("Failed to extract URL from output:", output)
+      throw new Error(`Failed to get image URL. Output type: ${typeof output}, Output: ${JSON.stringify(output)}`)
     }
+    
+    console.log("Extracted output URL:", outputUrl)
     
     // Download the inpainted image from Replicate
     const inpaintedResponse = await fetch(outputUrl as string)

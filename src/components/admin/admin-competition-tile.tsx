@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-import { Edit, Trash2, Eye, Play, Users, Trophy, Calendar } from "lucide-react"
+import { Edit, Trash2, Eye, Play, Users, Trophy, Calendar, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
 
@@ -37,9 +37,11 @@ export function AdminCompetitionTile({
   starts_at,
   ends_at,
   created_at,
-  entry_count = 0
+  entry_count = 0,
+  onDelete
 }: AdminCompetitionTileProps) {
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   // Format price display
   const formatPrice = (price: number) => {
@@ -96,14 +98,96 @@ export function AdminCompetitionTile({
   const imageUrl = getImageUrl()
   const imageAlt = display_photo_alt || `${title} competition image`
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this competition? This action cannot be undone.')) {
-      return
-    }
-    
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    setShowDeleteModal(false)
     setIsDeleting(true)
-    // TODO: Implement delete functionality
-    console.log('Delete competition:', id)
+    
+    try {
+      console.log('Starting deletion process for competition:', id)
+      
+      // Check if there are any entries first
+      const { data: entries, error: checkError } = await supabase
+        .from('competition_entries')
+        .select('id')
+        .eq('competition_id', id)
+      
+      if (checkError) {
+        console.error('Error checking entries:', checkError)
+        alert(`Error checking competition entries: ${checkError.message}`)
+        setIsDeleting(false)
+        return
+      }
+      
+      console.log(`Found ${entries?.length || 0} entries to delete`)
+      
+      // Delete all competition entries first (if any exist)
+      if (entries && entries.length > 0) {
+        console.log('Deleting competition entries...')
+        const { error: entriesError } = await supabase
+          .from('competition_entries')
+          .delete()
+          .eq('competition_id', id)
+        
+        if (entriesError) {
+          console.error('Error deleting entries:', entriesError)
+          alert(`Error deleting competition entries: ${entriesError.message}\n\nDetails: ${entriesError.details || 'No additional details'}`)
+          setIsDeleting(false)
+          return
+        }
+        console.log('Competition entries deleted successfully')
+      }
+      
+      // Check for any winners table entries and delete them
+      const { error: winnersError } = await supabase
+        .from('winners')
+        .delete()
+        .eq('competition_id', id)
+      
+      if (winnersError && winnersError.code !== 'PGRST116') { // PGRST116 = no rows found, which is OK
+        console.error('Error deleting winners:', winnersError)
+        // Don't fail the whole operation for winners table issues
+        console.log('Warning: Could not delete winners, continuing...')
+      }
+      
+      // Now delete the competition itself
+      console.log('Deleting competition...')
+      const { error: competitionError } = await supabase
+        .from('competitions')
+        .delete()
+        .eq('id', id)
+      
+      if (competitionError) {
+        console.error('Error deleting competition:', competitionError)
+        alert(`Error deleting competition: ${competitionError.message}\n\nDetails: ${competitionError.details || 'No additional details'}\n\nCode: ${competitionError.code || 'Unknown'}`)
+        setIsDeleting(false)
+        return
+      }
+      
+      console.log('Competition deleted successfully!')
+      
+      // Call the onDelete callback to refresh the list
+      if (onDelete && typeof onDelete === 'function') {
+        onDelete()
+      } else {
+        // Fallback: reload the page if no callback provided
+        console.log('No onDelete callback provided, reloading page...')
+        window.location.reload()
+      }
+      
+    } catch (error) {
+      console.error('Unexpected error during deletion:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      alert(`An unexpected error occurred while deleting the competition:\n\n${errorMessage}\n\nCheck the console for more details.`)
+      setIsDeleting(false)
+    }
+  }
+
+  const handleCancelDelete = () => {
+    setShowDeleteModal(false)
   }
 
   return (
@@ -191,7 +275,7 @@ export function AdminCompetitionTile({
           <Button
             size="sm"
             variant="outline"
-            onClick={handleDelete}
+            onClick={handleDeleteClick}
             disabled={isDeleting}
             className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-1"
           >
@@ -200,6 +284,42 @@ export function AdminCompetitionTile({
           </Button>
         </div>
       </div>
+
+      {/* Custom Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <X className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Competition</h3>
+                <p className="text-gray-600">
+                  Are you sure you want to delete this competition? This action cannot be undone.
+                </p>
+              </div>
+              
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={handleCancelDelete}
+                  className="px-6"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleConfirmDelete}
+                  className="px-6"
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

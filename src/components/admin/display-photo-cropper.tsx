@@ -315,11 +315,7 @@ export function DisplayPhotoCropper({
         displayPhotoAlt: altText.trim()
       })
       
-      // Just use toast, no duplicate notification
-      toast({
-        title: "Photo saved!",
-        description: "Display photo has been processed and saved.",
-      })
+      // Success - no toast notification needed
       
       // Close the modal after a short delay
       setTimeout(() => {

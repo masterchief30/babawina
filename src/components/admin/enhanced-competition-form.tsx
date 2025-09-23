@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
+// Removed useToast - using center notification instead
 import { useCenterNotification } from "@/hooks/use-center-notification"
 import { CenterNotification } from "@/components/ui/center-notification"
 import { supabase } from "@/lib/supabase"
@@ -119,6 +119,11 @@ export function EnhancedCompetitionForm({
       per_user_entry_limit: 1,
       status: 'draft'
     }
+  })
+
+  // Add unlimited entries state
+  const [isUnlimitedEntries, setIsUnlimitedEntries] = useState<boolean>(() => {
+    return editMode && initialData ? (initialData.per_user_entry_limit === -1 || initialData.per_user_entry_limit === 999999) : false
   })
 
   // Image states
@@ -257,7 +262,7 @@ export function EnhancedCompetitionForm({
   })
 
   const normalizedCanvasRef = useRef<HTMLCanvasElement>(null)
-  const { toast } = useToast()
+  // Using center notification instead of toast
   const { notification, showSuccess, showError, close } = useCenterNotification()
 
   // File upload handling (mobile-optimized)
@@ -268,11 +273,7 @@ export function EnhancedCompetitionForm({
     // Validate file for mobile upload
     const fileValidation = validateMobileUpload(file)
     if (!fileValidation.valid) {
-      toast({
-        title: "Invalid file",
-        description: fileValidation.error,
-        variant: "destructive"
-      })
+      showError("Invalid file", fileValidation.error)
       return
     }
 
@@ -286,11 +287,7 @@ export function EnhancedCompetitionForm({
       // Validate dimensions for mobile
       const dimensionValidation = validateMobileDimensions(dimensions.width, dimensions.height)
       if (!dimensionValidation.valid) {
-        toast({
-          title: "Invalid dimensions",
-          description: dimensionValidation.error,
-          variant: "destructive"
-        })
+        showError("Invalid dimensions", dimensionValidation.error)
         return
       }
 
@@ -314,13 +311,9 @@ export function EnhancedCompetitionForm({
       })
 
     } catch (error: unknown) {
-      toast({
-        title: "Upload failed",
-        description: error instanceof Error ? error.message : 'Unknown error occurred',
-        variant: "destructive"
-      })
+      showError("Upload failed", error instanceof Error ? error.message : 'Unknown error occurred')
     }
-  }, [toast])
+  }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -361,11 +354,7 @@ export function EnhancedCompetitionForm({
   // Handle photo wizard
   const handleProcessPhoto = () => {
     if (!rawFile) {
-      toast({
-        title: "No image",
-        description: "Please upload an image first.",
-        variant: "destructive"
-      })
+      showError("No image", "Please upload an image first.")
       return
     }
     setShowWizard(true)
@@ -399,10 +388,7 @@ export function EnhancedCompetitionForm({
     
     setShowComparison(true)
     
-    toast({
-      title: "Photo processing complete!",
-      description: `Competition ${data.competitionId} is ready to save.`,
-    })
+    showSuccess("Photo processing complete!", `Competition ${data.competitionId} is ready to save.`)
   }
 
   // Display photo handlers
@@ -456,40 +442,25 @@ export function EnhancedCompetitionForm({
   const handleSaveCompetition = async () => {
     // Validation
     if (!formData.title || !formData.prize_short) {
-      toast({
-        title: "Missing fields",
-        description: "Title and Prize Name are required.",
-        variant: "destructive"
-      })
+      showError("Missing fields", "Title and Prize Name are required.")
       return
     }
 
     if (new Date(formData.ends_at) <= new Date(formData.starts_at)) {
-      toast({
-        title: "Invalid dates",
-        description: "End date must be after start date.",
-        variant: "destructive"
-      })
+      showError("Invalid dates", "End date must be after start date.")
       return
     }
 
     if (formData.per_user_entry_limit < 1) {
-      toast({
-        title: "Invalid entry limit",
-        description: "Entry limit must be at least 1.",
-        variant: "destructive"
-      })
+      showError("Invalid entry limit", "Entry limit must be at least 1.")
       return
     }
 
     if (formData.status === 'live' && processingStatus.status !== 'ready') {
-      toast({
-        title: "Cannot go live",
-        description: "Complete image processing before going live.",
-        variant: "destructive"
-      })
+      showError("Cannot go live", "Complete image processing before going live.")
       return
     }
+
 
     try {
       const coords = manualCoords || processingResult?.centroid
@@ -625,7 +596,22 @@ export function EnhancedCompetitionForm({
       }
 
     } catch (error: unknown) {
-      showError("Save failed", error instanceof Error ? error.message : 'Unknown error occurred')
+      console.error('Competition save error:', error)
+      
+      let errorMessage = 'Unknown error occurred'
+      
+      if (error instanceof Error) {
+        // Check for common database errors
+        if (error.message.includes('violates not-null')) {
+          errorMessage = 'Required fields are missing. Please check all form fields.'
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'You do not have permission to save competitions.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      showError("Save failed", errorMessage)
     }
   }
 
@@ -707,25 +693,55 @@ export function EnhancedCompetitionForm({
           </div>
 
           <div>
-            <Label htmlFor="ends_at">End Date & Time</Label>
+            <Label htmlFor="ends_at">End Date</Label>
             <Input
               id="ends_at"
-              type="datetime-local"
-              value={formData.ends_at}
-              onChange={(e) => setFormData(prev => ({ ...prev, ends_at: e.target.value }))}
+              type="date"
+              value={formData.ends_at ? formData.ends_at.split('T')[0] : ''}
+              onChange={(e) => {
+                // Set end time to 6 PM UTC on the selected date
+                const endDateTime = e.target.value + 'T18:00:00'
+                setFormData(prev => ({ ...prev, ends_at: endDateTime }))
+              }}
             />
+            <p className="text-sm text-gray-500 mt-1">
+              Competitions end at 6:00 PM UTC on the selected date
+            </p>
           </div>
 
           <div>
             <Label htmlFor="entry_limit">Entry Limit per User</Label>
-            <Input
-              id="entry_limit"
-              type="number"
-              min="1"
-              value={formData.per_user_entry_limit}
-              onChange={(e) => setFormData(prev => ({ ...prev, per_user_entry_limit: parseInt(e.target.value) || 1 }))}
-              className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-            />
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="unlimited_entries"
+                  checked={isUnlimitedEntries}
+                  onChange={(e) => {
+                    setIsUnlimitedEntries(e.target.checked)
+                    if (e.target.checked) {
+                      setFormData(prev => ({ ...prev, per_user_entry_limit: 999999 }))
+                    } else {
+                      setFormData(prev => ({ ...prev, per_user_entry_limit: 1 }))
+                    }
+                  }}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="unlimited_entries" className="text-sm font-normal">
+                  Unlimited entries per user
+                </Label>
+              </div>
+              {!isUnlimitedEntries && (
+                <Input
+                  id="entry_limit"
+                  type="number"
+                  min="1"
+                  value={formData.per_user_entry_limit}
+                  onChange={(e) => setFormData(prev => ({ ...prev, per_user_entry_limit: parseInt(e.target.value) || 1 }))}
+                  className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                />
+              )}
+            </div>
           </div>
 
           <div>
