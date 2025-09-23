@@ -264,7 +264,7 @@ export function HomePage() {
       {/* Test Banner */}
       <div className="bg-green-600 text-white text-center py-4 px-4 relative z-40">
         <p className="font-bold text-base md:text-lg font-mono tracking-wide">
-          Test for free until 3 October 2025
+          Test for free until 30 September 2025
         </p>
       </div>
       
