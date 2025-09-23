@@ -263,8 +263,8 @@ export function HomePage() {
       
       {/* Test Banner */}
       <div className="bg-green-600 text-white text-center py-4 px-4 relative z-40">
-        <p className="font-bold text-base md:text-lg font-mono tracking-wide">
-          Test for free until 30 September 2025
+        <p className="font-extrabold text-base md:text-lg font-sans tracking-normal">
+          Find the ball for free until 30 September 2025
         </p>
       </div>
       
