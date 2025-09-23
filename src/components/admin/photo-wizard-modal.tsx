@@ -69,7 +69,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
   })
   
   const [isProcessing, setIsProcessing] = useState(false)
-  const [isSavingFinal, setIsSavingFinal] = useState(false)
+  const [, setIsSavingFinal] = useState(false)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageDimensions, setImageDimensions] = useState<ImageDimensions | null>(null)
   const [manualCoords, setManualCoords] = useState<{ x: number; y: number } | null>(null)

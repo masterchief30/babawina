@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
+import Image from "next/image"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -93,6 +94,7 @@ export function DisplayPhotoCropper({
     if (externalFile && isOpen) {
       handleNewFile(externalFile)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalFile, isOpen])
 
   // Load image and get dimensions
@@ -157,6 +159,7 @@ export function DisplayPhotoCropper({
     }
 
     handleNewFile(file)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toast])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -195,6 +198,7 @@ export function DisplayPhotoCropper({
       TILE_SPECS.previewWidth,
       TILE_SPECS.previewHeight
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cropPosition, scale, imageSize])
 
   // Update preview when crop changes
@@ -277,7 +281,7 @@ export function DisplayPhotoCropper({
           const filename = `display_${competitionId || timestamp}_16x9.webp`
 
           // Upload to Supabase
-          const { data, error } = await supabase.storage
+          const { error } = await supabase.storage
             .from('competition-display')
             .upload(filename, blob, {
               contentType: 'image/webp',
@@ -383,13 +387,16 @@ export function DisplayPhotoCropper({
                   onMouseLeave={handleMouseUp}
                 >
                   {/* Original Image */}
-                  <img
+                  <Image
                     src={imageUrl}
                     alt="Original"
+                    width={800}
+                    height={400}
                     style={{ 
                       maxWidth: '100%',
                       maxHeight: '400px',
-                      display: 'block'
+                      display: 'block',
+                      objectFit: 'contain'
                     }}
                   />
                   

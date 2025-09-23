@@ -46,7 +46,7 @@ export function CompetitionTile({
   featured = false
 }: CompetitionTileProps) {
   const { user } = useAuth()
-  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
+  const [, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
     minutes: 0,

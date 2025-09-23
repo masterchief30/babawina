@@ -313,7 +313,7 @@ export function EnhancedCompetitionForm({
     } catch (error: unknown) {
       showError("Upload failed", error instanceof Error ? error.message : 'Unknown error occurred')
     }
-  }, [])
+  }, [showError])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,

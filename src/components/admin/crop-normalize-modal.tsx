@@ -356,6 +356,7 @@ export function CropNormalizeModal({ isOpen, onClose, file, onSave }: CropNormal
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, imageDimensions])
 
   return (
