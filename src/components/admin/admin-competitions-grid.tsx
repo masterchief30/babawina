@@ -78,7 +78,7 @@ export function AdminCompetitionsGrid() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [statusFilter])
+  }, [statusFilter, fetchCompetitions])
 
   if (loading) {
     return (

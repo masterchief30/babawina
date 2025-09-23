@@ -3,7 +3,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import { useState } from "react"
-import { Edit, Trash2, Eye, Play, Users, Trophy, Calendar, X } from "lucide-react"
+import { Edit, Trash2, Users, Trophy, Calendar, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/lib/supabase"
 
@@ -19,7 +19,6 @@ interface AdminCompetitionTileProps {
   status: 'draft' | 'live' | 'closed' | 'judged'
   starts_at: string
   ends_at: string
-  created_at: string
   entry_count?: number
   onDelete?: () => void
 }
@@ -36,7 +35,6 @@ export function AdminCompetitionTile({
   status,
   starts_at,
   ends_at,
-  created_at,
   entry_count = 0,
   onDelete
 }: AdminCompetitionTileProps) {

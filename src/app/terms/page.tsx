@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 
 export default function TermsPage() {
@@ -13,9 +14,11 @@ export default function TermsPage() {
               <span className="font-semibold text-sm md:text-base">Back to Home</span>
             </Link>
             <div className="flex items-center gap-2 md:gap-3">
-              <img 
+              <Image 
                 src="/images/hero/mascot002.png" 
                 alt="BabaWina Mascot" 
+                width={32}
+                height={32}
                 className="w-6 h-6 md:w-8 md:h-8 object-contain"
               />
               <span className="text-lg md:text-xl font-bold text-blue-600">BabaWina</span>

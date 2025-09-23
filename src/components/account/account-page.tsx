@@ -12,10 +12,8 @@ import { supabase } from "@/lib/supabase"
 import { formatDistance } from "@/lib/utils"
 import { 
   ArrowLeft, 
-  User as UserIcon, 
   Mail, 
   Calendar, 
-  Trophy, 
   Target,
   LogOut,
   Trash2
@@ -114,9 +112,10 @@ export function AccountPage({ user, profile, entries }: AccountPageProps) {
 
       window.location.href = "/"
     } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete account. Please contact support."
       toast({
         title: "Error",
-        description: "Failed to delete account. Please contact support.",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

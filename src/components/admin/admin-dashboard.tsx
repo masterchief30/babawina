@@ -12,10 +12,6 @@ import {
   Upload, 
   Target, 
   Wand2, 
-  Save, 
-  Clock, 
-  Trophy, 
-  FileText,
   Eye,
   Settings
 } from "lucide-react"
