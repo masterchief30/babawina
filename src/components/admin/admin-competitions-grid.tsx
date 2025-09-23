@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { supabase } from "@/lib/supabase"
 import { AdminCompetitionTile } from "./admin-competition-tile"
 import { Button } from "@/components/ui/button"
@@ -29,7 +29,7 @@ export function AdminCompetitionsGrid() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   // Fetch all competitions
-  const fetchCompetitions = async () => {
+  const fetchCompetitions = useCallback(async () => {
     try {
       setLoading(true)
       let query = supabase
@@ -52,7 +52,7 @@ export function AdminCompetitionsGrid() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter])
 
   useEffect(() => {
 

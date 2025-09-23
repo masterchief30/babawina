@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { User, Lock, Trash2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, Trophy, Target, ChevronDown, ChevronRight } from 'lucide-react'
+import { User, Lock, Trash2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight } from 'lucide-react'
 
 interface Competition {
   id: string
@@ -40,10 +40,10 @@ interface UserCompetitionStats {
 export default function ProfilePage() {
   const { user, loading, signOut: authSignOut } = useAuth()
   const [activeTab, setActiveTab] = useState('account')
-  const [currentPassword, setCurrentPassword] = useState('')
+  const [, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false)
@@ -71,6 +71,7 @@ export default function ProfilePage() {
     if (activeTab === 'competitions' && user) {
       fetchUserCompetitions()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, user])
 
   const fetchUserCompetitions = async () => {
@@ -290,6 +291,7 @@ export default function ProfilePage() {
               <span className="font-semibold text-sm md:text-base">Back to Home</span>
             </Link>
             <div className="flex items-center gap-2 md:gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src="/images/hero/mascot002.png" 
                 alt="BabaWina Mascot" 

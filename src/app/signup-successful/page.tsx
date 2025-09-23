@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { ArrowRight, Mail } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export default function SignupSuccessfulPage() {
   const [showConfetti, setShowConfetti] = useState(false)
