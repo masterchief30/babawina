@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
 import { ArrowLeft, ShoppingCart, Trophy, CreditCard, CheckCircle, Info, PartyPopper, Target } from "lucide-react"
 import Link from "next/link"
-import { entryPreservation, saveTempEntriesToDB } from "@/lib/entry-preservation"
+import { entryPreservation, saveTempEntriesToDB, saveBetsWithToken } from "@/lib/entry-preservation"
 
 interface CheckoutEntry {
   competitionId: string
@@ -37,6 +37,20 @@ export default function CheckoutPage() {
 
   // Don't auto-redirect to signup - let user see checkout page and click button
   // This effect is removed to allow unauthenticated users to see the checkout page
+
+  // Handle browser back button - redirect to landing page
+  useEffect(() => {
+    const handlePopState = () => {
+      // When user clicks browser back button, go to landing page
+      window.location.href = '/'
+    }
+    
+    window.addEventListener('popstate', handlePopState)
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
 
   // Load checkout data from localStorage or preserved entries
   useEffect(() => {
@@ -96,9 +110,35 @@ export default function CheckoutPage() {
 
   // Handle checkout process
   const handleCheckout = async () => {
-    // If user is not authenticated, redirect to signup
+    // If user is not authenticated, save bets and redirect to signup
     if (!user) {
-      console.log('🔄 Redirecting to signup - entries already preserved in localStorage')
+      // Save bets to localStorage when "PLAY FOR FREE" is clicked
+      if (entries.length > 0) {
+        const entry = entries[0]
+        
+        // Try to save with token, but fallback to localStorage if it fails
+        try {
+          const submissionToken = await saveBetsWithToken({
+            competitionId: entry.competitionId,
+            competitionTitle: entry.competitionTitle,
+            prizeShort: entry.prizeShort,
+            entryPrice: entry.entryPrice,
+            entries: entry.entries,
+            imageUrl: entry.imageUrl
+          })
+          
+          if (submissionToken) {
+            localStorage.setItem('submissionToken', submissionToken)
+            console.log('✅ Bets saved to database with token:', submissionToken)
+          } else {
+            console.log('⚠️ Token save failed, using localStorage fallback')
+          }
+        } catch (error) {
+          console.log('⚠️ Database not ready, using localStorage fallback:', error)
+        }
+      }
+      
+      console.log('🔄 Redirecting to signup after saving bets')
       router.push('/signup')
       return
     }
@@ -191,13 +231,7 @@ export default function CheckoutPage() {
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link 
-              href={entries.length > 0 ? `/play/${entries[0].competitionId}` : "/"} 
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="font-semibold">Back to Competition</span>
-            </Link>
+            <div></div>
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-amber-500" />
               <span className="font-bold text-gray-900">Checkout</span>

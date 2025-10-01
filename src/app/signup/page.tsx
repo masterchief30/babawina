@@ -94,17 +94,8 @@ export default function SignupPage() {
       entryPreservation.associateWithEmail(formData.email)
       console.log('✅ Entries associated with email during signup')
       
-      // Save entries to database as backup (in case localStorage is lost)
-      const preserved = entryPreservation.loadEntries()
-      if (preserved && preserved.entries.length > 0) {
-        try {
-          const { saveTempEntriesToDB } = await import('@/lib/entry-preservation')
-          await saveTempEntriesToDB(preserved)
-          console.log('✅ Entries backed up to database during signup')
-        } catch (error) {
-          console.log('⚠️ Database backup failed, but localStorage preserved:', error)
-        }
-      }
+      // Note: Entries are now saved to pending_bets table when "PLAY FOR FREE" is clicked
+      // No need for temp_entries backup system anymore
 
       // Get submission token if available
       const submissionToken = localStorage.getItem('submissionToken')

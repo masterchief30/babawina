@@ -296,10 +296,7 @@ function ProfileContent() {
       <header className="bg-white/95 backdrop-blur-xl shadow-md">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
-              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="font-semibold text-sm md:text-base">Back to Home</span>
-            </Link>
+            <div></div>
             <div className="flex items-center gap-2 md:gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 

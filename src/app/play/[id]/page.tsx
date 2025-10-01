@@ -427,9 +427,9 @@ export default function PlayCompetitionPage() {
                   <Button
                     className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3"
                     disabled={gameEntries.length === 0}
-                    onClick={async () => {
-                      // Save bets immediately to database with token
-                      const submissionToken = await saveBetsWithToken({
+                    onClick={() => {
+                      // Save entries to localStorage only (NOT to database yet)
+                      entryPreservation.saveEntries({
                         competitionId: competition.id,
                         competitionTitle: competition.title,
                         prizeShort: competition.prize_short,
@@ -438,33 +438,7 @@ export default function PlayCompetitionPage() {
                         imageUrl: getProductImageUrl()
                       })
                       
-                      if (submissionToken) {
-                        // Also save to localStorage as backup
-                        entryPreservation.saveEntries({
-                          competitionId: competition.id,
-                          competitionTitle: competition.title,
-                          prizeShort: competition.prize_short,
-                          entryPrice: competition.entry_price_rand,
-                          entries: gameEntries,
-                          imageUrl: getProductImageUrl(),
-                          submissionToken: submissionToken
-                        })
-                        
-                        console.log('✅ Bets saved to database with token:', submissionToken)
-                        // Store token for checkout
-                        localStorage.setItem('submissionToken', submissionToken)
-                      } else {
-                        console.log('⚠️ Database save failed, using localStorage only')
-                        entryPreservation.saveEntries({
-                          competitionId: competition.id,
-                          competitionTitle: competition.title,
-                          prizeShort: competition.prize_short,
-                          entryPrice: competition.entry_price_rand,
-                          entries: gameEntries,
-                          imageUrl: getProductImageUrl()
-                        })
-                      }
-                      
+                      console.log('✅ Entries saved to localStorage for checkout')
                       window.location.href = '/checkout'
                     }}
                   >
