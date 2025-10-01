@@ -97,12 +97,20 @@ export default function SignupPage() {
       entryPreservation.associateWithEmail(formData.email)
       console.log('✅ Entries associated with email during signup')
       
-      // Simple signup - back to original working version
+      // Get submission token from localStorage
+      const submissionToken = localStorage.getItem('submissionToken')
+      console.log('🎯 Including submission token in signup:', submissionToken)
+      
+      // Simple signup with token in callback URL
+      const callbackUrl = submissionToken 
+        ? `${window.location.origin}/auth/callback?token=${submissionToken}`
+        : `${window.location.origin}/auth/callback`
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: callbackUrl
         }
       })
       

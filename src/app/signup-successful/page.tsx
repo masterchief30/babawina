@@ -8,13 +8,12 @@ import { ArrowRight, Target } from 'lucide-react'
 import { entryPreservation } from '@/lib/entry-preservation'
 
 export default function SignupSuccessfulPage() {
-  const [showConfetti, setShowConfetti] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(true) // Start immediately
   const [hasPreservedEntries, setHasPreservedEntries] = useState(false)
   const [preservedData, setPreservedData] = useState<any>(null)
 
   useEffect(() => {
-    // Start confetti animation immediately
-    setShowConfetti(true)
+    // Confetti already starts immediately with useState(true)
     
     // Check for preserved entries
     const preserved = entryPreservation.loadEntries()
