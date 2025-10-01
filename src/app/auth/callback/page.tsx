@@ -50,7 +50,7 @@ export default function AuthCallback() {
               }
             }
             
-            // Fallback: Try localStorage entries
+            // Always try localStorage entries (since pending_bets table might not exist yet)
             if (!entriesSaved) {
               console.log('🔍 Checking for preserved entries in localStorage...')
               const preserved = entryPreservation.loadEntries()

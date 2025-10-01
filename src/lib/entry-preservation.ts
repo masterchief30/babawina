@@ -234,6 +234,7 @@ export async function saveBetsWithToken(data: Omit<PreservedEntryData, 'sessionI
     const submissionToken = generateSubmissionToken()
     
     console.log('💾 Saving bets immediately with token:', submissionToken)
+    console.log('📊 Input data:', data)
     
     // Save each bet individually with the same token
     const betsToSave = data.entries.map((gameEntry, index) => ({
@@ -251,12 +252,15 @@ export async function saveBetsWithToken(data: Omit<PreservedEntryData, 'sessionI
       expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
     }))
 
+    console.log('📝 Bets to save:', betsToSave)
+
     const { error } = await supabase
       .from('pending_bets')
       .insert(betsToSave)
 
     if (error) {
       console.error('❌ Failed to save bets with token:', error)
+      console.error('❌ Error details:', error.message, error.details, error.hint)
       return null
     }
 

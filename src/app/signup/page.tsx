@@ -2,15 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
 import { entryPreservation, saveTempEntriesToDB } from '@/lib/entry-preservation'
+import { supabase } from '@/lib/supabase'
 
 export default function SignupPage() {
   const { user, loading } = useAuth()
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -94,33 +97,12 @@ export default function SignupPage() {
       entryPreservation.associateWithEmail(formData.email)
       console.log('✅ Entries associated with email during signup')
       
-      // Note: Entries are now saved to pending_bets table when "PLAY FOR FREE" is clicked
-      // No need for temp_entries backup system anymore
-
-      // Get submission token if available
-      const submissionToken = localStorage.getItem('submissionToken')
-      const callbackUrl = submissionToken 
-        ? `${window.location.origin}/auth/callback?token=${submissionToken}`
-        : `${window.location.origin}/auth/callback`
-
-      // Sign up with Supabase
-      console.log('Attempting signup with:', {
-        email: formData.email,
-        redirectTo: callbackUrl,
-        submissionToken: submissionToken
-      })
-      
+      // Simple signup - back to original working version
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: callbackUrl,
-          data: {
-            age_confirmed: confirmedAge,
-            terms_agreed: agreedToTerms,
-            session_id: entryPreservation.getSessionId(),
-            submission_token: submissionToken // Pass token for recovery
-          }
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       })
       
@@ -131,8 +113,8 @@ export default function SignupPage() {
         
         // Handle specific error cases with user-friendly messages
         if (error.message.includes('email rate limit exceeded')) {
-          console.error('Rate limit error - this should not happen if no limits are set')
-          alert('Email service temporarily unavailable. Please try again in a moment.')
+          console.error('Rate limit exceeded - try again in 1-2 minutes or use a different email')
+          alert('Too many signup attempts. Please wait 1-2 minutes or try with a different email address.')
         } else if (error.message.includes('User already registered')) {
           alert('This email is already registered. Please try signing in instead.')
         } else if (error.message.includes('Invalid email')) {
