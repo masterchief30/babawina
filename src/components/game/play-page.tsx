@@ -23,7 +23,7 @@ interface Competition {
 
 interface PlayPageProps {
   competition: Competition
-  user: User
+  user: User | null
   hasExistingEntry: boolean
 }
 
@@ -33,6 +33,12 @@ export function PlayPage({ competition, user, hasExistingEntry }: PlayPageProps)
   // const { toast } = useToast()
 
   const handleSubmitEntry = async (x: number, y: number) => {
+    // If user is not authenticated, redirect to signup
+    if (!user) {
+      window.location.href = "/signup"
+      return
+    }
+
     if (hasExistingEntry) {
       throw new Error("You have already submitted an entry for this competition")
     }

@@ -123,13 +123,9 @@ export function CompetitionTile({
   const imageUrl = getImageUrl()
   const imageAlt = display_photo_alt || `${title} competition image`
 
-  // Handle click based on authentication status
+  // Allow direct access to play page regardless of authentication status
   const handleTileClick = (e: React.MouseEvent) => {
-    if (!user) {
-      e.preventDefault()
-      window.location.href = '/login'
-    }
-    // If user is authenticated, let the Link handle navigation to /play/${id}
+    // Let the Link handle navigation to /play/${id} for all users
   }
 
   return (

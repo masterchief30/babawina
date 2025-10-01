@@ -234,14 +234,10 @@ export function HomePage() {
   }, [])
 
   const handlePlayNow = () => {
-    if (!user) {
-      window.location.href = "/signup"
-    } else {
-      // Scroll to competitions section for signed-in users
-      const competitionsSection = document.getElementById('competitions')
-      if (competitionsSection) {
-        competitionsSection.scrollIntoView({ behavior: 'smooth' })
-      }
+    // Always scroll to competitions section for all users
+    const competitionsSection = document.getElementById('competitions')
+    if (competitionsSection) {
+      competitionsSection.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -264,7 +260,7 @@ export function HomePage() {
       {/* Test Banner */}
       <div className="bg-green-600 text-white text-center py-4 px-4 relative z-40">
         <p className="font-extrabold text-base md:text-lg font-sans tracking-normal">
-          Find the ball for free until 30 September 2025
+          Find the ball for free until 31 October 2025
         </p>
       </div>
       

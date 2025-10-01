@@ -55,6 +55,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null)
         setLoading(false)
         
+        // Handle user confirmation and save entries
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('🎯 User signed in, checking for preserved entries...')
+          
+          // Import entry preservation functions
+          const { entryPreservation, migrateTempEntries } = await import('@/lib/entry-preservation')
+          
+          try {
+            const preserved = entryPreservation.loadEntries()
+            if (preserved && preserved.entries.length > 0) {
+              console.log('💾 Found preserved entries, saving to database...')
+              
+              const entriesToSave = preserved.entries.map((gameEntry: any, index: number) => ({
+                competition_id: preserved.competitionId,
+                user_id: session.user.id,
+                guess_x: gameEntry.x,
+                guess_y: gameEntry.y,
+                entry_price_paid: preserved.entryPrice,
+                entry_number: index + 1
+              }))
+
+              const { error: insertError } = await supabase
+                .from('competition_entries')
+                .insert(entriesToSave)
+
+              if (insertError) {
+                console.error('❌ Failed to save entries in AuthContext:', insertError)
+              } else {
+                console.log('✅ Successfully saved entries in AuthContext')
+                entryPreservation.clearEntries()
+                
+                // Redirect to profile competitions tab
+                setTimeout(() => {
+                  window.location.href = '/profile?tab=competitions&confirmed=true'
+                }, 1000)
+              }
+            }
+            
+            // Also try to migrate temp entries
+            await migrateTempEntries(session.user.id, session.user.email!)
+            
+          } catch (error) {
+            console.error('❌ Error handling entries in AuthContext:', error)
+          }
+        }
+        
         // If user signed out, ensure we're on the home page
         if (event === 'SIGNED_OUT') {
           console.log('User signed out, ensuring clean state')

@@ -4,14 +4,25 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Target } from 'lucide-react'
+import { entryPreservation } from '@/lib/entry-preservation'
 
 export default function SignupSuccessfulPage() {
   const [showConfetti, setShowConfetti] = useState(false)
+  const [hasPreservedEntries, setHasPreservedEntries] = useState(false)
+  const [preservedData, setPreservedData] = useState<any>(null)
 
   useEffect(() => {
     // Start confetti animation immediately
     setShowConfetti(true)
+    
+    // Check for preserved entries
+    const preserved = entryPreservation.loadEntries()
+    if (preserved && preserved.entries.length > 0) {
+      setHasPreservedEntries(true)
+      setPreservedData(preserved)
+      console.log('✅ Found preserved entries during signup success:', preserved)
+    }
     
     // Stop confetti after 5 seconds
     const timer = setTimeout(() => {
@@ -156,35 +167,22 @@ export default function SignupSuccessfulPage() {
               <h1 className="text-3xl lg:text-4xl font-black text-gray-900 mb-2">
                 Congratulations!
               </h1>
-              <p className="text-lg text-gray-600">
-                Check your email and confirm your account!
-              </p>
             </motion.div>
 
+            {/* Entry Preservation Status */}
+            {hasPreservedEntries && preservedData && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl"
+              >
+                <div className="text-center mb-2">
+                  <h3 className="font-bold text-green-800">Check your email and confirm your account! 🎯</h3>
+                </div>
+              </motion.div>
+            )}
 
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              className="space-y-3"
-            >
-              <Link href="/" className="block">
-                <Button className="w-full h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold rounded-xl shadow-lg text-base flex items-center justify-center gap-3 group">
-                  <span>Start Exploring BabaWina</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              
-              <Link href="/login" className="block">
-                <Button 
-                  variant="outline"
-                  className="w-full h-12 border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold rounded-xl text-base"
-                >
-                  Already confirmed? Sign In
-                </Button>
-              </Link>
-            </motion.div>
 
             {/* Footer Note */}
             <motion.div

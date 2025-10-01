@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
+import { entryPreservation, saveTempEntriesToDB } from '@/lib/entry-preservation'
 
 export default function SignupPage() {
   const { user, loading } = useAuth()
@@ -89,24 +90,71 @@ export default function SignupPage() {
       // Import Supabase client
       const { supabase } = await import('@/lib/supabase')
       
+      // Associate entries with email before signup
+      entryPreservation.associateWithEmail(formData.email)
+      console.log('✅ Entries associated with email during signup')
+      
+      // Save entries to database as backup (in case localStorage is lost)
+      const preserved = entryPreservation.loadEntries()
+      if (preserved && preserved.entries.length > 0) {
+        try {
+          const { saveTempEntriesToDB } = await import('@/lib/entry-preservation')
+          await saveTempEntriesToDB(preserved)
+          console.log('✅ Entries backed up to database during signup')
+        } catch (error) {
+          console.log('⚠️ Database backup failed, but localStorage preserved:', error)
+        }
+      }
+
+      // Get submission token if available
+      const submissionToken = localStorage.getItem('submissionToken')
+      const callbackUrl = submissionToken 
+        ? `${window.location.origin}/auth/callback?token=${submissionToken}`
+        : `${window.location.origin}/auth/callback`
+
       // Sign up with Supabase
+      console.log('Attempting signup with:', {
+        email: formData.email,
+        redirectTo: callbackUrl,
+        submissionToken: submissionToken
+      })
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: callbackUrl,
           data: {
             age_confirmed: confirmedAge,
             terms_agreed: agreedToTerms,
+            session_id: entryPreservation.getSessionId(),
+            submission_token: submissionToken // Pass token for recovery
           }
         }
       })
+      
+      console.log('Signup response:', { data, error })
 
       if (error) {
         console.error('Signup error:', error)
-        alert(`Signup failed: ${error.message}`)
+        
+        // Handle specific error cases with user-friendly messages
+        if (error.message.includes('email rate limit exceeded')) {
+          console.error('Rate limit error - this should not happen if no limits are set')
+          alert('Email service temporarily unavailable. Please try again in a moment.')
+        } else if (error.message.includes('User already registered')) {
+          alert('This email is already registered. Please try signing in instead.')
+        } else if (error.message.includes('Invalid email')) {
+          alert('Please enter a valid email address.')
+        } else if (error.message.includes('Password')) {
+          alert('Password must be at least 6 characters long.')
+        } else {
+          console.error('Full error object:', error)
+          alert(`Signup failed: ${error.message}\n\nPlease check the console for more details.`)
+        }
       } else {
         console.log('Signup successful:', data)
+        console.log('Session ID passed to auth:', entryPreservation.getSessionId())
         // Redirect to success page
         window.location.href = '/signup-successful'
       }

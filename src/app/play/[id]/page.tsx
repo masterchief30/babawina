@@ -6,8 +6,9 @@ import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { ArrowLeft, Target, Plus, Minus, ShoppingCart, Trophy } from "lucide-react"
+import { ArrowLeft, Target, Plus, Minus, ShoppingCart, Trophy, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import { entryPreservation, saveBetsWithToken } from "@/lib/entry-preservation"
 
 interface Competition {
   id: string
@@ -44,13 +45,24 @@ export default function PlayCompetitionPage() {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showCoordinates, setShowCoordinates] = useState(false)
 
-  // Redirect to login if not authenticated
+  // Allow access without authentication - users can play without signing up
+  // Authentication will be required at checkout
+
+  // Restore saved entries from localStorage when component loads
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login')
-      return
+    if (!params.id) return
+    
+    try {
+      // Check if there are saved entries for this competition
+      const preserved = entryPreservation.loadEntries()
+      if (preserved && preserved.competitionId === params.id && preserved.entries.length > 0) {
+        console.log('🔄 Restoring saved entries:', preserved.entries)
+        setGameEntries(preserved.entries)
+      }
+    } catch (error) {
+      console.error('Error restoring entries:', error)
     }
-  }, [user, loading, router])
+  }, [params.id])
 
   // Fetch competition data
   useEffect(() => {
@@ -266,7 +278,7 @@ export default function PlayCompetitionPage() {
                   <img
                     src={getGameImageUrl()}
                     alt={`${competition.title} game field`}
-                    className="max-w-full max-h-full object-contain"
+                    className="max-w-full max-h-full object-contain cursor-crosshair"
                     onLoad={() => setImageLoaded(true)}
                     onClick={handleImageClick}
                     onMouseMove={handleMouseMove}
@@ -326,11 +338,11 @@ export default function PlayCompetitionPage() {
               <div className="p-4">
                 {/* Prize Display */}
                 <div className="mb-6">
-                  <div className="text-center mb-4">
+                  <div className="mb-4">
                     <img
                       src={getProductImageUrl()}
                       alt={competition.title}
-                      className="w-20 h-20 object-contain mx-auto rounded-lg"
+                      className="w-full h-48 object-cover rounded-lg shadow-lg"
                     />
                   </div>
                   <h3 className="font-bold text-gray-900 text-center mb-2">
@@ -362,28 +374,6 @@ export default function PlayCompetitionPage() {
                       <Minus className="w-4 h-4" />
                     </Button>
                     <span className="text-sm text-gray-600 px-2">In Play</span>
-                    <Button
-                      size="sm"
-                      className="bg-orange-500 hover:bg-orange-600 text-white"
-                      disabled={competition && competition.per_user_entry_limit !== 999999 && gameEntries.length >= competition.per_user_entry_limit}
-                      onClick={() => {
-                        // Check entry limit before adding
-                        if (competition && competition.per_user_entry_limit !== 999999 && gameEntries.length >= competition.per_user_entry_limit) {
-                          return
-                        }
-                        
-                        // Simulate a click in the center of the image
-                        const centerEntry: GameEntry = {
-                          id: `entry-${Date.now()}-${Math.random()}`,
-                          x: 50,
-                          y: 50,
-                          timestamp: Date.now()
-                        }
-                        setGameEntries(prev => [...prev, centerEntry])
-                      }}
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
                   </div>
                   
                   <Button
@@ -395,15 +385,6 @@ export default function PlayCompetitionPage() {
                     Delete
                   </Button>
 
-                  {/* Entry limit info */}
-                  {competition && competition.per_user_entry_limit !== 999999 && (
-                    <div className="text-center text-xs text-gray-500 mt-2">
-                      {gameEntries.length} of {competition.per_user_entry_limit} entries
-                      {gameEntries.length >= competition.per_user_entry_limit && (
-                        <div className="text-orange-600 font-medium mt-1">Entry limit reached</div>
-                      )}
-                    </div>
-                  )}
                   
                 </div>
 
@@ -446,17 +427,44 @@ export default function PlayCompetitionPage() {
                   <Button
                     className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3"
                     disabled={gameEntries.length === 0}
-                    onClick={() => {
-                      // Save entries to localStorage for checkout
-                      const checkoutData = {
+                    onClick={async () => {
+                      // Save bets immediately to database with token
+                      const submissionToken = await saveBetsWithToken({
                         competitionId: competition.id,
                         competitionTitle: competition.title,
                         prizeShort: competition.prize_short,
                         entryPrice: competition.entry_price_rand,
                         entries: gameEntries,
                         imageUrl: getProductImageUrl()
+                      })
+                      
+                      if (submissionToken) {
+                        // Also save to localStorage as backup
+                        entryPreservation.saveEntries({
+                          competitionId: competition.id,
+                          competitionTitle: competition.title,
+                          prizeShort: competition.prize_short,
+                          entryPrice: competition.entry_price_rand,
+                          entries: gameEntries,
+                          imageUrl: getProductImageUrl(),
+                          submissionToken: submissionToken
+                        })
+                        
+                        console.log('✅ Bets saved to database with token:', submissionToken)
+                        // Store token for checkout
+                        localStorage.setItem('submissionToken', submissionToken)
+                      } else {
+                        console.log('⚠️ Database save failed, using localStorage only')
+                        entryPreservation.saveEntries({
+                          competitionId: competition.id,
+                          competitionTitle: competition.title,
+                          prizeShort: competition.prize_short,
+                          entryPrice: competition.entry_price_rand,
+                          entries: gameEntries,
+                          imageUrl: getProductImageUrl()
+                        })
                       }
-                      localStorage.setItem('checkoutData', JSON.stringify(checkoutData))
+                      
                       window.location.href = '/checkout'
                     }}
                   >

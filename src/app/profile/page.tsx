@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { User, Lock, Trash2, ArrowLeft, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 interface Competition {
   id: string
@@ -39,6 +40,7 @@ interface UserCompetitionStats {
 
 export default function ProfilePage() {
   const { user, loading, signOut: authSignOut } = useAuth()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('account')
   const [, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -58,6 +60,14 @@ export default function ProfilePage() {
     type: 'success' | 'error'
     message: string
   }>({ show: false, type: 'success', message: '' })
+
+  // Set initial tab based on URL parameter
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab && ['account', 'competitions', 'password'].includes(tab)) {
+      setActiveTab(tab)
+    }
+  }, [searchParams])
 
   // Redirect if not authenticated
   useEffect(() => {

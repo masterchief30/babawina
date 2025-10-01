@@ -10,12 +10,8 @@ export const metadata = {
 export default async function Play() {
   const supabase = await createServerSupabaseClient()
   
-  // Check if user is authenticated
+  // Allow access without authentication - users can play without signing up
   const { data: { user } } = await supabase.auth.getUser()
-  
-  if (!user) {
-    redirect("/")
-  }
 
   // Get current live competition
   const { data: competition } = await supabase
@@ -28,13 +24,17 @@ export default async function Play() {
     redirect("/")
   }
 
-  // Check if user already has an entry for this competition
-  const { data: existingEntry } = await supabase
-    .from("entries")
-    .select("*")
-    .eq("competition_id", competition.id)
-    .eq("user_id", user.id)
-    .single()
+  // Check if user already has an entry for this competition (only if authenticated)
+  let existingEntry = null
+  if (user) {
+    const { data } = await supabase
+      .from("entries")
+      .select("*")
+      .eq("competition_id", competition.id)
+      .eq("user_id", user.id)
+      .single()
+    existingEntry = data
+  }
 
   return (
     <PlayPage 

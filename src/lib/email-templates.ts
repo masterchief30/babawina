@@ -52,7 +52,7 @@ export const confirmationEmailTemplate = `
                                         </p>
                                         <p style="font-size: 16px; color: #3A3A3A; margin: 0 0 16px 0; line-height: 1.7; font-family: 'Inter', Arial, sans-serif;">
                                             You're just one step away from joining South Africa's most exciting gaming competition platform! 
-                                            Get ready to find the ball and win amazing prizes.
+                                            Your bets have been saved and will be ready for you after confirmation.
                                         </p>
                                         <p style="font-size: 16px; color: #3A3A3A; margin: 0 0 20px 0; line-height: 1.7; font-family: 'Inter', Arial, sans-serif;">
                                             From PlayStation 5s to luxury cars, your next big win could be just one game away!&nbsp;🎮✨
@@ -72,7 +72,7 @@ export const confirmationEmailTemplate = `
                                             Just one more step...
                                         </h2>
                                         <p style="font-size: 16px; color: #5A5A5A; margin: 0; line-height: 1.6; font-family: 'Inter', Arial, sans-serif;">
-                                            Please confirm your email address and we'll get you started on your winning journey!
+                                            Please confirm your email address and you'll be taken to your profile to view your saved bets!
                                         </p>
                                     </td>
                                 </tr>
@@ -92,10 +92,10 @@ export const confirmationEmailTemplate = `
                                                         <w:anchorlock/>
                                                         <center>
                                                         <![endif]-->
-                                                        <a href="{{ .ConfirmationURL }}" target="_blank" 
-                                                           style="display: inline-block; background-color: #2563EB; color: #ffffff; font-family: 'Inter', Arial, sans-serif; font-size: 18px; font-weight: 600; text-align: center; text-decoration: none; padding: 16px 40px; border-radius: 30px; letter-spacing: -0.3px; line-height: 1.3;">
-                                                            🎯&nbsp;&nbsp;Confirm Email & Start Playing
-                                                        </a>
+                                        <a href="{{ .ConfirmationURL }}" 
+                                           style="display: inline-block; background-color: #2563EB; color: #ffffff; font-family: 'Inter', Arial, sans-serif; font-size: 18px; font-weight: 600; text-align: center; text-decoration: none; padding: 16px 40px; border-radius: 30px; letter-spacing: -0.3px; line-height: 1.3;">
+                                            🎯&nbsp;&nbsp;Confirm Email & View Your Bets
+                                        </a>
                                                         <!--[if mso]>
                                                         </center>
                                                         </v:roundrect>
