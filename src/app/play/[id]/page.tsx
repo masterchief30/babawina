@@ -224,11 +224,11 @@ export default function PlayCompetitionPage() {
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700">
+            <Link href="/" className="hidden md:flex items-center gap-2 text-blue-600 hover:text-blue-700">
               <ArrowLeft className="w-5 h-5" />
               <span className="font-semibold">Back to Competitions</span>
             </Link>
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Trophy className="w-5 h-5 text-amber-500" />
               <span className="font-bold text-gray-900">{competition.title}</span>
             </div>
@@ -244,24 +244,35 @@ export default function PlayCompetitionPage() {
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="p-6 border-b">
                 <div className="flex justify-between items-center">
-                  <p className="text-gray-600">Click anywhere on the image to place your guess where the ball is hidden!</p>
-                  {/* Delete Last Crosshair Button - Always visible */}
-                  <button
-                    onClick={() => {
-                      if (gameEntries.length > 0) {
-                        removeEntry(gameEntries[gameEntries.length - 1].id)
-                      }
-                    }}
-                    disabled={gameEntries.length === 0}
-                    className={`px-4 py-2 rounded text-base font-medium transition-colors ${
-                      gameEntries.length > 0 
-                        ? 'bg-red-500 hover:bg-red-600 text-white' 
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    }`}
-                    title={gameEntries.length > 0 ? "Delete last crosshair" : "No crosshairs to delete"}
-                  >
-                    Delete
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <p className="text-gray-600 hidden md:block">Click anywhere on the image to place your guess where the ball is hidden!</p>
+                    
+                    {/* Delete Last Crosshair Button - Always visible */}
+                    <button
+                      onClick={() => {
+                        if (gameEntries.length > 0) {
+                          removeEntry(gameEntries[gameEntries.length - 1].id)
+                        }
+                      }}
+                      disabled={gameEntries.length === 0}
+                      className={`px-4 py-2 rounded text-base font-medium transition-colors ${
+                        gameEntries.length > 0 
+                          ? 'bg-red-500 hover:bg-red-600 text-white' 
+                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      }`}
+                      title={gameEntries.length > 0 ? "Delete last crosshair" : "No crosshairs to delete"}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  
+                  {/* Mobile bet counter - right aligned */}
+                  <div className="md:hidden flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+                    <Target className="w-4 h-4 text-blue-600" />
+                    <span className="font-bold text-blue-700">
+                      {gameEntries.length}/{competition.per_user_entry_limit}
+                    </span>
+                  </div>
                 </div>
               </div>
               
@@ -328,7 +339,7 @@ export default function PlayCompetitionPage() {
           {/* Tickets Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden sticky top-8">
-              <div className="bg-gradient-to-r from-amber-500 to-orange-500 p-4">
+              <div className="hidden md:block bg-gradient-to-r from-amber-500 to-orange-500 p-4">
                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
                   <Target className="w-5 h-5" />
                   {competition.title.toUpperCase()}
@@ -336,8 +347,8 @@ export default function PlayCompetitionPage() {
               </div>
               
               <div className="p-4">
-                {/* Prize Display */}
-                <div className="mb-6">
+                {/* Prize Display - Hidden on mobile */}
+                <div className="hidden md:block mb-6">
                   <div className="mb-4">
                     <img
                       src={getProductImageUrl()}
@@ -357,8 +368,8 @@ export default function PlayCompetitionPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="space-y-3 mb-6">
+                {/* Action Buttons - Hidden on mobile */}
+                <div className="hidden md:block space-y-3 mb-6">
                   <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="outline"
@@ -388,9 +399,9 @@ export default function PlayCompetitionPage() {
                   
                 </div>
 
-                {/* Entries List */}
+                {/* Entries List - Hidden on mobile */}
                 {gameEntries.length > 0 && (
-                  <div className="border-t pt-4">
+                  <div className="border-t pt-4 hidden md:block">
                     <h4 className="font-semibold text-gray-900 mb-3">YOUR ENTRIES</h4>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {gameEntries.map((entry, index) => (
@@ -425,7 +436,7 @@ export default function PlayCompetitionPage() {
                   </div>
                   
                   <Button
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3"
+                    className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-3"
                     disabled={gameEntries.length === 0}
                     onClick={() => {
                       // Save entries to localStorage only (NOT to database yet)
