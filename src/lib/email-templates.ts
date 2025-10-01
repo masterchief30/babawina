@@ -339,4 +339,4 @@ export const confirmationEmailTemplate = `
     
 </body>
 </html>
-`;
+`
