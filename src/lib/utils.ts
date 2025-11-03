@@ -53,12 +53,17 @@ export function getTimeRemaining(endDate: Date): {
 }
 
 export function generateSlug(title: string): string {
-  return title
+  const baseSlug = title
     .toLowerCase()
     .replace(/[^a-z0-9 -]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .trim()
+  
+  // Append a short random suffix to ensure uniqueness
+  const randomSuffix = Math.random().toString(36).substring(2, 8)
+  
+  return `${baseSlug}-${randomSuffix}`
 }
 
 export function getInitials(name: string): string {

@@ -30,32 +30,75 @@ export function AdminCompetitionsGrid() {
 
   // Fetch all competitions
   const fetchCompetitions = useCallback(async () => {
+    console.log('🚀 Starting fetchCompetitions...')
+    console.log('📊 Current status filter:', statusFilter)
+    
     try {
       setLoading(true)
+      console.log('🔄 Loading state set to true')
+      
       let query = supabase
         .from('competitions')
-        .select('*')
+        .select(`
+          id,
+          title,
+          prize_short,
+          prize_value_rand,
+          entry_price_rand,
+          image_inpainted_path,
+          display_photo_path,
+          display_photo_alt,
+          status,
+          starts_at,
+          ends_at,
+          created_at
+        `)
         .order('created_at', { ascending: false })
 
       if (statusFilter !== 'all') {
+        console.log('🎯 Applying status filter:', statusFilter)
         query = query.eq('status', statusFilter)
       }
 
+      console.log('📡 Executing Supabase query...')
       const { data, error } = await query
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Supabase error:', error)
+        throw error
+      }
+
+      console.log('✅ Query successful!')
+      console.log('🔍 Admin fetched competitions:', data?.length || 0, 'competitions')
+      console.log('📊 Status filter:', statusFilter)
+      
+      if (data && data.length > 0) {
+        console.log('📋 Competition details:', data.map(c => ({ 
+          id: c.id, 
+          title: c.title, 
+          status: c.status, 
+          ends_at: c.ends_at,
+          starts_at: c.starts_at
+        })))
+      } else {
+        console.log('📭 No competitions found in database')
+      }
 
       setCompetitions(data || [])
+      console.log('💾 Competitions state updated')
+      
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Unknown error occurred')
-      console.error('Error fetching competitions:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+      console.error('💥 Error in fetchCompetitions:', errorMessage)
+      setError(errorMessage)
     } finally {
       setLoading(false)
+      console.log('🔄 Loading state set to false')
     }
   }, [statusFilter])
 
   useEffect(() => {
-
+    console.log('🎬 useEffect triggered - fetching competitions')
     fetchCompetitions()
 
     // Set up real-time subscription
@@ -69,6 +112,7 @@ export function AdminCompetitionsGrid() {
           table: 'competitions'
         },
         () => {
+          console.log('🔔 Real-time update received - refetching competitions')
           // Refetch when competitions change
           fetchCompetitions()
         }
@@ -76,9 +120,10 @@ export function AdminCompetitionsGrid() {
       .subscribe()
 
     return () => {
+      console.log('🧹 Cleaning up real-time subscription')
       supabase.removeChannel(channel)
     }
-  }, [statusFilter, fetchCompetitions])
+  }, [fetchCompetitions])
 
   if (loading) {
     return (
