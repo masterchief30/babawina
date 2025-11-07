@@ -476,13 +476,25 @@ export async function migrateTempEntries(userId: string, email: string): Promise
       .gt('expires_at', new Date().toISOString())
 
     if (fetchError) {
-      // Check if it's a table doesn't exist error
-      if (fetchError.message?.includes('relation "temp_entries" does not exist')) {
-        console.log('ℹ️ temp_entries table not found - skipping database migration')
+      // Check if it's a table doesn't exist error or RLS policy error
+      const errorMsg = fetchError.message?.toLowerCase() || ''
+      const errorCode = (fetchError as any).code || ''
+      
+      // Common error patterns that indicate the table doesn't exist or isn't accessible
+      if (
+        errorMsg.includes('relation') && errorMsg.includes('does not exist') ||
+        errorMsg.includes('table') && errorMsg.includes('not found') ||
+        errorCode === '42P01' || // PostgreSQL: undefined_table
+        errorCode === 'PGRST106' || // PostgREST: table not found
+        errorCode === 'PGRST204' // PostgREST: no rows returned
+      ) {
+        console.log('ℹ️ temp_entries table not available - skipping database migration (this is OK)')
         return true // Not an error, table just doesn't exist yet
       }
-      console.error('❌ Error fetching temp entries:', fetchError)
-      return false
+      
+      // For other errors, log but still return true since this is optional functionality
+      console.warn('⚠️ Could not fetch temp entries (non-critical):', errorMsg || 'Unknown error')
+      return true // Don't fail the login process for this optional feature
     }
 
     if (!tempEntries || tempEntries.length === 0) {

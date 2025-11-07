@@ -6,7 +6,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const isLoginPage = pathname === '/admin/login';
   const isDashboardPage = pathname === '/admin/dashboard';
-  const isCompetitionsPage = pathname.startsWith('/admin/competitions');
+  const isCreatePage = pathname === '/admin/competitions' && !pathname.includes('/edit');
+  const isEditPage = pathname.includes('/admin/competitions/edit');
+  const isManagePage = pathname === '/admin/manage';
+  const isWinnersPage = pathname === '/admin/winners';
+  const isUsersPage = pathname === '/admin/users';
 
   return (
     <>
@@ -77,7 +81,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Link 
                 href="/admin/competitions"
                 className={`flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 ${
-                  isCompetitionsPage 
+                  isCreatePage 
                     ? 'bg-emerald-600 shadow-lg transform scale-105' 
                     : 'hover:bg-slate-800 hover:transform hover:scale-105'
                 }`}
@@ -87,21 +91,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
               <Link 
                 href="/admin/manage"
-                className="flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 hover:bg-slate-800 hover:transform hover:scale-105"
+                className={`flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 ${
+                  isManagePage || isEditPage
+                    ? 'bg-emerald-600 shadow-lg transform scale-105' 
+                    : 'hover:bg-slate-800 hover:transform hover:scale-105'
+                }`}
               >
                 <span className="font-medium">Manage Competitions</span>
               </Link>
 
               <Link 
                 href="/admin/winners"
-                className="flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 hover:bg-slate-800 hover:transform hover:scale-105"
+                className={`flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 ${
+                  isWinnersPage 
+                    ? 'bg-emerald-600 shadow-lg transform scale-105' 
+                    : 'hover:bg-slate-800 hover:transform hover:scale-105'
+                }`}
               >
                 <span className="font-medium">Winners</span>
               </Link>
 
               <Link 
                 href="/admin/users"
-                className="flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 hover:bg-slate-800 hover:transform hover:scale-105"
+                className={`flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 ${
+                  isUsersPage 
+                    ? 'bg-emerald-600 shadow-lg transform scale-105' 
+                    : 'hover:bg-slate-800 hover:transform hover:scale-105'
+                }`}
               >
                 <span className="font-medium">Users</span>
               </Link>

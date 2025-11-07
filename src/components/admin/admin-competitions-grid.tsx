@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { AdminCompetitionTile } from "./admin-competition-tile"
 import { Button } from "@/components/ui/button"
-import { Plus, Filter } from "lucide-react"
+import { Plus, Filter, RefreshCw } from "lucide-react"
 import Link from "next/link"
 
 interface Competition {
@@ -27,16 +27,19 @@ export function AdminCompetitionsGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Fetch all competitions
-  const fetchCompetitions = useCallback(async () => {
+  const fetchCompetitions = async () => {
     console.log('🚀 Starting fetchCompetitions...')
     console.log('📊 Current status filter:', statusFilter)
     
     try {
       setLoading(true)
+      setError(null)
       console.log('🔄 Loading state set to true')
       
+      // Try with display photo columns first
       let query = supabase
         .from('competitions')
         .select(`
@@ -61,7 +64,56 @@ export function AdminCompetitionsGrid() {
       }
 
       console.log('📡 Executing Supabase query...')
-      const { data, error } = await query
+      
+      // Check authentication status
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('🔐 Current session:', session ? `User: ${session.user.email}` : 'No session')
+      
+      let { data, error } = await query
+
+      // Fallback: If error (likely missing columns), try without display photo fields
+      if (error) {
+        console.log('⚠️ Query failed, trying fallback without display_photo fields...')
+        console.log('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        
+        let fallbackQuery = supabase
+          .from('competitions')
+          .select(`
+            id,
+            title,
+            prize_short,
+            prize_value_rand,
+            entry_price_rand,
+            image_inpainted_path,
+            status,
+            starts_at,
+            ends_at,
+            created_at
+          `)
+          .order('created_at', { ascending: false })
+
+        if (statusFilter !== 'all') {
+          fallbackQuery = fallbackQuery.eq('status', statusFilter)
+        }
+
+        const fallbackResult = await fallbackQuery
+        data = fallbackResult.data
+        error = fallbackResult.error
+        
+        // Add null display photo fields to maintain compatibility
+        if (data) {
+          data = data.map(comp => ({
+            ...comp,
+            display_photo_path: null,
+            display_photo_alt: null
+          }))
+        }
+      }
 
       if (error) {
         console.error('❌ Supabase error:', error)
@@ -70,15 +122,12 @@ export function AdminCompetitionsGrid() {
 
       console.log('✅ Query successful!')
       console.log('🔍 Admin fetched competitions:', data?.length || 0, 'competitions')
-      console.log('📊 Status filter:', statusFilter)
       
       if (data && data.length > 0) {
         console.log('📋 Competition details:', data.map(c => ({ 
           id: c.id, 
           title: c.title, 
-          status: c.status, 
-          ends_at: c.ends_at,
-          starts_at: c.starts_at
+          status: c.status
         })))
       } else {
         console.log('📭 No competitions found in database')
@@ -95,11 +144,23 @@ export function AdminCompetitionsGrid() {
       setLoading(false)
       console.log('🔄 Loading state set to false')
     }
-  }, [statusFilter])
+  }
 
+  // Fetch competitions on mount and when filter changes
   useEffect(() => {
     console.log('🎬 useEffect triggered - fetching competitions')
-    fetchCompetitions()
+    console.log('📊 Current status filter:', statusFilter)
+    
+    // Safety timeout - if loading takes more than 5 seconds, show error
+    const timeoutId = setTimeout(() => {
+      console.error('⏰ Loading timeout - stopping infinite load')
+      setError('Loading timeout. Please refresh the page.')
+      setLoading(false)
+    }, 5000)
+    
+    fetchCompetitions().finally(() => {
+      clearTimeout(timeoutId)
+    })
 
     // Set up real-time subscription
     const channel = supabase
@@ -113,7 +174,6 @@ export function AdminCompetitionsGrid() {
         },
         () => {
           console.log('🔔 Real-time update received - refetching competitions')
-          // Refetch when competitions change
           fetchCompetitions()
         }
       )
@@ -121,9 +181,19 @@ export function AdminCompetitionsGrid() {
 
     return () => {
       console.log('🧹 Cleaning up real-time subscription')
+      clearTimeout(timeoutId)
       supabase.removeChannel(channel)
     }
-  }, [fetchCompetitions])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter])
+
+  // Manual refresh handler
+  const handleManualRefresh = async () => {
+    console.log('🔄 Manual refresh triggered')
+    setIsRefreshing(true)
+    await fetchCompetitions()
+    setIsRefreshing(false)
+  }
 
   if (loading) {
     return (
@@ -138,17 +208,19 @@ export function AdminCompetitionsGrid() {
           </Button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden animate-pulse">
-              <div className="h-48 bg-gray-200" />
-              <div className="p-4 space-y-3">
-                <div className="h-5 bg-gray-200 rounded w-3/4" />
-                <div className="h-4 bg-gray-200 rounded w-1/2" />
-                <div className="h-8 bg-gray-200 rounded" />
-              </div>
-            </div>
-          ))}
+        {/* Centered Spinner */}
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-r-emerald-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+          </div>
+          
+          <p className="mt-6 text-lg font-medium text-gray-700 animate-pulse">
+            Loading competitions...
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            Fetching competition data
+          </p>
         </div>
       </div>
     )
@@ -180,12 +252,23 @@ export function AdminCompetitionsGrid() {
             {competitions.length} competition{competitions.length !== 1 ? 's' : ''} total
           </p>
         </div>
-        <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
-          <Link href="/admin/competitions">
-            <Plus className="w-4 h-4 mr-2" />
-            Create New Competition
-          </Link>
-        </Button>
+        <div className="flex gap-3">
+          <Button 
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            variant="outline"
+            className="border-emerald-600 text-emerald-600 hover:bg-emerald-50"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <Button asChild className="bg-emerald-600 hover:bg-emerald-700">
+            <Link href="/admin/competitions">
+              <Plus className="w-4 h-4 mr-2" />
+              Create New
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

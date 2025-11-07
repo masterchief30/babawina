@@ -56,7 +56,7 @@ interface AiResult {
 type WizardStep = 1 | 2 | 3 | 4
 
 export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWizardModalProps) {
-  const [currentStep, setCurrentStep] = useState<WizardStep>(2)
+  const [currentStep, setCurrentStep] = useState<WizardStep>(1)
   const [wizardData, setWizardData] = useState<WizardData>({
     competitionId: '',
     rawPath: '',
@@ -172,14 +172,28 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
     setIsProcessing(true)
     try {
+      // Check auth before upload
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Not authenticated. Please refresh the page and log in again.')
+      }
+
       const fileName = `${wizardData.competitionId}_raw.${file.name.split('.').pop()}`
+      
+      console.log('🏈 Raw photo upload - User:', session.user.email)
+      console.log('📦 File size:', file.size, 'bytes')
+      console.log('📁 Target: competition-raw/', fileName)
       
       const { error } = await supabase.storage
         .from('competition-raw')
         .upload(fileName, file)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Raw photo upload failed:', error.message)
+        throw error
+      }
 
+      console.log('✅ Raw photo uploaded successfully')
       setWizardData(prev => ({ ...prev, rawPath: fileName }))
       
       // Show success message for 2 seconds, then move to next step
@@ -189,6 +203,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
       }, 2000)
       
     } catch (error: unknown) {
+      console.error('💥 Raw photo exception:', error)
       toast({
         title: "Save failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',
@@ -212,15 +227,29 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
     setIsProcessing(true)
     try {
+      // Check auth before upload
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Not authenticated. Please refresh the page and log in again.')
+      }
+
       const { blob, transform } = await cropAndNormalizeImage(file, cropAreaPixels, imageDimensions)
       const fileName = `${wizardData.competitionId}_normalized.jpg`
+      
+      console.log('✂️ Cropped photo upload - User:', session.user.email)
+      console.log('📦 Blob size:', blob.size, 'bytes')
+      console.log('📁 Target: competition-images/normalized/', fileName)
       
       const { error } = await supabase.storage
         .from('competition-images')
         .upload(`normalized/${fileName}`, blob)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Cropped photo upload failed:', error.message)
+        throw error
+      }
 
+      console.log('✅ Cropped photo uploaded successfully')
       const url = URL.createObjectURL(blob)
       
       setWizardData(prev => ({
@@ -237,6 +266,7 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
         setIsProcessing(false)
       }, 2000)
     } catch (error: unknown) {
+      console.error('💥 Cropped photo exception:', error)
       toast({
         title: "Crop failed",
         description: error instanceof Error ? error.message : 'Unknown error occurred',

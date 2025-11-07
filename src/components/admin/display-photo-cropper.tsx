@@ -6,9 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import { createClient } from "@supabase/supabase-js"
+import { supabase } from "@/lib/supabase"
 import { Crop, Upload, Save, Move } from "lucide-react"
-// import Image from "next/image" // Unused
 import { useDropzone } from "react-dropzone"
 
 interface DisplayPhotoCropperProps {
@@ -60,12 +59,6 @@ export function DisplayPhotoCropper({
   const finalCanvasRef = useRef<HTMLCanvasElement>(null)
   const imageRef = useRef<HTMLImageElement | null>(null)
   const { toast } = useToast()
-  
-  // Initialize Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
 
   // Calculate the crop box dimensions based on the image and desired aspect ratio
   const getCropBoxDimensions = () => {
@@ -276,9 +269,19 @@ export function DisplayPhotoCropper({
         }
 
         try {
+          // Check auth before upload
+          const { data: { session } } = await supabase.auth.getSession()
+          if (!session) {
+            throw new Error('Not authenticated. Please refresh the page and log in again.')
+          }
+
           // Generate filename
           const timestamp = Date.now()
           const filename = `display_${competitionId || timestamp}_16x9.webp`
+
+          console.log('🖼️ Display photo upload - User:', session.user.email)
+          console.log('📦 Blob size:', blob.size, 'bytes')
+          console.log('📁 Target: competition-display/', filename)
 
           // Upload to Supabase
           const { error } = await supabase.storage
@@ -288,10 +291,15 @@ export function DisplayPhotoCropper({
               upsert: true
             })
 
-          if (error) throw error
+          if (error) {
+            console.error('❌ Display photo upload failed:', error.message)
+            throw error
+          }
 
+          console.log('✅ Display photo uploaded successfully')
           resolve(filename)
         } catch (error) {
+          console.error('💥 Display photo exception:', error)
           reject(error)
         }
       }, 'image/webp', 0.9) // Higher quality for display photos

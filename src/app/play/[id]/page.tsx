@@ -75,6 +75,8 @@ export default function PlayCompetitionPage() {
           .select('*')
           .eq('id', params.id)
           .eq('status', 'live')
+          .lte('starts_at', new Date().toISOString()) // Only show if start date has arrived
+          .gte('ends_at', new Date().toISOString())   // Only show if not expired
           .single()
 
         if (error) {

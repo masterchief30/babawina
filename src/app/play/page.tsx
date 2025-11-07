@@ -13,11 +13,13 @@ export default async function Play() {
   // Allow access without authentication - users can play without signing up
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Get current live competition
+  // Get current live competition (must have started and not ended)
   const { data: competition } = await supabase
     .from("competitions")
     .select("*")
     .eq("status", "live")
+    .lte("starts_at", new Date().toISOString()) // Only show if start date has arrived
+    .gte("ends_at", new Date().toISOString())   // Only show if not expired
     .single()
 
   if (!competition) {

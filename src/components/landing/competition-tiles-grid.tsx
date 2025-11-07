@@ -49,7 +49,8 @@ export function CompetitionTilesGrid() {
             created_at
           `)
           .eq('status', 'live')
-          .gte('ends_at', new Date().toISOString())
+          .lte('starts_at', new Date().toISOString()) // Only show if start date has arrived
+          .gte('ends_at', new Date().toISOString())   // Only show if not expired
           .order('ends_at', { ascending: true })
           .limit(9) // Show max 9 competitions for 3x3 grid
 
@@ -73,7 +74,8 @@ export function CompetitionTilesGrid() {
               created_at
             `)
             .eq('status', 'live')
-            .gte('ends_at', new Date().toISOString())
+            .lte('starts_at', new Date().toISOString()) // Only show if start date has arrived
+            .gte('ends_at', new Date().toISOString())   // Only show if not expired
             .order('ends_at', { ascending: true })
             .limit(9)
 
