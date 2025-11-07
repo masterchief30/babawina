@@ -102,16 +102,17 @@ export function AdminCompetitionsGrid() {
         }
 
         const fallbackResult = await fallbackQuery
-        data = fallbackResult.data
         error = fallbackResult.error
         
         // Add null display photo fields to maintain compatibility
-        if (data) {
-          data = data.map(comp => ({
+        if (fallbackResult.data) {
+          data = fallbackResult.data.map(comp => ({
             ...comp,
             display_photo_path: null,
             display_photo_alt: null
           }))
+        } else {
+          data = null
         }
       }
 
