@@ -1,47 +1,53 @@
-'use client'
+import { createClient } from '@supabase/supabase-js'
+import { AdminManageClient } from '@/components/admin/admin-manage-client'
 
-import { AdminCompetitionsGrid } from "@/components/admin/admin-competitions-grid"
-import { useEffect, useState } from "react"
-import { useAuth } from "@/contexts/AuthContext"
-import { useRouter } from "next/navigation"
-
-export default function ManageCompetitionsPage() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
-  const [mountKey, setMountKey] = useState(0)
+// Server component - fetches data server-side like Winners/Users pages
+export default async function ManageCompetitionsPage() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
   
-  useEffect(() => {
-    // Check if user is logged in
-    if (!loading && !user) {
-      console.warn('⚠️ Not logged in - redirecting to admin login')
-      router.push('/admin/login')
-      return
+  // Use service role client that bypasses RLS - fast and reliable
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
     }
-    
-    // Update key on mount to force fresh data fetch
-    setMountKey(Date.now())
-    console.log('🔑 ManageCompetitionsPage mounted with key:', Date.now())
-    console.log('👤 User:', user?.email)
-  }, [user, loading, router])
+  })
+
+  console.log('🏢 Server: Fetching competitions...')
   
-  // Show loading while checking auth
-  if (loading) {
+  // Fetch all competitions server-side
+  const { data: competitions, error } = await supabaseAdmin
+    .from('competitions')
+    .select(`
+      id,
+      title,
+      prize_short,
+      prize_value_rand,
+      entry_price_rand,
+      image_inpainted_path,
+      display_photo_path,
+      display_photo_alt,
+      status,
+      starts_at,
+      ends_at,
+      created_at
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('❌ Server: Error fetching competitions:', error)
     return (
       <div className="p-8">
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto"></div>
-            <p className="mt-4 text-gray-600">Checking authentication...</p>
-          </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Manage Competitions</h1>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <p className="text-red-800">Error loading competitions: {error.message}</p>
         </div>
       </div>
     )
   }
-  
-  // Don't render if not logged in (redirect will happen)
-  if (!user) {
-    return null
-  }
-  
-  return <AdminCompetitionsGrid key={mountKey} />
+
+  console.log('✅ Server: Fetched', competitions?.length || 0, 'competitions')
+
+  return <AdminManageClient initialCompetitions={competitions || []} />
 }

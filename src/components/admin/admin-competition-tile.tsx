@@ -189,7 +189,7 @@ export function AdminCompetitionTile({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] border border-gray-100 w-3/4">
+    <div className="bg-white rounded-xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] border border-gray-100 max-w-xs">
       {/* Image Section */}
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600">
         <Image
@@ -263,6 +263,10 @@ export function AdminCompetitionTile({
             variant="outline"
             className="flex-1"
             asChild
+            onClick={() => {
+              console.log('🔗 Edit button clicked for competition:', id)
+              console.log('🔗 Navigating to:', `/admin/competitions/edit/${id}`)
+            }}
           >
             <Link href={`/admin/competitions/edit/${id}`}>
               <Edit className="w-4 h-4 mr-2" />

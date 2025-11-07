@@ -217,7 +217,26 @@ function MobileSoccerBall({ user }: { user: User | null }) {
   )
 }
 
-export function HomePage() {
+interface Competition {
+  id: string
+  title: string
+  prize_short: string
+  prize_value_rand: number
+  entry_price_rand: number
+  image_inpainted_path: string | null
+  display_photo_path: string | null
+  display_photo_alt: string | null
+  status: 'live' | 'draft' | 'closed' | 'judged'
+  starts_at: string
+  ends_at: string
+  created_at: string
+}
+
+interface HomePageProps {
+  initialCompetitions: Competition[]
+}
+
+export function HomePage({ initialCompetitions }: HomePageProps) {
   const [scrolled, setScrolled] = useState(false)
   const { user, loading, signOut } = useAuth()
 
@@ -546,7 +565,7 @@ export function HomePage() {
             </h2>
             <p className="text-gray-600 mt-4 text-lg">Select a prize and start playing immediately</p>
           </motion.div>
-          <CompetitionTilesGrid />
+          <CompetitionTilesGrid initialCompetitions={initialCompetitions} />
         </div>
       </section>
 

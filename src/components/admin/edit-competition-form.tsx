@@ -1,15 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { EnhancedCompetitionForm } from "./enhanced-competition-form"
 import { useCenterNotification } from "@/hooks/use-center-notification"
 import { CenterNotification } from "@/components/ui/center-notification"
-
-interface EditCompetitionFormProps {
-  competitionId: string
-}
+import { EnhancedCompetitionForm } from "./enhanced-competition-form"
 
 interface CompetitionData {
   id: string
@@ -43,83 +36,25 @@ interface CompetitionData {
   processing_status?: string
 }
 
-export function EditCompetitionForm({ competitionId }: EditCompetitionFormProps) {
-  const [competitionData, setCompetitionData] = useState<CompetitionData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { notification, showError, close } = useCenterNotification()
-  const router = useRouter()
+interface EditCompetitionFormProps {
+  initialData: CompetitionData
+}
 
-  // Fetch competition data
-  useEffect(() => {
-    const fetchCompetition = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('competitions')
-          .select('*')
-          .eq('id', competitionId)
-          .single()
+export function EditCompetitionForm({ initialData }: EditCompetitionFormProps) {
+  const { notification, close } = useCenterNotification()
 
-        if (error) throw error
-
-        if (!data) {
-          throw new Error('Competition not found')
-        }
-
-        setCompetitionData(data)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
-        setError(errorMessage)
-        showError("Failed to load competition", errorMessage)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    if (competitionId) {
-      fetchCompetition()
-    }
-  }, [competitionId, showError])
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading competition...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !competitionData) {
-    return (
-      <div className="text-center py-12">
-        <div className="bg-red-50 rounded-xl p-8 max-w-md mx-auto">
-          <div className="text-red-500 text-4xl mb-4">⚠️</div>
-          <h3 className="text-xl font-semibold text-red-900 mb-2">
-            Competition Not Found
-          </h3>
-          <p className="text-red-700 mb-6">
-            {error || "The competition you're looking for doesn't exist."}
-          </p>
-          <button
-            onClick={() => router.push('/admin/manage')}
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium"
-          >
-            Back to Manage
-          </button>
-        </div>
-      </div>
-    )
-  }
+  console.log('📝 EditCompetitionForm received initialData:', initialData ? {
+    id: initialData.id,
+    title: initialData.title,
+    status: initialData.status
+  } : 'undefined')
 
   return (
     <>
       <EnhancedCompetitionForm 
         editMode={true}
-        initialData={competitionData}
-        competitionId={competitionId}
+        initialData={initialData}
+        competitionId={initialData.id}
       />
       
       {/* Center Notification */}

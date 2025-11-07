@@ -1,11 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabase"
 import { CompetitionTile } from "./competition-tile"
-import { TileSkeleton } from "./tile-skeleton"
 import { motion } from "framer-motion"
-import { Trophy, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 
 interface Competition {
   id: string
@@ -22,141 +19,14 @@ interface Competition {
   created_at: string
 }
 
-export function CompetitionTilesGrid() {
-  const [competitions, setCompetitions] = useState<Competition[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+interface CompetitionTilesGridProps {
+  initialCompetitions: Competition[]
+}
 
-  // Fetch live competitions
-  useEffect(() => {
-    const fetchCompetitions = async () => {
-      try {
-        // First try with display photo fields
-        const { data: initialData, error } = await supabase
-          .from('competitions')
-          .select(`
-            id,
-            title,
-            prize_short,
-            prize_value_rand,
-            entry_price_rand,
-            image_inpainted_path,
-            display_photo_path,
-            display_photo_alt,
-            status,
-            starts_at,
-            ends_at,
-            created_at
-          `)
-          .eq('status', 'live')
-          .lte('starts_at', new Date().toISOString()) // Only show if start date has arrived
-          .gte('ends_at', new Date().toISOString())   // Only show if not expired
-          .order('ends_at', { ascending: true })
-          .limit(9) // Show max 9 competitions for 3x3 grid
+export function CompetitionTilesGrid({ initialCompetitions }: CompetitionTilesGridProps) {
+  console.log('🎮 CompetitionTilesGrid received:', initialCompetitions.length, 'competitions')
 
-        let data = initialData
-
-        // If error (likely missing columns), try without display photo fields
-        if (error) {
-          console.log('Display photo columns not found, using fallback query')
-          const fallback = await supabase
-            .from('competitions')
-            .select(`
-              id,
-              title,
-              prize_short,
-              prize_value_rand,
-              entry_price_rand,
-              image_inpainted_path,
-              status,
-              starts_at,
-              ends_at,
-              created_at
-            `)
-            .eq('status', 'live')
-            .lte('starts_at', new Date().toISOString()) // Only show if start date has arrived
-            .gte('ends_at', new Date().toISOString())   // Only show if not expired
-            .order('ends_at', { ascending: true })
-            .limit(9)
-
-          if (fallback.error) throw fallback.error
-          
-          // Add null display photo fields to maintain compatibility
-          data = fallback.data?.map(comp => ({
-            ...comp,
-            display_photo_path: null,
-            display_photo_alt: null
-          })) || []
-        }
-
-        setCompetitions(data || [])
-      } catch (err: unknown) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load competitions'
-        setError(errorMessage)
-        console.error('Error fetching competitions:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCompetitions()
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('competitions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'competitions',
-          filter: 'status=eq.live'
-        },
-        () => {
-          // Refetch when competitions change
-          fetchCompetitions()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="w-full">
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <TileSkeleton key={i} featured={i === 0} />
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 rounded-full mb-4">
-          <Trophy className="w-10 h-10 text-red-500" />
-        </div>
-        <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-          Unable to load competitions
-        </h2>
-        <p className="text-gray-600 mb-6 text-sm md:text-base">{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full font-bold transition-all"
-        >
-          Try Again
-        </button>
-      </div>
-    )
-  }
-
-  if (competitions.length === 0) {
+  if (initialCompetitions.length === 0) {
     return (
       <div className="text-center py-12 px-4">
         <motion.div 
@@ -187,7 +57,7 @@ export function CompetitionTilesGrid() {
     <div className="w-full">
       {/* Competition Grid - Mobile-optimized */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {competitions.map((competition, index) => (
+        {initialCompetitions.map((competition, index) => (
           <motion.div
             key={competition.id}
             initial={{ opacity: 0, y: 20 }}
@@ -213,7 +83,7 @@ export function CompetitionTilesGrid() {
       </div>
 
       {/* View All Button - Mobile-friendly */}
-      {competitions.length >= 9 && (
+      {initialCompetitions.length >= 9 && (
         <div className="text-center mt-8">
           <motion.button
             whileHover={{ scale: 1.05 }}

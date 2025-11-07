@@ -32,22 +32,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Safety timeout - if auth takes more than 3 seconds, stop loading
+    // Safety timeout - if auth takes more than 8 seconds, stop loading
     const timeoutId = setTimeout(() => {
       console.warn('⏰ Auth loading timeout - proceeding without session')
       setLoading(false)
-    }, 3000)
+    }, 8000)
 
-    // Get initial session
+    // Get initial session - optimized
     const getInitialSession = async () => {
       try {
         console.log('🔐 Getting initial session...')
+        const startTime = Date.now()
+        
         const { data: { session } } = await supabase.auth.getSession()
-        console.log('✅ Session retrieved:', session ? 'Logged in' : 'Guest')
+        
+        const elapsed = Date.now() - startTime
+        console.log(`✅ Session retrieved in ${elapsed}ms:`, session ? 'Logged in' : 'Guest')
+        
         setSession(session)
         setUser(session?.user ?? null)
       } catch (error) {
         console.error('❌ Error getting session:', error)
+        // Even on error, set loading to false so app doesn't hang
+        setSession(null)
+        setUser(null)
       } finally {
         clearTimeout(timeoutId) // Clear timeout if we finish in time
         setLoading(false)
