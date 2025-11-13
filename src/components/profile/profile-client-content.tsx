@@ -207,7 +207,7 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
             const competitionStatsMap = new Map()
             
             userEntries.forEach((entry: any) => {
-              const competition = competitions?.find(c => c.id === entry.competition_id)
+              const competition = competitions?.find((c: any) => c.id === entry.competition_id)
               if (!competition) return
               
               const competitionId = competition.id

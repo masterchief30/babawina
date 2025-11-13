@@ -247,15 +247,15 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
     console.log('📦 Total entries:', gameEntries.length)
     console.log('💰 Competition price:', competition.entry_price_rand, 'RAND')
     console.log('📊 Pricing breakdown:', {
-      totalCount: pricing.totalCount,
       paidCount: pricing.paidCount,
       freeCount: pricing.freeCount,
       pendingCount: pricing.pendingCount,
-      totalPrice: pricing.totalPrice
+      totalCost: pricing.totalCost
     })
     console.log('💳 Submission status:', {
       hasPaymentMethod: submissionStatus?.hasPaymentMethod,
-      totalSubmissions: submissionStatus?.totalSubmissions
+      paidSubmissions: submissionStatus?.paidSubmissions,
+      freeSubmissions: submissionStatus?.freeSubmissions
     })
 
     // Check if user is authenticated

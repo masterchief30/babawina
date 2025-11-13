@@ -43,10 +43,11 @@ async function checkAdminAuth(request: NextRequest) {
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('🗑️ DELETE request for competition:', params.id)
+    const { id } = await params
+    console.log('🗑️ DELETE request for competition:', id)
 
     // Check admin authentication
     const auth = await checkAdminAuth(request)
@@ -61,7 +62,7 @@ export async function DELETE(
     console.log('✅ Admin authenticated:', auth.userId)
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const competitionId = params.id
+    const competitionId = id
 
     // 1. Delete competition entries
     console.log('🗑️ Deleting competition entries...')
@@ -134,10 +135,11 @@ export async function DELETE(
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log('📝 PUT request for competition:', params.id)
+    const { id } = await params
+    console.log('📝 PUT request for competition:', id)
 
     // Check admin authentication
     const auth = await checkAdminAuth(request)
@@ -156,7 +158,7 @@ export async function PUT(
     console.log('📦 Update data received:', Object.keys(updateData))
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
-    const competitionId = params.id
+    const competitionId = id
 
     // Update the competition
     console.log('📝 Updating competition...')

@@ -80,7 +80,7 @@ export function OneClickSubmitButton({
       setSubmissionStatus(status)
 
       // Check if this is a free submission
-      if (status.nextSubmissionFree) {
+      if (status.nextIsFree) {
         // FREE SUBMISSION - submit immediately
         await submitEntry(true)
         return
@@ -136,7 +136,7 @@ export function OneClickSubmitButton({
           duration: 5000,
         })
       } else {
-        const nextFreeMessage = result.nextSubmissionFree
+        const nextFreeMessage = result.nextIsFree
           ? 'Your next entry is FREE! 🎁'
           : `${result.submissionsUntilFree} more until FREE entry`
 
@@ -199,7 +199,7 @@ export function OneClickSubmitButton({
       return 'Sign Up to Submit'
     }
 
-    if (submissionStatus?.nextSubmissionFree) {
+    if (submissionStatus?.nextIsFree) {
       return (
         <>
           <Sparkles className="w-5 h-5 mr-2" />
@@ -212,7 +212,7 @@ export function OneClickSubmitButton({
   }
 
   const getButtonClassName = () => {
-    if (submissionStatus?.nextSubmissionFree) {
+    if (submissionStatus?.nextIsFree) {
       return 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold text-lg py-6'
     }
 
