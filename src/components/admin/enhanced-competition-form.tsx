@@ -463,6 +463,8 @@ export function EnhancedCompetitionForm({
 
 
     try {
+      console.log('💾 Starting competition save...')
+      
       const coords = manualCoords || processingResult?.centroid
       const unitCoords = coords ? normalizedToUnitCoords(coords.x, coords.y) : null
 
@@ -524,12 +526,22 @@ export function EnhancedCompetitionForm({
         console.log('=== UPDATING COMPETITION ===')
         console.log('Competition ID:', competitionId)
         
-        // Update existing competition
+        // Update existing competition with timeout
         // First try with display photo fields
-        const { error: updateError } = await supabase
+        const updatePromise = supabase
           .from('competitions')
           .update(competitionData)
           .eq('id', competitionId)
+        
+        // Add 10 second timeout
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Update timed out after 10 seconds')), 10000)
+        )
+        
+        const { error: updateError } = await Promise.race([
+          updatePromise,
+          timeoutPromise
+        ]) as any
         
         console.log('Update result:', { updateError })
         

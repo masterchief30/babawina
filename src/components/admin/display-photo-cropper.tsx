@@ -269,17 +269,11 @@ export function DisplayPhotoCropper({
         }
 
         try {
-          // Check auth before upload
-          const { data: { session } } = await supabase.auth.getSession()
-          if (!session) {
-            throw new Error('Not authenticated. Please refresh the page and log in again.')
-          }
-
           // Generate filename
           const timestamp = Date.now()
           const filename = `display_${competitionId || timestamp}_16x9.webp`
 
-          console.log('🖼️ Display photo upload - User:', session.user.email)
+          console.log('🖼️ Display photo upload starting...')
           console.log('📦 Blob size:', blob.size, 'bytes')
           console.log('📁 Target: competition-display/', filename)
 

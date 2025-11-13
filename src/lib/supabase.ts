@@ -40,6 +40,7 @@ export interface Database {
           email: string
           display_name: string | null
           role: 'user' | 'admin'
+          stripe_customer_id: string | null
           created_at: string
         }
         Insert: {
@@ -47,6 +48,7 @@ export interface Database {
           email: string
           display_name?: string | null
           role?: 'user' | 'admin'
+          stripe_customer_id?: string | null
           created_at?: string
         }
         Update: {
@@ -54,6 +56,7 @@ export interface Database {
           email?: string
           display_name?: string | null
           role?: 'user' | 'admin'
+          stripe_customer_id?: string | null
           created_at?: string
         }
       }
@@ -181,6 +184,179 @@ export interface Database {
           rank?: number
           distance?: number
           announced_at?: string
+        }
+      }
+      user_payment_methods: {
+        Row: {
+          id: string
+          user_id: string
+          stripe_payment_method_id: string
+          stripe_customer_id: string
+          card_brand: string | null
+          card_last4: string | null
+          card_exp_month: number | null
+          card_exp_year: number | null
+          is_default: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          stripe_payment_method_id: string
+          stripe_customer_id: string
+          card_brand?: string | null
+          card_last4?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          stripe_payment_method_id?: string
+          stripe_customer_id?: string
+          card_brand?: string | null
+          card_last4?: string | null
+          card_exp_month?: number | null
+          card_exp_year?: number | null
+          is_default?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      transactions: {
+        Row: {
+          id: string
+          user_id: string
+          competition_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_charge_id: string | null
+          amount_cents: number
+          currency: string
+          status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded' | 'canceled'
+          payment_method_id: string | null
+          entries_purchased: number
+          was_free: boolean
+          stripe_receipt_url: string | null
+          error_message: string | null
+          metadata: any | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          competition_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_charge_id?: string | null
+          amount_cents: number
+          currency?: string
+          status?: 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded' | 'canceled'
+          payment_method_id?: string | null
+          entries_purchased?: number
+          was_free?: boolean
+          stripe_receipt_url?: string | null
+          error_message?: string | null
+          metadata?: any | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          competition_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_charge_id?: string | null
+          amount_cents?: number
+          currency?: string
+          status?: 'pending' | 'processing' | 'succeeded' | 'failed' | 'refunded' | 'canceled'
+          payment_method_id?: string | null
+          entries_purchased?: number
+          was_free?: boolean
+          stripe_receipt_url?: string | null
+          error_message?: string | null
+          metadata?: any | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      user_submission_counters: {
+        Row: {
+          id: string
+          user_id: string
+          competition_id: string
+          paid_submissions: number
+          free_submissions: number
+          total_submissions: number
+          next_submission_free: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          competition_id: string
+          paid_submissions?: number
+          free_submissions?: number
+          total_submissions?: number
+          next_submission_free?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          competition_id?: string
+          paid_submissions?: number
+          free_submissions?: number
+          total_submissions?: number
+          next_submission_free?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      competition_entries: {
+        Row: {
+          id: string
+          competition_id: string
+          user_id: string
+          guess_x: number
+          guess_y: number
+          entry_price_paid: number
+          entry_number: number
+          distance: number | null
+          transaction_id: string | null
+          was_free_entry: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          competition_id: string
+          user_id: string
+          guess_x: number
+          guess_y: number
+          entry_price_paid: number
+          entry_number: number
+          distance?: number | null
+          transaction_id?: string | null
+          was_free_entry?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          competition_id?: string
+          user_id?: string
+          guess_x?: number
+          guess_y?: number
+          entry_price_paid?: number
+          entry_number?: number
+          distance?: number | null
+          transaction_id?: string | null
+          was_free_entry?: boolean
+          created_at?: string
         }
       }
     }
