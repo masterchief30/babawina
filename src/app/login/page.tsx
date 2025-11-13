@@ -41,23 +41,57 @@ export default function LoginPage() {
     setIsLoading(true)
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('🔑 Starting login...')
+      console.log('📧 Email:', email)
+      
+      // Add timeout to prevent hanging
+      const loginPromise = supabase.auth.signInWithPassword({
         email,
         password,
       })
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Login timed out after 10 seconds')), 10000)
+      )
+      
+      const { data, error } = await Promise.race([
+        loginPromise,
+        timeoutPromise
+      ]) as any
+
+      console.log('📦 Login response:', { hasSession: !!data?.session, hasUser: !!data?.user, error })
 
       if (error) {
+        console.error('❌ Login error:', error)
         throw error
       }
 
-      if (data.user) {
+      if (data.user && data.session) {
+        console.log('✅ Login successful!', data.user.email)
+        console.log('🔐 Session:', !!data.session)
+        
+        // Store session in localStorage for fast loading
+        try {
+          localStorage.setItem('sb-auth-token', JSON.stringify({
+            access_token: data.session.access_token,
+            currentSession: data.session,
+            user: data.user
+          }))
+          console.log('💾 Session stored in localStorage')
+        } catch (e) {
+          console.error('Failed to store session:', e)
+        }
+        
         showNotification('success', 'Login successful!')
         setTimeout(() => {
           window.location.href = '/'
         }, 1000)
+      } else {
+        console.error('⚠️ No user in response')
+        throw new Error('Login failed - no user returned')
       }
     } catch (error: unknown) {
-      console.error('Login error:', error)
+      console.error('💥 Login error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Login failed'
       showNotification('error', errorMessage)
     } finally {

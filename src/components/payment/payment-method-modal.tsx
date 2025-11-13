@@ -168,7 +168,7 @@ function PaymentForm({
                   color: '#9e2146',
                 },
               },
-              hidePostalCode: false,
+              hidePostalCode: true,
             }}
           />
         </div>
@@ -248,10 +248,10 @@ export function PaymentMethodModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">Add Payment Method</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-2xl font-bold text-gray-900">Add Payment Method</DialogTitle>
+          <DialogDescription className="text-gray-600">
             Add a card for instant competition entries
           </DialogDescription>
         </DialogHeader>

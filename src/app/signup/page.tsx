@@ -106,6 +106,9 @@ export default function SignupPage() {
         ? `${window.location.origin}/auth/callback?token=${submissionToken}`
         : `${window.location.origin}/auth/callback`
       
+      console.log('🚀 Starting signup process...')
+      console.log('📧 Email:', formData.email)
+      
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -114,7 +117,10 @@ export default function SignupPage() {
         }
       })
       
-      console.log('Signup response:', { data, error })
+      console.log('📦 Signup response:', { data, error })
+      console.log('👤 User created:', data?.user?.id)
+      console.log('🔐 Session created:', !!data?.session)
+      console.log('✉️ Email confirmation required:', data?.user?.identities?.length === 0)
 
       if (error) {
         console.error('Signup error:', error)
@@ -134,9 +140,34 @@ export default function SignupPage() {
           alert(`Signup failed: ${error.message}\n\nPlease check the console for more details.`)
         }
       } else {
-        console.log('Signup successful:', data)
-        console.log('Session ID passed to auth:', entryPreservation.getSessionId())
+        console.log('✅ Signup successful!')
+        console.log('📋 User data:', {
+          id: data?.user?.id,
+          email: data?.user?.email,
+          confirmed: data?.user?.confirmed_at
+        })
+        console.log('🔑 Session exists:', !!data?.session)
+        console.log('📍 Session ID:', entryPreservation.getSessionId())
+        
+        // Store session in localStorage immediately for fast access
+        if (data?.session && data?.user) {
+          try {
+            localStorage.setItem('sb-auth-token', JSON.stringify({
+              access_token: data.session.access_token,
+              currentSession: data.session,
+              user: data.user
+            }))
+            console.log('💾 Session stored in localStorage')
+            console.log('✅ User IS logged in - proceeding to success page')
+          } catch (e) {
+            console.error('Failed to store session:', e)
+          }
+        } else {
+          console.warn('⚠️ No session in signup response - user may not be logged in!')
+        }
+        
         // Redirect to success page
+        console.log('↪️ Redirecting to /signup-successful')
         window.location.href = '/signup-successful'
       }
     } catch (error) {

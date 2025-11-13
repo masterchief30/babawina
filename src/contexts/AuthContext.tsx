@@ -32,32 +32,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Safety timeout - if auth takes more than 8 seconds, stop loading
-    const timeoutId = setTimeout(() => {
-      console.warn('⏰ Auth loading timeout - proceeding without session')
-      setLoading(false)
-    }, 8000)
-
-    // Get initial session - optimized
+    // Get initial session with FAST localStorage check first
     const getInitialSession = async () => {
       try {
-        console.log('🔐 Getting initial session...')
+        console.log('🔐 Checking for session...')
+        
+        // FAST PATH: Check localStorage directly (instant!)
+        const authData = localStorage.getItem('sb-auth-token')
+        if (authData) {
+          try {
+            const parsed = JSON.parse(authData)
+            const token = parsed?.access_token || parsed?.currentSession?.access_token
+            const storedUser = parsed?.user || parsed?.currentSession?.user
+            
+            if (token && storedUser) {
+              console.log('⚡ Fast path: Found valid session in localStorage')
+              setSession(parsed.currentSession || parsed)
+              setUser(storedUser)
+              setLoading(false)
+              return // Exit early - we're logged in!
+            }
+          } catch (e) {
+            console.log('⚠️ Failed to parse localStorage auth, trying Supabase...')
+          }
+        }
+        
+        // SLOW PATH: Fall back to Supabase getSession() with timeout
+        console.log('🔍 No localStorage session, trying Supabase getSession()...')
         const startTime = Date.now()
         
-        const { data: { session } } = await supabase.auth.getSession()
+        const sessionPromise = supabase.auth.getSession()
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        )
+        
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ]) as any
         
         const elapsed = Date.now() - startTime
-        console.log(`✅ Session retrieved in ${elapsed}ms:`, session ? 'Logged in' : 'Guest')
+        console.log(`✅ Supabase session retrieved in ${elapsed}ms:`, session ? 'Logged in' : 'Guest')
         
         setSession(session)
         setUser(session?.user ?? null)
       } catch (error) {
-        console.error('❌ Error getting session:', error)
-        // Even on error, set loading to false so app doesn't hang
+        console.warn('⏰ Session check timed out or failed - proceeding as guest')
         setSession(null)
         setUser(null)
       } finally {
-        clearTimeout(timeoutId) // Clear timeout if we finish in time
         setLoading(false)
       }
     }
@@ -134,54 +157,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signOut = async () => {
-    console.log('AuthContext signOut called')
+    console.log('🚪 Logging out...')
+    
+    // IMMEDIATELY clear local state - don't wait for Supabase
+    setSession(null)
+    setUser(null)
+    
+    // Clear localStorage
     try {
-      // Check if there's an active session first
-      console.log('Checking for active session...')
-      const { data: { session: currentSession } } = await supabase.auth.getSession()
-      console.log('Current session:', currentSession?.user?.email || 'No session')
-      
-      if (!currentSession) {
-        // No active session, just clear local state
-        console.log('No active session found, clearing local state')
-        setSession(null)
-        setUser(null)
-        return
-      }
-
-      // Sign out from Supabase
-      console.log('Signing out from Supabase...')
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.log('Supabase signOut error:', error)
-        // If it's just a session missing error, don't throw - just clear local state
-        if (error.message?.includes('session') || error.message?.includes('Auth session missing')) {
-          console.log('Session already invalid, clearing local state')
-          setSession(null)
-          setUser(null)
-          return
-        }
-        console.error('Error signing out:', error)
-        throw error
-      }
-      
-      // Clear local state
-      console.log('Supabase signOut successful, clearing local state')
-      setSession(null)
-      setUser(null)
-    } catch (error: unknown) {
-      console.error('Sign out error:', error)
-      // Even if there's an error, clear local state to ensure UI updates
-      console.log('Clearing local state due to error')
-      setSession(null)
-      setUser(null)
-      
-      // Only throw if it's not a session-related error
-      const errorMessage = error instanceof Error ? error.message : ''
-      if (!errorMessage.includes('session') && !errorMessage.includes('Auth session missing')) {
-        throw error
-      }
+      localStorage.removeItem('sb-auth-token')
+      console.log('🗑️ Cleared localStorage')
+    } catch (e) {
+      console.error('Failed to clear localStorage:', e)
     }
+    
+    try {
+      // Try to sign out from Supabase with timeout
+      console.log('📡 Calling Supabase signOut...')
+      
+      const signOutPromise = supabase.auth.signOut()
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 3000)
+      )
+      
+      await Promise.race([signOutPromise, timeoutPromise])
+      console.log('✅ Supabase signOut successful')
+    } catch (error) {
+      console.log('⚠️ Supabase signOut timed out or failed (not critical)')
+      // Not critical - local state already cleared
+    }
+    
+    // Redirect to home
+    console.log('✅ Logout complete - redirecting to home')
+    window.location.href = '/'
   }
 
   const value = {

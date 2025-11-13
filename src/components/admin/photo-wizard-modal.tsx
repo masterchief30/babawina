@@ -172,26 +172,51 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
     setIsProcessing(true)
     try {
-      // Check auth before upload
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error('Not authenticated. Please refresh the page and log in again.')
-      }
-
       const fileName = `${wizardData.competitionId}_raw.${file.name.split('.').pop()}`
       
-      console.log('🏈 Raw photo upload - User:', session.user.email)
+      console.log('🏈 Raw photo upload (server-side)...')
       console.log('📦 File size:', file.size, 'bytes')
       console.log('📁 Target: competition-raw/', fileName)
       
-      const { error } = await supabase.storage
-        .from('competition-raw')
-        .upload(fileName, file)
-
-      if (error) {
-        console.error('❌ Raw photo upload failed:', error.message)
-        throw error
+      // Get auth token from localStorage
+      const authData = localStorage.getItem('sb-auth-token')
+      if (!authData) {
+        throw new Error('No authentication data found. Please refresh the page.')
       }
+      
+      let accessToken: string
+      try {
+        const parsed = JSON.parse(authData)
+        accessToken = parsed?.access_token || parsed?.currentSession?.access_token
+        
+        if (!accessToken) {
+          throw new Error('No access token found')
+        }
+      } catch (e) {
+        throw new Error('Failed to read authentication data. Please refresh the page.')
+      }
+
+      // Upload via server-side API
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('filename', fileName)
+      
+      const response = await fetch('/api/admin/upload-raw-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: formData
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('❌ Raw photo upload failed:', error)
+        throw new Error(error.details || error.error || 'Upload failed')
+      }
+      
+      const result = await response.json()
+      console.log('✅ Server response:', result)
 
       console.log('✅ Raw photo uploaded successfully')
       setWizardData(prev => ({ ...prev, rawPath: fileName }))
@@ -227,27 +252,52 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
 
     setIsProcessing(true)
     try {
-      // Check auth before upload
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error('Not authenticated. Please refresh the page and log in again.')
-      }
-
       const { blob, transform } = await cropAndNormalizeImage(file, cropAreaPixels, imageDimensions)
       const fileName = `${wizardData.competitionId}_normalized.jpg`
       
-      console.log('✂️ Cropped photo upload - User:', session.user.email)
+      console.log('✂️ Cropped photo upload...')
       console.log('📦 Blob size:', blob.size, 'bytes')
       console.log('📁 Target: competition-images/normalized/', fileName)
       
-      const { error } = await supabase.storage
-        .from('competition-images')
-        .upload(`normalized/${fileName}`, blob)
-
-      if (error) {
-        console.error('❌ Cropped photo upload failed:', error.message)
-        throw error
+      // Get auth token from localStorage
+      const authData = localStorage.getItem('sb-auth-token')
+      if (!authData) {
+        throw new Error('No authentication data found. Please refresh the page.')
       }
+      
+      let accessToken: string
+      try {
+        const parsed = JSON.parse(authData)
+        accessToken = parsed?.access_token || parsed?.currentSession?.access_token
+        
+        if (!accessToken) {
+          throw new Error('No access token found')
+        }
+      } catch (e) {
+        throw new Error('Failed to read authentication data. Please refresh the page.')
+      }
+
+      // Upload via server-side API
+      const formData = new FormData()
+      formData.append('file', blob, fileName)
+      formData.append('filename', fileName)
+      
+      const response = await fetch('/api/admin/upload-normalized-photo', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: formData
+      })
+      
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('❌ Normalized photo upload failed:', error)
+        throw new Error(error.details || error.error || 'Upload failed')
+      }
+      
+      const result = await response.json()
+      console.log('✅ Server response:', result)
 
       console.log('✅ Cropped photo uploaded successfully')
       const url = URL.createObjectURL(blob)

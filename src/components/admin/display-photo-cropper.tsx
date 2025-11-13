@@ -273,24 +273,33 @@ export function DisplayPhotoCropper({
           const timestamp = Date.now()
           const filename = `display_${competitionId || timestamp}_16x9.webp`
 
-          console.log('🖼️ Display photo upload starting...')
+          console.log('🖼️ Display photo upload starting (server-side)...')
           console.log('📦 Blob size:', blob.size, 'bytes')
           console.log('📁 Target: competition-display/', filename)
 
-          // Upload to Supabase
-          const { error } = await supabase.storage
-            .from('competition-display')
-            .upload(filename, blob, {
-              contentType: 'image/webp',
-              upsert: true
-            })
-
-          if (error) {
-            console.error('❌ Display photo upload failed:', error.message)
-            throw error
+          // Use authenticated fetch with auto-retry
+          const { authenticatedFetch } = await import('@/lib/admin-auth')
+          
+          const formData = new FormData()
+          formData.append('file', blob, filename)
+          formData.append('filename', filename)
+          
+          console.log('⏳ Uploading via API...')
+          const response = await authenticatedFetch('/api/admin/upload-display-photo', {
+            method: 'POST',
+            body: formData
+          })
+          
+          console.log('📡 API response:', response.status)
+          
+          if (!response.ok) {
+            const error = await response.json()
+            console.error('❌ Upload failed:', error)
+            throw new Error(error.details || error.error || 'Upload failed')
           }
-
-          console.log('✅ Display photo uploaded successfully')
+          
+          const result = await response.json()
+          console.log('✅ Display photo uploaded successfully!', result)
           resolve(filename)
         } catch (error) {
           console.error('💥 Display photo exception:', error)

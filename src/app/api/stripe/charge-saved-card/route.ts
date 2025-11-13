@@ -96,7 +96,12 @@ export async function POST(request: NextRequest) {
       .eq('competition_id', competitionId)
       .single()
 
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('📊 COUNTER STATUS')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+
     if (!counter) {
+      console.log('🆕 No counter found - creating new one')
       // Create new counter
       const { data: newCounter, error: counterError } = await supabase
         .from('user_submission_counters')
@@ -120,10 +125,20 @@ export async function POST(request: NextRequest) {
       }
 
       counter = newCounter
+      console.log('✅ Counter created:', counter)
+    } else {
+      console.log('✅ Counter found:', {
+        paid_submissions: counter.paid_submissions,
+        free_submissions: counter.free_submissions,
+        total_submissions: counter.total_submissions,
+        next_submission_free: counter.next_submission_free
+      })
     }
 
     // Determine if this submission is free
     const isFreeSubmission = counter.next_submission_free
+    console.log('🎯 Is this submission FREE?', isFreeSubmission)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     let transactionId: string | null = null
     let paymentIntentId: string | null = null
 
@@ -156,16 +171,31 @@ export async function POST(request: NextRequest) {
 
       transactionId = transaction.id
 
-      // Update counter - reset to 0 paid after free submission
-      await supabase
+      // Update counter - increment free submissions
+      console.log('📈 UPDATING COUNTER (FREE SUBMISSION):')
+      console.log('   Previous free:', counter.free_submissions)
+      console.log('   New free count:', counter.free_submissions + 1)
+      console.log('   Total will be:', counter.total_submissions + 1)
+      console.log('   Resetting next_submission_free to FALSE')
+      
+      const { error: updateError } = await supabase
         .from('user_submission_counters')
         .update({
-          paid_submissions: 0,
           free_submissions: counter.free_submissions + 1,
           total_submissions: counter.total_submissions + 1,
           next_submission_free: false,
         })
         .eq('id', counter.id)
+      
+      if (updateError) {
+        console.error('❌ Failed to update counter after free submission:', updateError)
+        return NextResponse.json(
+          { error: 'Failed to update submission counter' },
+          { status: 500 }
+        )
+      }
+      
+      console.log('✅ Counter updated after free submission')
     } else {
       // PAID SUBMISSION - Charge the card
       console.log('💳 Processing PAID submission for user:', userId)
@@ -240,7 +270,13 @@ export async function POST(request: NextRequest) {
         const newPaidCount = counter.paid_submissions + 1
         const nextIsFree = newPaidCount % 2 === 0 // Every 2 paid = next is free
 
-        await supabase
+        console.log('📈 UPDATING COUNTER (PAID SUBMISSION):')
+        console.log('   Previous paid:', counter.paid_submissions)
+        console.log('   New paid count:', newPaidCount)
+        console.log('   Next is free?', nextIsFree, `(${newPaidCount} % 2 === 0)`)
+        console.log('   Total will be:', counter.total_submissions + 1)
+
+        const { error: updateError } = await supabase
           .from('user_submission_counters')
           .update({
             paid_submissions: newPaidCount,
@@ -249,7 +285,16 @@ export async function POST(request: NextRequest) {
           })
           .eq('id', counter.id)
 
+        if (updateError) {
+          console.error('❌ Failed to update counter after paid submission:', updateError)
+          return NextResponse.json(
+            { error: 'Failed to update submission counter' },
+            { status: 500 }
+          )
+        }
+
         console.log(`✅ Payment successful: R${competition.entry_price_rand}`)
+        console.log('✅ Counter updated after paid submission')
       } catch (paymentError) {
         console.error('Payment failed:', paymentError)
 
@@ -288,8 +333,6 @@ export async function POST(request: NextRequest) {
         user_id: userId,
         guess_x: entryData.x,
         guess_y: entryData.y,
-        entry_price_paid: isFreeSubmission ? 0 : competition.entry_price_rand,
-        entry_number: counter.total_submissions + 1,
         transaction_id: transactionId,
         was_free_entry: isFreeSubmission,
       })

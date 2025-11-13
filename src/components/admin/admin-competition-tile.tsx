@@ -105,84 +105,53 @@ export function AdminCompetitionTile({
     setIsDeleting(true)
     
     try {
-      console.log('🗑️ Starting deletion process for competition:', id)
+      console.log('🗑️ Starting server-side deletion for competition:', id)
       
-      // Helper function to add timeout to promises
-      const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 8000): Promise<T> => {
-        return Promise.race([
-          promise,
-          new Promise<T>((_, reject) => 
-            setTimeout(() => reject(new Error(`Operation timed out after ${timeoutMs}ms`)), timeoutMs)
-          )
-        ])
-      }
+      // Get auth token directly from localStorage (bypass hanging getSession)
+      console.log('🔑 Getting auth token from storage...')
       
-      // Check if there are any entries first
-      console.log('🔍 Checking for entries...')
-      const { data: entries, error: checkError } = await withTimeout(
-        supabase
-          .from('competition_entries')
-          .select('id')
-          .eq('competition_id', id)
-      ) as any
-      
-      if (checkError) {
-        console.error('❌ Error checking entries:', checkError)
-        alert(`Error checking competition entries: ${checkError.message}`)
+      const authData = localStorage.getItem('sb-auth-token')
+      if (!authData) {
+        console.error('❌ No auth data in storage')
+        alert('Authentication required. Please refresh the page and try again.')
         setIsDeleting(false)
         return
       }
       
-      console.log(`📊 Found ${entries?.length || 0} entries to delete`)
-      
-      // Delete all competition entries first (if any exist)
-      if (entries && entries.length > 0) {
-        console.log('🗑️ Deleting competition entries...')
-        const { error: entriesError } = await withTimeout(
-          supabase
-            .from('competition_entries')
-            .delete()
-            .eq('competition_id', id)
-        ) as any
+      let accessToken: string
+      try {
+        const parsed = JSON.parse(authData)
+        accessToken = parsed?.access_token || parsed?.currentSession?.access_token
         
-        if (entriesError) {
-          console.error('❌ Error deleting entries:', entriesError)
-          alert(`Error deleting competition entries: ${entriesError.message}\n\nDetails: ${entriesError.details || 'No additional details'}`)
-          setIsDeleting(false)
-          return
+        if (!accessToken) {
+          throw new Error('No access token in stored data')
         }
-        console.log('✅ Competition entries deleted successfully')
+      } catch (e) {
+        console.error('❌ Failed to parse auth data:', e)
+        alert('Authentication error. Please refresh the page and try again.')
+        setIsDeleting(false)
+        return
       }
       
-      // Check for any winners table entries and delete them
-      console.log('🏆 Checking for winners...')
-      const { error: winnersError } = await withTimeout(
-        supabase
-          .from('winners')
-          .delete()
-          .eq('competition_id', id)
-      ) as any
+      console.log('✅ Auth token obtained, calling API...')
       
-      if (winnersError && winnersError.code !== 'PGRST116') { // PGRST116 = no rows found, which is OK
-        console.error('⚠️ Error deleting winners:', winnersError)
-        // Don't fail the whole operation for winners table issues
-        console.log('⚠️ Warning: Could not delete winners, continuing...')
-      } else {
-        console.log('✅ Winners deleted (or none found)')
-      }
+      // Call server-side API
+      const response = await fetch(`/api/admin/competitions/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      })
       
-      // Now delete the competition itself
-      console.log('🗑️ Deleting competition...')
-      const { error: competitionError } = await withTimeout(
-        supabase
-          .from('competitions')
-          .delete()
-          .eq('id', id)
-      ) as any
+      console.log('📡 API response received:', response.status)
       
-      if (competitionError) {
-        console.error('❌ Error deleting competition:', competitionError)
-        alert(`Error deleting competition: ${competitionError.message}\n\nDetails: ${competitionError.details || 'No additional details'}\n\nCode: ${competitionError.code || 'Unknown'}`)
+      const result = await response.json()
+      console.log('📦 API result:', result)
+      
+      if (!response.ok) {
+        console.error('❌ Delete failed:', result)
+        alert(`Failed to delete competition: ${result.error}\n${result.details || ''}`)
         setIsDeleting(false)
         return
       }

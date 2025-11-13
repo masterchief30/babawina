@@ -523,51 +523,86 @@ export function EnhancedCompetitionForm({
       
       let error
       if (editMode && competitionId) {
-        console.log('=== UPDATING COMPETITION ===')
+        console.log('=== UPDATING COMPETITION (SERVER-SIDE) ===')
         console.log('Competition ID:', competitionId)
         
-        // Update existing competition with timeout
-        // First try with display photo fields
-        const updatePromise = supabase
-          .from('competitions')
-          .update(competitionData)
-          .eq('id', competitionId)
-        
-        // Add 10 second timeout
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Update timed out after 10 seconds')), 10000)
-        )
-        
-        const { error: updateError } = await Promise.race([
-          updatePromise,
-          timeoutPromise
-        ]) as any
-        
-        console.log('Update result:', { updateError })
-        
-        // If error (likely missing columns), try without display photo fields
-        if (updateError && updateError.message?.includes('column')) {
-          console.log('Display photo columns not found, updating without them')
-          const { ...dataWithoutDisplay } = competitionData
-          console.log('Data without display fields:', dataWithoutDisplay)
-          const { error: fallbackError } = await supabase
-            .from('competitions')
-            .update(dataWithoutDisplay)
-            .eq('id', competitionId)
-          console.log('Fallback update result:', { fallbackError })
-          error = fallbackError
-        } else {
-          error = updateError
+        // Get auth token directly from localStorage (bypass hanging getSession)
+        const authData = localStorage.getItem('sb-auth-token')
+        if (!authData) {
+          throw new Error('No authentication data found. Please refresh the page.')
         }
+        
+        let accessToken: string
+        try {
+          const parsed = JSON.parse(authData)
+          accessToken = parsed?.access_token || parsed?.currentSession?.access_token
+          
+          if (!accessToken) {
+            throw new Error('No access token found')
+          }
+        } catch (e) {
+          throw new Error('Failed to read authentication data. Please refresh the page.')
+        }
+        
+        // Call server-side update API
+        const response = await fetch(`/api/admin/competitions/${competitionId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(competitionData)
+        })
+        
+        const result = await response.json()
+        
+        if (!response.ok) {
+          console.error('❌ Update failed:', result)
+          throw new Error(result.details || result.error || 'Update failed')
+        }
+        
+        console.log('✅ Update successful:', result)
       } else {
-        // Create new competition
-        const { error: insertError } = await supabase
-          .from('competitions')
-          .insert(competitionData)
-        error = insertError
+        // Create new competition - with timeout
+        console.log('=== CREATING COMPETITION (SERVER-SIDE) ===')
+        
+        // Get auth token from localStorage
+        const authData = localStorage.getItem('sb-auth-token')
+        if (!authData) {
+          throw new Error('No authentication data found. Please refresh the page.')
+        }
+        
+        let accessToken: string
+        try {
+          const parsed = JSON.parse(authData)
+          accessToken = parsed?.access_token || parsed?.currentSession?.access_token
+          
+          if (!accessToken) {
+            throw new Error('No access token found')
+          }
+        } catch (e) {
+          throw new Error('Failed to read authentication data. Please refresh the page.')
+        }
+        
+        // Call server-side create API
+        const response = await fetch('/api/admin/competitions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(competitionData)
+        })
+        
+        const result = await response.json()
+        
+        if (!response.ok) {
+          console.error('❌ Create failed:', result)
+          throw new Error(result.details || result.error || 'Create failed')
+        }
+        
+        console.log('✅ Create successful:', result)
       }
-
-      if (error) throw error
 
       showSuccess(
         editMode ? "Competition updated" : "Competition created", 

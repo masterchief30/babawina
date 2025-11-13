@@ -7,12 +7,22 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, Trophy, Target, Minus, ShoppingCart, Gift, Check } from "lucide-react"
+import { ArrowLeft, Trophy, Target, Minus, ShoppingCart, Gift, Check, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { PaymentMethodModal } from "../payment/payment-method-modal"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
+import { useAuth } from "@/contexts/AuthContext"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 
 interface Competition {
   id: string
@@ -41,12 +51,19 @@ interface PlayCompetitionClientProps {
   userId: string | null
 }
 
-export function PlayCompetitionClient({ competition, userId }: PlayCompetitionClientProps) {
+export function PlayCompetitionClient({ competition, userId: serverUserId }: PlayCompetitionClientProps) {
   const { toast } = useToast()
+  const router = useRouter()
+  const { user } = useAuth() // Get user from AuthContext (client-side)
+  
+  // Use AuthContext user if available, otherwise fall back to server prop
+  const userId = user?.id || serverUserId
+  
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showCoordinates, setShowCoordinates] = useState(false)
   const [gameEntries, setGameEntries] = useState<GameEntry[]>([])
   const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submittedEntriesCount, setSubmittedEntriesCount] = useState(0) // Count of already-submitted entries
   const [submissionStatus, setSubmissionStatus] = useState<{
@@ -73,7 +90,12 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
 
     async function loadExistingEntries() {
       try {
-        console.log('📥 Loading existing entries for user:', userId)
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('📥 LOADING EXISTING BETS FROM DATABASE')
+        console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        console.log('👤 User ID:', userId)
+        console.log('🎯 Competition ID:', competition.id)
+        
         const { data, error } = await supabase
           .from('competition_entries')
           .select('id, guess_x, guess_y, created_at')
@@ -82,12 +104,14 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
           .order('created_at', { ascending: true })
 
         if (error) {
-          console.error('❌ Error loading entries:', error)
+          console.error('❌ DATABASE ERROR:', error)
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
           return
         }
 
         if (data && data.length > 0) {
-          console.log(`✅ Loaded ${data.length} existing entries`)
+          console.log('✅ FOUND', data.length, 'EXISTING BETS IN DATABASE!')
+          console.log('📋 Bet data:', data)
           
           // Convert database entries to game entries
           const existingEntries: GameEntry[] = data.map((entry) => ({
@@ -100,11 +124,13 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
 
           setGameEntries(existingEntries)
           setSubmittedEntriesCount(existingEntries.length)
+          console.log('💾 Loaded into game state:', existingEntries.length, 'bets')
           
           // Clear localStorage now that entries are loaded from database
           const { entryPreservation } = await import('@/lib/entry-preservation')
           entryPreservation.clearEntries()
-          console.log('🧹 Cleared localStorage after loading entries from database')
+          console.log('🧹 Cleared localStorage (bets now in DB)')
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
           
           toast({
             title: "Welcome back! 🎯",
@@ -112,7 +138,8 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
             duration: 5000,
           })
         } else {
-          console.log('ℹ️ No existing entries found')
+          console.log('ℹ️ No existing bets found in database')
+          console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         }
       } catch (error) {
         console.error('❌ Error loading existing entries:', error)
@@ -179,21 +206,20 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
     setGameEntries(prev => prev.filter(entry => entry.id !== entryId))
   }
 
-  // Calculate pricing with "Buy 2 Get 1 Free"
+  // Calculate pricing with "Buy 2 Get 1 Free" FOR THIS SESSION ONLY
   const calculatePricing = () => {
-    const startingTotalCount = submissionStatus?.totalSubmissions || 0
     let paidCount = 0
     let freeCount = 0
     
     // Only count entries that are NOT already submitted
     const pendingEntries = gameEntries.filter(entry => !entry.submitted)
     
+    // Calculate pricing for THIS BATCH ONLY (resets each session)
     pendingEntries.forEach((_, index) => {
-      // Calculate absolute position including already submitted entries
-      const absolutePosition = startingTotalCount + submittedEntriesCount + index + 1
+      const position = index + 1 // Position in THIS batch (1, 2, 3, 4...)
       
-      // Every 3rd entry is free (3, 6, 9, 12...)
-      const isFree = absolutePosition % 3 === 0
+      // Every 3rd entry in THIS batch is free
+      const isFree = position % 3 === 0
       
       if (isFree) {
         freeCount++
@@ -214,99 +240,150 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
 
   // Handle submit all entries
   const handleSubmitAll = async () => {
-    console.log('🚀 SUBMIT ALL clicked')
-    console.log('👤 User ID:', userId)
-    console.log('📦 Entries count:', gameEntries.length)
-    console.log('💰 Pricing:', pricing)
-    console.log('📊 Submission status:', submissionStatus)
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('🚀 SUBMIT ALL CLICKED')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('👤 User ID:', userId || 'NOT LOGGED IN')
+    console.log('📦 Total entries:', gameEntries.length)
+    console.log('💰 Competition price:', competition.entry_price_rand, 'RAND')
+    console.log('📊 Pricing breakdown:', {
+      totalCount: pricing.totalCount,
+      paidCount: pricing.paidCount,
+      freeCount: pricing.freeCount,
+      pendingCount: pricing.pendingCount,
+      totalPrice: pricing.totalPrice
+    })
+    console.log('💳 Submission status:', {
+      hasPaymentMethod: submissionStatus?.hasPaymentMethod,
+      totalSubmissions: submissionStatus?.totalSubmissions
+    })
 
     // Check if user is authenticated
     if (!userId) {
-      console.log('❌ No user ID - redirecting to signup')
+      console.log('❌ NO USER ID - REDIRECTING TO SIGNUP')
       window.location.href = '/signup'
       return
     }
 
     console.log('✅ User is authenticated')
 
-    // Check if there are entries
-    if (gameEntries.length === 0) {
-      console.log('❌ No entries to submit')
+    // Check if there are pending entries
+    if (pricing.pendingCount === 0) {
+      console.log('❌ No pending entries to submit')
       toast({
-        title: 'No entries',
-        description: 'Please place at least one guess first',
-        variant: 'destructive'
+        title: 'No pending entries',
+        description: 'All your bets have been submitted already',
       })
       return
     }
 
-    console.log('✅ Has entries to submit')
+    console.log('✅ Has', pricing.pendingCount, 'pending entries to submit')
 
-    // Check if user has payment method (if paid entries exist)
-    if (pricing.paidCount > 0 && !submissionStatus?.hasPaymentMethod) {
-      console.log('💳 User needs to add payment method')
-      console.log('   Paid count:', pricing.paidCount)
-      console.log('   Has payment method:', submissionStatus?.hasPaymentMethod)
+    // Check if competition requires payment
+    const requiresPayment = competition.entry_price_rand > 0
+    console.log('💵 Competition requires payment:', requiresPayment)
+
+    // Check if user needs to add payment method
+    if (requiresPayment && !submissionStatus?.hasPaymentMethod) {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log('💳 OPENING PAYMENT MODAL')
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log('   Reason: Competition costs', competition.entry_price_rand, 'RAND')
+      console.log('   User has payment method:', false)
       // Show payment modal to add card
       setShowPaymentModal(true)
       return
     }
 
-    console.log('✅ User has payment method or all entries are free')
-    console.log('📤 Proceeding to submit entries...')
+    console.log('✅ Payment method OK or competition is free')
+    console.log('💬 SHOWING CONFIRMATION MODAL...')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-    // Submit all entries
-    await processSubmissions()
+    // Show confirmation modal before charging
+    setShowConfirmationModal(true)
   }
 
   // Process all submissions (after payment method is confirmed)
   const processSubmissions = async () => {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    console.log('💳 PROCESSING BATCH SUBMISSION')
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+    
+    setShowConfirmationModal(false) // Close confirmation modal
     setIsSubmitting(true)
 
     try {
-      // Submit each entry
-      for (const entry of gameEntries) {
-        const response = await fetch('/api/stripe/charge-saved-card', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId,
-            competitionId: competition.id,
-            entryData: {
-              x: entry.x / 100, // Convert back to 0-1 range
-              y: entry.y / 100
-            }
-          })
-        })
+      // Get only pending entries (not already submitted)
+      const pendingEntries = gameEntries.filter(entry => !entry.submitted)
+      console.log('📦 Pending entries to submit:', pendingEntries.length)
+      console.log('👤 User ID:', userId)
+      console.log('🎯 Competition ID:', competition.id)
 
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || 'Submission failed')
-        }
+      if (pendingEntries.length === 0) {
+        console.log('❌ No pending entries')
+        return
       }
+
+      // Convert entries to API format
+      const entriesForApi = pendingEntries.map(entry => ({
+        x: entry.x / 100, // Convert back to 0-1 range
+        y: entry.y / 100
+      }))
+
+      console.log('📤 Sending batch of', entriesForApi.length, 'entries to API...')
+      
+      // Submit ALL entries in ONE batch
+      const response = await fetch('/api/stripe/submit-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId,
+          competitionId: competition.id,
+          entries: entriesForApi
+        })
+      })
+
+      console.log('📡 Response status:', response.status, response.statusText)
+
+      if (!response.ok) {
+        const error = await response.json()
+        console.error('❌ API Error:', error)
+        throw new Error(error.error || 'Submission failed')
+      }
+
+      const result = await response.json()
+      console.log('✅ Batch submission successful!')
+      console.log('   Entries submitted:', result.entriesSubmitted)
+      console.log('   Paid entries:', result.paidEntries)
+      console.log('   Free entries:', result.freeEntries)
+      console.log('   Total charged: R', result.totalCharged)
+      console.log('   Transaction ID:', result.transactionId)
+
+      console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.log(`✅ ALL ${result.entriesSubmitted} ENTRIES SUBMITTED!`)
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
       // All submissions successful!
       toast({
         title: '🎉 All Entries Submitted!',
-        description: `${gameEntries.length} entries submitted successfully!`,
-        duration: 5000
+        description: `${result.entriesSubmitted} entries submitted! Paid: ${result.paidEntries}, Free: ${result.freeEntries}. Redirecting...`,
+        duration: 3000
       })
 
-      // Clear entries
-      setGameEntries([])
+      // Clear only pending entries (keep submitted ones visible)
+      setGameEntries(gameEntries.filter(entry => entry.submitted))
 
-      // Refresh submission status
-      if (userId) {
-        const response = await fetch(
-          `/api/user/submission-status?userId=${userId}&competitionId=${competition.id}`
-        )
-        if (response.ok) {
-          const data = await response.json()
-          setSubmissionStatus(data)
-        }
-      }
+      // Redirect to profile page after 2 seconds
+      console.log('🔄 Redirecting to profile in 2 seconds...')
+      setTimeout(() => {
+        console.log('🏠 Navigating to profile page')
+        router.push('/profile?tab=competitions')
+      }, 2000)
     } catch (error) {
-      console.error('Error submitting entries:', error)
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.error('❌ SUBMISSION FAILED')
+      console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+      console.error('Error:', error)
       toast({
         title: 'Submission Failed',
         description: error instanceof Error ? error.message : 'Failed to submit entries',
@@ -314,6 +391,7 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
       })
     } finally {
       setIsSubmitting(false)
+      console.log('🏁 processSubmissions complete')
     }
   }
 
@@ -479,9 +557,12 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
                     <h4 className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">ENTRIES ({gameEntries.length})</h4>
                     <div className="space-y-1 max-h-64 overflow-y-auto">
                       {gameEntries.map((entry, index) => {
-                        const startingTotalCount = submissionStatus?.totalSubmissions || 0
-                        const absolutePosition = startingTotalCount + index + 1
-                        const isFree = absolutePosition % 3 === 0
+                        // Calculate pricing for THIS BATCH ONLY
+                        // Only count position among pending entries
+                        const pendingEntries = gameEntries.filter(e => !e.submitted)
+                        const pendingIndex = pendingEntries.findIndex(e => e.id === entry.id)
+                        const batchPosition = pendingIndex >= 0 ? pendingIndex + 1 : 0
+                        const isFree = batchPosition > 0 && batchPosition % 3 === 0
                         const isSubmitted = entry.submitted === true
 
                         return (
@@ -626,6 +707,74 @@ export function PlayCompetitionClient({ competition, userId }: PlayCompetitionCl
           entryPrice={competition.entry_price_rand}
         />
       )}
+
+      {/* Payment Confirmation Modal */}
+      <Dialog open={showConfirmationModal} onOpenChange={setShowConfirmationModal}>
+        <DialogContent className="bg-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+              <CreditCard className="w-6 h-6 text-blue-600" />
+              Ready to Pay?
+            </DialogTitle>
+            <DialogDescription className="text-base pt-4">
+              You&apos;re about to submit <strong>{pricing.pendingCount} {pricing.pendingCount === 1 ? 'bet' : 'bets'}</strong> for this competition.
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Pricing Breakdown */}
+          <div className="space-y-3 py-4">
+            {pricing.paidCount > 0 && (
+              <div className="flex justify-between items-center text-gray-700">
+                <span>Paid entries:</span>
+                <span className="font-semibold">{pricing.paidCount} × R{competition.entry_price_rand}</span>
+              </div>
+            )}
+            
+            {pricing.freeCount > 0 && (
+              <div className="flex justify-between items-center text-green-600">
+                <span className="flex items-center gap-1">
+                  <Gift className="w-4 h-4" />
+                  Free entries:
+                </span>
+                <span className="font-semibold">{pricing.freeCount} × FREE</span>
+              </div>
+            )}
+            
+            <div className="border-t pt-3 mt-3">
+              <div className="flex justify-between items-center text-xl font-bold">
+                <span>Total:</span>
+                <span className="text-blue-600">R{pricing.totalCost}</span>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-col gap-2">
+            <Button
+              onClick={() => processSubmissions()}
+              disabled={isSubmitting}
+              className="w-full bg-green-600 hover:bg-green-700 text-white text-lg py-6"
+            >
+              {isSubmitting ? (
+                'Processing...'
+              ) : (
+                <>
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  Yes, Continue with Payment
+                </>
+              )}
+            </Button>
+            
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmationModal(false)}
+              disabled={isSubmitting}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
