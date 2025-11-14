@@ -1,15 +1,17 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { motion } from 'framer-motion'
-import { User, Lock, Trash2, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react'
+import { User, Lock, Trash2, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight, ArrowLeft, CreditCard } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { PaymentMethodModal } from '@/components/payment/payment-method-modal'
+import { useToast } from '@/hooks/use-toast'
 
 interface Competition {
   id: string
@@ -38,6 +40,14 @@ interface UserCompetitionStats {
   entries: CompetitionEntry[]
 }
 
+interface PaymentMethod {
+  id: string
+  card_brand: string
+  card_last4: string
+  is_default: boolean
+  created_at: string
+}
+
 interface ProfileClientContentProps {
   initialCompetitions: UserCompetitionStats[]
 }
@@ -51,6 +61,7 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
   
   const { user, loading, signOut: authSignOut } = useAuth()
   const searchParams = useSearchParams()
+  const { toast } = useToast()
   const [activeTab, setActiveTab] = useState('account')
   const [, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -64,6 +75,11 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
   const [userCompetitions, setUserCompetitions] = useState<UserCompetitionStats[]>(initialCompetitions)
   const [isLoadingCompetitions, setIsLoadingCompetitions] = useState(false)
   const [expandedCompetitions, setExpandedCompetitions] = useState<Set<string>>(new Set())
+  
+  // Payment methods state
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false)
+  const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
   
   console.log('💾 userCompetitions state:', userCompetitions)
   console.log('📊 State length:', userCompetitions?.length || 0)
@@ -310,6 +326,209 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
     }, 3000)
   }
 
+  // Fetch payment methods using direct REST API (avoids timeout issues)
+  const fetchPaymentMethods = useCallback(async () => {
+    if (!user?.id) {
+      console.log('💳 No user ID, skipping payment fetch')
+      return
+    }
+    
+    console.log('💳 Fetching payment methods for user:', user.id)
+    setIsLoadingPayments(true)
+    try {
+      // Get token from localStorage (fast path)
+      const storedSession = localStorage.getItem('sb-auth-token')
+      if (!storedSession) {
+        throw new Error('No auth session found')
+      }
+      
+      const session = JSON.parse(storedSession)
+      let accessToken = session?.access_token
+      
+      if (!accessToken) {
+        throw new Error('No access token found')
+      }
+      
+      // Direct REST API call
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
+      const url = `${supabaseUrl}/rest/v1/user_payment_methods?user_id=eq.${user.id}&select=id,card_brand,card_last4,is_default,created_at&order=created_at.desc`
+      
+      console.log('💳 Fetching from REST API:', url)
+      
+      const response = await fetch(url, {
+        headers: {
+          'apikey': supabaseKey!,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        // If unauthorized, try refreshing token
+        if (response.status === 401) {
+          console.log('💳 Token expired, refreshing...')
+          const { data: refreshData } = await supabase.auth.refreshSession()
+          if (refreshData?.session) {
+            accessToken = refreshData.session.access_token
+            localStorage.setItem('sb-auth-token', JSON.stringify(refreshData.session))
+            
+            // Retry with new token
+            const retryResponse = await fetch(url, {
+              headers: {
+                'apikey': supabaseKey!,
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            })
+            
+            if (!retryResponse.ok) {
+              throw new Error(`HTTP ${retryResponse.status}`)
+            }
+            
+            const data = await retryResponse.json()
+            console.log('💳 Payment methods fetched (after refresh):', data)
+            console.log('💳 Number of payment methods:', data?.length || 0)
+            setPaymentMethods(data || [])
+            return
+          }
+        }
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('💳 Payment methods fetched:', data)
+      console.log('💳 Number of payment methods:', data?.length || 0)
+      setPaymentMethods(data || [])
+    } catch (error) {
+      console.error('💳 Error fetching payment methods:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to load payment methods',
+        variant: 'destructive'
+      })
+    } finally {
+      setIsLoadingPayments(false)
+    }
+  }, [user?.id, toast])
+
+  // Set payment method as default using direct REST API
+  const setDefaultPaymentMethod = async (paymentMethodId: string) => {
+    try {
+      // Get token from localStorage
+      const storedSession = localStorage.getItem('sb-auth-token')
+      if (!storedSession) {
+        throw new Error('No auth session found')
+      }
+      
+      const session = JSON.parse(storedSession)
+      const accessToken = session?.access_token
+      
+      if (!accessToken) {
+        throw new Error('No access token found')
+      }
+      
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
+      // First, set all payment methods to non-default
+      const unsetUrl = `${supabaseUrl}/rest/v1/user_payment_methods?user_id=eq.${user?.id}`
+      await fetch(unsetUrl, {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey!,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ is_default: false }),
+      })
+      
+      // Then set the selected one as default
+      const setUrl = `${supabaseUrl}/rest/v1/user_payment_methods?id=eq.${paymentMethodId}`
+      const response = await fetch(setUrl, {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey!,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ is_default: true }),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      // Silently refresh the list
+      fetchPaymentMethods()
+    } catch (error) {
+      console.error('Error setting default payment method:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to set default payment method',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  // Delete payment method using direct REST API
+  const deletePaymentMethod = async (paymentMethodId: string) => {
+    if (!confirm('Are you sure you want to delete this payment method?')) return
+    
+    try {
+      // Get token from localStorage
+      const storedSession = localStorage.getItem('sb-auth-token')
+      if (!storedSession) {
+        throw new Error('No auth session found')
+      }
+      
+      const session = JSON.parse(storedSession)
+      const accessToken = session?.access_token
+      
+      if (!accessToken) {
+        throw new Error('No access token found')
+      }
+      
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+      
+      const url = `${supabaseUrl}/rest/v1/user_payment_methods?id=eq.${paymentMethodId}`
+      
+      const response = await fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'apikey': supabaseKey!,
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      
+      // Silently refresh the list - no success notification needed
+      fetchPaymentMethods()
+    } catch (error) {
+      console.error('Error deleting payment method:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to delete payment method',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  // Fetch payment methods when tab is opened
+  useEffect(() => {
+    if (activeTab === 'payment' && user?.id) {
+      fetchPaymentMethods()
+    }
+  }, [activeTab, user?.id, fetchPaymentMethods])
+
   const toggleCompetitionExpansion = (competitionId: string) => {
     setExpandedCompetitions(prev => {
       const newSet = new Set(prev)
@@ -480,6 +699,18 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   >
                     <Trophy className="w-5 h-5" />
                     <span className="font-medium">Competitions</span>
+                  </button>
+                  
+                  <button
+                    onClick={() => setActiveTab('payment')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
+                      activeTab === 'payment'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <CreditCard className="w-5 h-5" />
+                    <span className="font-medium">Payment Methods</span>
                   </button>
                   
                   <button
@@ -692,6 +923,96 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   </div>
                 )}
 
+                {/* Payment Methods Tab */}
+                {activeTab === 'payment' && (
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Payment Methods</h2>
+                    
+                    {console.log('💳 Rendering payment tab:', { isLoadingPayments, paymentMethodsCount: paymentMethods.length })}
+                    
+                    {isLoadingPayments ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      </div>
+                    ) : paymentMethods.length === 0 ? (
+                      <div className="bg-gray-50 rounded-lg p-8 text-center">
+                        <CreditCard className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">No payment methods saved</p>
+                        <Button onClick={() => setShowAddPaymentModal(true)}>
+                          Add Payment Method
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div className="mb-4 flex items-center gap-4">
+                          <Button 
+                            onClick={() => setShowAddPaymentModal(true)}
+                            disabled={paymentMethods.length >= 3}
+                          >
+                            Add New Payment Method
+                          </Button>
+                          {paymentMethods.length >= 3 && (
+                            <p className="text-sm text-amber-600">
+                              Maximum 3 payment methods allowed. Delete one to add another.
+                            </p>
+                          )}
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {paymentMethods.map((method) => (
+                            <div 
+                              key={method.id}
+                              className="bg-white border border-gray-200 rounded-lg p-4 md:p-6 flex items-center justify-between"
+                            >
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                                  <CreditCard className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-semibold text-gray-900 capitalize">
+                                      {method.card_brand} •••• {method.card_last4}
+                                    </p>
+                                    {method.is_default && (
+                                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                                        Default
+                                      </span>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-gray-500">
+                                    Added {new Date(method.created_at).toLocaleDateString()}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-center gap-2">
+                                {!method.is_default && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setDefaultPaymentMethod(method.id)}
+                                    className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 border-blue-200"
+                                  >
+                                    Set as Default
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deletePaymentMethod(method.id)}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Password Tab - Same as before */}
                 {activeTab === 'password' && (
                   <div>
@@ -861,6 +1182,19 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
             </p>
           </motion.div>
         </div>
+      )}
+      
+      {/* Payment Method Modal */}
+      {showAddPaymentModal && user && (
+        <PaymentMethodModal
+          isOpen={showAddPaymentModal}
+          onClose={() => setShowAddPaymentModal(false)}
+          userId={user.id}
+          onSuccess={() => {
+            setShowAddPaymentModal(false)
+            fetchPaymentMethods() // Refresh the list
+          }}
+        />
       )}
     </div>
   )

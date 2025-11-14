@@ -117,11 +117,7 @@ function PaymentForm({
 
       const saveData = await saveResponse.json()
 
-      toast({
-        title: 'Success!',
-        description: `Card ending in ${saveData.cardLast4} added successfully`,
-      })
-
+      // Silently close modal - no success notification needed
       onSuccess()
     } catch (error) {
       console.error('Error setting up payment:', error)
@@ -174,25 +170,27 @@ function PaymentForm({
         </div>
       </div>
 
-      {/* Buy 2 Get 1 Free Info */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-start space-x-3">
-          <div className="flex-shrink-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-              🎁
+      {/* Simple Pricing Info - Only show when there's a competition context */}
+      {entryPrice !== undefined && (
+        <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                💳
+              </div>
+            </div>
+            <div className="flex-1">
+              <h4 className="font-semibold text-gray-900 mb-1">Simple Pricing</h4>
+              <p className="text-sm text-gray-600">
+                Entry price: <span className="font-semibold text-gray-900">R{entryPrice.toFixed(2)}</span>
+              </p>
+              <p className="text-sm text-gray-600 mt-1">
+                Pay once, use for all your entries. Fast and easy! 🎯
+              </p>
             </div>
           </div>
-          <div className="flex-1">
-            <h4 className="font-semibold text-gray-900 mb-1">Buy 2 Get 1 FREE!</h4>
-            <p className="text-sm text-gray-600">
-              This entry: <span className="font-semibold text-gray-900">R{entryPrice.toFixed(2)}</span>
-            </p>
-            <p className="text-sm text-gray-600 mt-1">
-              Submit 2 paid entries, get your 3rd entry completely free! 🎉
-            </p>
-          </div>
         </div>
-      </div>
+      )}
 
       {/* Security Notice */}
       <div className="flex items-center space-x-2 text-xs text-gray-500">

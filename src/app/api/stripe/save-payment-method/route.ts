@@ -77,6 +77,19 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    // Check if user already has 3 payment methods (maximum allowed)
+    const { count: methodCount } = await supabase
+      .from('user_payment_methods')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+
+    if (methodCount !== null && methodCount >= 3) {
+      return NextResponse.json(
+        { error: 'Maximum 3 payment methods allowed. Please delete one before adding another.' },
+        { status: 400 }
+      )
+    }
+
     // Set all other payment methods for this user to non-default
     await supabase
       .from('user_payment_methods')

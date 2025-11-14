@@ -50,8 +50,8 @@ export default function TermsPage() {
               <h2 className="text-2xl font-bold text-gray-900 mb-4">2. Game Rules</h2>
               <div className="space-y-4 text-gray-700">
                 <p><strong>How to Play:</strong> Players must guess where the ball is located in the competition image by clicking on the image to place their entry.</p>
-                <p><strong>Entry Fee:</strong> Each entry costs R10.00 (Ten Rand) unless otherwise specified for specific competitions. Pricing is displayed clearly before submission.</p>
-                <p><strong>&quot;Buy 2 Get 1 Free&quot; Promotion:</strong> For every two (2) paid entries you submit in a single session, your third (3rd) entry is FREE. This promotion applies per submission session and resets after each submission.</p>
+                <p><strong>Entry Fee:</strong> Each entry costs R15.00 (Fifteen Rand) unless otherwise specified for specific competitions. Pricing is displayed clearly before submission.</p>
+                <p><strong>Simple Pricing:</strong> All entries are priced equally at R15.00 per entry. There are no hidden fees or complex pricing structures.</p>
                 <p><strong>Winner Selection:</strong> The player whose guess is closest to the actual ball location (as determined by our judging system) wins the prize. Distance is calculated using precise coordinate measurements.</p>
                 <p><strong>Multiple Entries:</strong> Players may submit multiple entries per competition, subject to any competition-specific limits. Each entry is evaluated independently.</p>
               </div>

@@ -1,7 +1,7 @@
 /**
  * API Route: Submit Batch of Entries
- * Handles batch submission with "Buy 2 Get 1 Free" per session
- * Charges once for all paid entries in the batch
+ * Simple pricing: R15 per entry
+ * Charges once for all entries in the batch
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -112,34 +112,25 @@ export async function POST(request: NextRequest) {
     }
 
     // ═══════════════════════════════════════════════════════
-    // CALCULATE "BUY 2 GET 1 FREE" FOR THIS BATCH ONLY
+    // SIMPLE PRICING: R15 PER ENTRY
     // ═══════════════════════════════════════════════════════
-    const entriesWithPricing = entries.map((entry, index) => {
-      const position = index + 1
-      const isFree = position % 3 === 0 // Every 3rd is free
-      return {
-        ...entry,
-        isFree,
-        position,
-      }
-    })
+    const entriesWithPricing = entries.map((entry, index) => ({
+      ...entry,
+      isFree: false, // No free entries in simple pricing
+      position: index + 1,
+    }))
 
-    const paidCount = entriesWithPricing.filter(e => !e.isFree).length
-    const freeCount = entriesWithPricing.filter(e => e.isFree).length
+    const paidCount = entries.length // All entries are paid
+    const freeCount = 0 // No free entries
     const totalAmount = paidCount * competition.entry_price_rand
 
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-    console.log('💵 PRICING BREAKDOWN (THIS BATCH ONLY)')
+    console.log('💵 PRICING BREAKDOWN')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
     console.log('📊 Total entries:', entries.length)
-    console.log('💳 Paid entries:', paidCount)
-    console.log('🎁 Free entries:', freeCount)
-    console.log('💰 Total charge:', totalAmount, 'RAND')
+    console.log('💰 Price per entry: R' + competition.entry_price_rand)
+    console.log('💰 Total charge: R' + totalAmount)
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-
-    entriesWithPricing.forEach(e => {
-      console.log(`  Position ${e.position}: ${e.isFree ? '🎁 FREE' : '💳 R' + competition.entry_price_rand}`)
-    })
 
     let transactionId: string | null = null
     let paymentIntentId: string | null = null

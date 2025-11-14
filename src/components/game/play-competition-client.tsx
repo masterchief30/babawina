@@ -210,27 +210,12 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
     setGameEntries(prev => prev.filter(entry => entry.id !== entryId))
   }
 
-  // Calculate pricing with "Buy 2 Get 1 Free" FOR THIS SESSION ONLY
+  // Calculate pricing - Simple R15 per entry
   const calculatePricing = () => {
-    let paidCount = 0
-    let freeCount = 0
-    
-    // Only count entries that are NOT already submitted
+    // Simple pricing: All entries are paid
     const pendingEntries = gameEntries.filter(entry => !entry.submitted)
-    
-    // Calculate pricing for THIS BATCH ONLY (resets each session)
-    pendingEntries.forEach((_, index) => {
-      const position = index + 1 // Position in THIS batch (1, 2, 3, 4...)
-      
-      // Every 3rd entry in THIS batch is free
-      const isFree = position % 3 === 0
-      
-      if (isFree) {
-        freeCount++
-      } else {
-        paidCount++
-      }
-    })
+    const paidCount = pendingEntries.length
+    const freeCount = 0
 
     return {
       paidCount,
@@ -351,9 +336,19 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
       console.log('📡 Response status:', response.status, response.statusText)
 
       if (!response.ok) {
-        const error = await response.json()
-        console.error('❌ API Error:', error)
-        throw new Error(error.error || 'Submission failed')
+        // Try to get error details
+        let errorMessage = 'Submission failed'
+        try {
+          const error = await response.json()
+          console.error('❌ API Error:', error)
+          errorMessage = error.error || error.message || 'Submission failed'
+        } catch (parseError) {
+          // Response body might not be JSON
+          const errorText = await response.text()
+          console.error('❌ Response text:', errorText)
+          errorMessage = errorText || `HTTP ${response.status}: ${response.statusText}`
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
@@ -403,10 +398,8 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
   const handlePaymentMethodAdded = async () => {
     setShowPaymentModal(false)
     
-    toast({
-      title: 'Payment method saved!',
-      description: 'Submitting your entries...'
-    })
+    // Payment method saved - no need to show notification
+    // User will see the payment processing modal next
 
     // Update status to show payment method exists
     if (submissionStatus) {
@@ -561,12 +554,7 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
                     <h4 className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">ENTRIES ({gameEntries.length})</h4>
                     <div className="space-y-1 max-h-64 overflow-y-auto">
                       {gameEntries.map((entry, index) => {
-                        // Calculate pricing for THIS BATCH ONLY
-                        // Only count position among pending entries
-                        const pendingEntries = gameEntries.filter(e => !e.submitted)
-                        const pendingIndex = pendingEntries.findIndex(e => e.id === entry.id)
-                        const batchPosition = pendingIndex >= 0 ? pendingIndex + 1 : 0
-                        const isFree = batchPosition > 0 && batchPosition % 3 === 0
+                        // Simple pricing - all entries are paid
                         const isSubmitted = entry.submitted === true
 
                         return (
@@ -592,16 +580,11 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
                               )}
                             </div>
                             <div className="flex items-center gap-1.5">
-                              {isFree && !isSubmitted ? (
-                                <span className="text-green-600 font-bold flex items-center gap-0.5 text-xs">
-                                  <Gift className="w-3 h-3" />
-                                  FREE
-                                </span>
-                              ) : !isSubmitted ? (
+                              {!isSubmitted && (
                                 <span className="text-gray-900 font-semibold text-xs">
                                   {formatPrice(competition.entry_price_rand)}
                                 </span>
-                              ) : null}
+                              )}
                               {!isSubmitted && (
                                 <Button
                                   variant="ghost"

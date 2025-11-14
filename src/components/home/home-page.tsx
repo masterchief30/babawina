@@ -64,19 +64,19 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       
-      {/* Promo Banner - "Buy 2 Get 1 Free" */}
+      {/* Promo Banner - Simple Pricing */}
       <motion.div 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white text-center py-3 px-4 relative z-[90]"
+        className="bg-gradient-to-r from-blue-600 to-blue-700 text-white text-center py-3 px-4 relative z-[90]"
       >
         <div className="flex items-center justify-center gap-2 flex-wrap">
-          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
           <p className="font-bold text-sm sm:text-base md:text-lg">
-            <span className="hidden sm:inline">🎉 Limited Time Offer: </span>
-            <span className="text-yellow-300">Buy 2 Entries, Get 1 FREE!</span>
+            <span className="hidden sm:inline">🎮 Win a PS5 for only </span>
+            <span className="text-yellow-300">R15 per entry!</span>
           </p>
-          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
+          <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
       </motion.div>
       
@@ -278,8 +278,8 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
               {[
                 { 
                   icon: Sparkles, 
-                  value: "Buy 2, Get 1 FREE", 
-                  label: "Special Offer",
+                  value: "R15 per Entry", 
+                  label: "Simple Pricing",
                   color: "text-yellow-300"
                 },
                 { 

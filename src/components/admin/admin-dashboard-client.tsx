@@ -302,14 +302,18 @@ export function AdminDashboardClient({ metrics }: Props) {
             </div>
           )}
 
-          {/* Buy 2 Get 1 Free Impact */}
+          {/* Average Entries per User */}
           <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-5 h-5 text-amber-500" />
-              <p className="text-sm font-semibold text-gray-600">"Buy 2 Get 1 Free" Impact</p>
+              <Target className="w-5 h-5 text-blue-500" />
+              <p className="text-sm font-semibold text-gray-600">Avg Entries per User</p>
             </div>
-            <p className="text-3xl font-black text-gray-900 mb-1">{formatCurrency(metrics.competitions.freeEntries * 10)}</p>
-            <p className="text-xs text-gray-500">Value given to customers (R10/entry)</p>
+            <p className="text-3xl font-black text-gray-900 mb-1">
+              {metrics.users.activeUsers > 0 
+                ? (metrics.competitions.allTimeEntries / metrics.users.activeUsers).toFixed(1)
+                : '0'}
+            </p>
+            <p className="text-xs text-gray-500">Average engagement per active user</p>
           </div>
 
         </div>
