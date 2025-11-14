@@ -43,18 +43,11 @@ export function AdminLoginPage() {
     console.log('🔐 Starting admin login for:', email)
 
     try {
-      // Add timeout to login attempt
-      const loginPromise = supabase.auth.signInWithPassword({
+      console.log('📡 Calling Supabase auth...')
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Login timeout')), 10000)
-      )
-
-      console.log('📡 Calling Supabase auth...')
-      const { data, error } = await Promise.race([loginPromise, timeoutPromise]) as any
 
       if (error) {
         console.error('❌ Login error:', error)
@@ -62,7 +55,6 @@ export function AdminLoginPage() {
       }
 
       console.log('✅ Login successful!')
-      if (error) throw error
 
       // Check if user exists and make them admin
       if (data.user) {
@@ -109,11 +101,7 @@ export function AdminLoginPage() {
       }
     } catch (err: any) {
       console.error('💥 Login failed:', err)
-      if (err.message === 'Login timeout') {
-        showNotification('error', 'Login Timeout - Check Supabase Connection')
-      } else {
-        showNotification('error', 'Login Failed - Invalid Credentials')
-      }
+      showNotification('error', err.message || 'Login Failed - Invalid Credentials')
     } finally {
       setIsLoading(false)
       console.log('🔄 Login attempt finished')
@@ -173,12 +161,6 @@ export function AdminLoginPage() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              Only <strong>{ADMIN_EMAIL}</strong> is authorized for admin access.
-            </p>
-          </div>
         </div>
 
         {/* Back to Home */}
