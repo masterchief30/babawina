@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft, CheckCircle, XCircle } from 'lucide
 import { motion } from 'framer-motion'
 
 export default function LoginPage() {
+  const router = useRouter()
   const { user, loading } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
@@ -22,12 +24,21 @@ export default function LoginPage() {
     message: string
   }>({ show: false, type: 'success', message: '' })
 
+  // Only clear stale sessions if user is actually trying to log in (not during redirect)
+  useEffect(() => {
+    // Only clear if we're not already authenticated and not loading
+    if (!loading && !user) {
+      console.log('🧹 Login page: Clearing any old sessions for fresh login')
+      localStorage.removeItem('sb-auth-token')
+    }
+  }, [loading, user])
+
   // Redirect if already authenticated
   useEffect(() => {
     if (!loading && user) {
-      window.location.href = '/'
+      router.push('/')
     }
-  }, [user, loading])
+  }, [user, loading, router])
 
   const showNotification = (type: 'success' | 'error', message: string) => {
     setNotification({ show: true, type, message })
@@ -72,19 +83,30 @@ export default function LoginPage() {
         
         // Store session in localStorage for fast loading
         try {
-          localStorage.setItem('sb-auth-token', JSON.stringify({
+          const sessionData = {
             access_token: data.session.access_token,
-            currentSession: data.session,
+            refresh_token: data.session.refresh_token,
+            expires_at: data.session.expires_at,
             user: data.user
-          }))
-          console.log('💾 Session stored in localStorage')
+          }
+          localStorage.setItem('sb-auth-token', JSON.stringify(sessionData))
+          console.log('💾 Session stored in localStorage:', sessionData)
+          
+          // Double-check it was saved
+          const saved = localStorage.getItem('sb-auth-token')
+          console.log('✅ Verified saved session:', !!saved)
         } catch (e) {
           console.error('Failed to store session:', e)
         }
         
         showNotification('success', 'Login successful!')
+        
+        // Use Next.js router for smooth navigation (no full page reload)
         setTimeout(() => {
-          window.location.href = '/'
+          console.log('🔄 Redirecting to home...')
+          router.push('/')
+          // Force a page refresh to reload AuthContext
+          setTimeout(() => window.location.reload(), 100)
         }, 1000)
       } else {
         console.error('⚠️ No user in response')

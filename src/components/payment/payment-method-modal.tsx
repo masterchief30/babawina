@@ -224,13 +224,6 @@ function PaymentForm({
           )}
         </Button>
       </div>
-
-      {/* Test Mode Notice (only in development) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="text-xs text-center text-gray-400 pt-2 border-t">
-          Test Mode: Use card 4242 4242 4242 4242
-        </div>
-      )}
     </form>
   )
 }

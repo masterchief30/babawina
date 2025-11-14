@@ -1120,23 +1120,23 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                       ) : (
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="deleteConfirmation" className="text-red-700">
-                              Type &quot;delete account&quot; to confirm:
+                            <Label htmlFor="deleteConfirmation" className="text-red-700 font-bold">
+                              Type exactly: <span className="font-mono bg-red-100 px-2 py-1 rounded">DELETE MY ACCOUNT</span>
                             </Label>
                             <Input
                               id="deleteConfirmation"
                               type="text"
                               value={deleteConfirmation}
                               onChange={(e) => setDeleteConfirmation(e.target.value)}
-                              placeholder="delete account"
-                              className="border-red-300 focus:border-red-500"
+                              placeholder="DELETE MY ACCOUNT"
+                              className="border-red-300 focus:border-red-500 font-mono"
                             />
                           </div>
                           <div className="flex flex-col sm:flex-row gap-3">
                             <Button
                               onClick={handleDeleteAccount}
-                              disabled={isDeletingAccount || deleteConfirmation.toLowerCase() !== 'delete account'}
-                              className="bg-red-600 hover:bg-red-700 text-white py-3"
+                              disabled={isDeletingAccount || deleteConfirmation !== 'DELETE MY ACCOUNT'}
+                              className="bg-red-600 hover:bg-red-700 text-white py-3 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isDeletingAccount ? (
                                 <div className="flex items-center gap-2">

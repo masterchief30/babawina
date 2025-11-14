@@ -405,18 +405,26 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
                       fill
                       className="object-cover group-hover:scale-110 transition-transform duration-500"
                       style={{
-                        filter: 'contrast(1.1) saturate(0.9) brightness(0.95)',
+                        filter: 'contrast(1.05) saturate(1.15) brightness(1.02) blur(0.3px)',
                         imageRendering: 'auto',
                         objectPosition: testimonial.image.includes('003.jpeg') ? 'center 25%' : 'center center'
                       }}
-                      quality={60}
+                      quality={75}
                     />
-                    {/* Grainy Overlay for Authentic Look */}
+                    {/* Subtle Phone Camera Effects */}
                     <div 
-                      className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay"
+                      className="absolute inset-0 pointer-events-none"
                       style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-                        backgroundSize: '200px 200px'
+                        background: 'radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.15) 100%)',
+                        mixBlendMode: 'multiply'
+                      }}
+                    />
+                    {/* Very Light Grain for Phone Texture */}
+                    <div 
+                      className="absolute inset-0 pointer-events-none opacity-15 mix-blend-overlay"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                        backgroundSize: '250px 250px'
                       }}
                     />
                     {/* Winner Badge */}
@@ -504,28 +512,40 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
               How It Works
             </h2>
             <p className="text-gray-600 text-base md:text-lg">
-              Three simple steps to win
+              Three simple steps to win big prizes
             </p>
           </motion.div>
           
           <div className="grid sm:grid-cols-3 gap-6 md:gap-8">
             {[
               {
-                icon: Users,
-                title: "Sign Up Free",
-                description: "Create account in 30 seconds",
+                icon: Trophy,
+                title: "Choose Your Competition",
+                bullets: [
+                  "Browse live PS5 competitions",
+                  "Pick the one you want to enter",
+                  "See exactly what you're playing for"
+                ],
                 color: "from-blue-600 to-blue-700"
               },
               {
                 icon: Target,
-                title: "Find the Ball",
-                description: "Click where the ball is hidden",
+                title: "Place Your Best Guess",
+                bullets: [
+                  "Study the photo carefully",
+                  "Click where the ball center is hidden",
+                  "Only R15 per entry - enter as many times as you want!"
+                ],
                 color: "from-amber-500 to-amber-600"
               },
               {
-                icon: Trophy,
-                title: "Win Prize",
-                description: "Closest guess wins",
+                icon: Sparkles,
+                title: "Win Your PS5!",
+                bullets: [
+                  "Every Friday at 18:00 PM we announce the winner",
+                  "Closest guess to the ball wins this week's competition",
+                  "New competition starts immediately after!"
+                ],
                 color: "from-green-500 to-green-600"
               }
             ].map((step, i) => (
@@ -539,8 +559,15 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
                 <div className={`w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br ${step.color} rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                   <step.icon className="w-7 h-7 md:w-8 md:h-8 text-white" />
                 </div>
-                <h3 className="text-lg md:text-xl font-bold mb-2 text-gray-900">{step.title}</h3>
-                <p className="text-sm md:text-base text-gray-600">{step.description}</p>
+                <h3 className="text-lg md:text-xl font-bold mb-3 text-gray-900">{step.title}</h3>
+                <ul className="text-left space-y-2 max-w-xs mx-auto">
+                  {step.bullets.map((bullet, bulletIndex) => (
+                    <li key={bulletIndex} className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 md:w-5 md:h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm md:text-base text-gray-700">{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
               </motion.div>
             ))}
           </div>
@@ -614,7 +641,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
           
           <div className="border-t border-gray-800 pt-6 text-center">
             <p className="text-xs md:text-sm text-gray-500 mb-2">
-              © 2025 BabaWina • Made in South Africa 🇿🇦 • 18+ Only
+              © 2025 BabaWina • Made with love in ZA 🇿🇦 • 18+ Only
             </p>
           </div>
         </div>
