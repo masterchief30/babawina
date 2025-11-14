@@ -928,8 +928,6 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   <div>
                     <h2 className="text-xl md:text-2xl font-semibold text-gray-900 mb-6">Payment Methods</h2>
                     
-                    {console.log('💳 Rendering payment tab:', { isLoadingPayments, paymentMethodsCount: paymentMethods.length })}
-                    
                     {isLoadingPayments ? (
                       <div className="flex items-center justify-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
