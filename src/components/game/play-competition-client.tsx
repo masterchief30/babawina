@@ -135,12 +135,6 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
           entryPreservation.clearEntries()
           console.log('🧹 Cleared localStorage (bets now in DB)')
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-          
-          toast({
-            title: "Welcome back! 🎯",
-            description: `Your ${data.length} bet${data.length !== 1 ? 's' : ''} ${data.length !== 1 ? 'have' : 'has'} been loaded.`,
-            duration: 5000,
-          })
         } else {
           console.log('ℹ️ No existing bets found in database')
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')

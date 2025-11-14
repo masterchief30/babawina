@@ -12,6 +12,15 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify Stripe is configured
+    if (!process.env.STRIPE_SECRET_KEY) {
+      console.error('❌ STRIPE_SECRET_KEY not configured in environment')
+      return NextResponse.json(
+        { error: 'Payment system not configured. Please contact support.' },
+        { status: 500 }
+      )
+    }
+    
     // Parse request body
     const body = await request.json()
     const { userId } = body
@@ -81,9 +90,17 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('❌ Error creating Setup Intent:', error)
     
+    // Log more details for debugging
+    if (error instanceof Error) {
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to create payment setup',
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
       },
       { status: 500 }
     )

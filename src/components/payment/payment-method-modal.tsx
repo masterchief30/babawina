@@ -220,7 +220,7 @@ function PaymentForm({
               Saving...
             </>
           ) : (
-            <>Save Card & Continue</>
+            <>Continue</>
           )}
         </Button>
       </div>
