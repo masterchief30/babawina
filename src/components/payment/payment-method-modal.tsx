@@ -18,7 +18,7 @@ interface PaymentMethodModalProps {
   onClose: () => void
   onSuccess: () => void
   userId: string
-  entryPrice: number
+  entryPrice?: number  // Optional - only needed when adding payment from competition page
 }
 
 function PaymentForm({
