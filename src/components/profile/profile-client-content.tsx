@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { motion } from 'framer-motion'
-import { User, Lock, Trash2, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight } from 'lucide-react'
+import { User, Lock, Trash2, Eye, EyeOff, CheckCircle, XCircle, Trophy, ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 interface Competition {
   id: string
@@ -412,7 +413,17 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
       <header className="bg-white/95 backdrop-blur-xl shadow-md">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <div></div>
+            {/* Back to Competitions Button */}
+            <Link 
+              href="/#competitions"
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors group"
+            >
+              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-sm md:text-base font-semibold hidden sm:inline">Back to Competitions</span>
+              <span className="text-sm font-semibold sm:hidden">Back</span>
+            </Link>
+            
+            {/* Logo */}
             <div className="flex items-center gap-2 md:gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 

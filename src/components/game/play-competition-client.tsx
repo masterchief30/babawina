@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { PaymentMethodModal } from "../payment/payment-method-modal"
+import { PaymentSuccessModal, PaymentProcessingModal } from "../payment/payment-success-modal"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
@@ -65,6 +66,9 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showConfirmationModal, setShowConfirmationModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successData, setSuccessData] = useState({ amountCharged: 0, entryCount: 0 })
   const [submittedEntriesCount, setSubmittedEntriesCount] = useState(0) // Count of already-submitted entries
   const [submissionStatus, setSubmissionStatus] = useState<{
     nextIsFree: boolean
@@ -311,6 +315,7 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
     
     setShowConfirmationModal(false) // Close confirmation modal
     setIsSubmitting(true)
+    setIsProcessing(true) // Show processing modal
 
     try {
       // Get only pending entries (not already submitted)
@@ -363,27 +368,26 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
       console.log(`✅ ALL ${result.entriesSubmitted} ENTRIES SUBMITTED!`)
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
 
-      // All submissions successful!
-      toast({
-        title: '🎉 All Entries Submitted!',
-        description: `${result.entriesSubmitted} entries submitted! Paid: ${result.paidEntries}, Free: ${result.freeEntries}. Redirecting...`,
-        duration: 3000
+      // Stop processing, show success animation!
+      setIsProcessing(false)
+      
+      // Set success data for the modal
+      setSuccessData({
+        amountCharged: result.totalCharged || 0,
+        entryCount: result.entriesSubmitted || 0
       })
+      
+      // Show the success modal with confetti & lion animation
+      setShowSuccessModal(true)
 
       // Clear only pending entries (keep submitted ones visible)
       setGameEntries(gameEntries.filter(entry => entry.submitted))
-
-      // Redirect to profile page after 2 seconds
-      console.log('🔄 Redirecting to profile in 2 seconds...')
-      setTimeout(() => {
-        console.log('🏠 Navigating to profile page')
-        router.push('/profile?tab=competitions')
-      }, 2000)
     } catch (error) {
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       console.error('❌ SUBMISSION FAILED')
       console.error('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
       console.error('Error:', error)
+      setIsProcessing(false) // Stop processing modal
       toast({
         title: 'Submission Failed',
         description: error instanceof Error ? error.message : 'Failed to submit entries',
@@ -775,6 +779,17 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Payment Processing Modal (Loading Spinner) */}
+      <PaymentProcessingModal isOpen={isProcessing} />
+
+      {/* Payment Success Modal (Confetti + Lion Animation) */}
+      <PaymentSuccessModal
+        isOpen={showSuccessModal}
+        amountCharged={successData.amountCharged}
+        entryCount={successData.entryCount}
+        onClose={() => setShowSuccessModal(false)}
+      />
     </div>
   )
 }

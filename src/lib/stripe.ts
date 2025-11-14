@@ -5,18 +5,33 @@
 
 import Stripe from 'stripe'
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+// Lazy initialization to avoid build-time errors
+let stripeInstance: Stripe | null = null
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not set in environment variables')
+    }
+    
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-10-29.clover',
+      typescript: true,
+      appInfo: {
+        name: 'Babawina Competition Platform',
+        version: '1.0.0',
+      },
+    })
+  }
+  
+  return stripeInstance
 }
 
-// Initialize Stripe with secret key (server-side only)
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: '2025-10-29.clover',
-  typescript: true,
-  appInfo: {
-    name: 'Babawina Competition Platform',
-    version: '1.0.0',
-  },
+// Export getter function
+export const stripe = new Proxy({} as Stripe, {
+  get: (_target, prop) => {
+    return (getStripe() as any)[prop]
+  }
 })
 
 /**
