@@ -8,7 +8,7 @@ export default function PrivacyPage() {
       <header className="bg-white/95 backdrop-blur-xl shadow-md">
         <div className="container mx-auto px-4 py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
+            <Link href="/#competitions" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
               <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
               <span className="font-semibold text-sm md:text-base">Back to Home</span>
             </Link>
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 md:px-8 py-8">
             <h1 className="text-3xl md:text-4xl font-bold text-white text-center">Privacy Policy</h1>
-            <p className="text-blue-100 text-center mt-2">Last updated: December 2024</p>
+            <p className="text-blue-100 text-center mt-2">Last updated: November 2025</p>
           </div>
 
           {/* Content */}
@@ -45,6 +45,13 @@ export default function PrivacyPage() {
                   <li>Age confirmation (to verify eligibility)</li>
                   <li>Competition entries and game data</li>
                 </ul>
+                <p><strong>Payment Information:</strong></p>
+                <ul className="list-disc list-inside ml-4 space-y-2">
+                  <li>Credit/debit card information (securely processed and stored by Stripe, our PCI-DSS compliant payment processor)</li>
+                  <li>Billing information</li>
+                  <li>Transaction history</li>
+                </ul>
+                <p className="text-sm italic">Note: BabaWina does NOT store your full credit card details. All payment information is securely handled by Stripe, Inc.</p>
                 <p><strong>Automatically Collected:</strong></p>
                 <ul className="list-disc list-inside ml-4 space-y-2">
                   <li>IP address and device information</li>
@@ -61,6 +68,9 @@ export default function PrivacyPage() {
                 <ul className="list-disc list-inside ml-4 space-y-2">
                   <li>Provide and maintain our gaming services</li>
                   <li>Process competition entries and determine winners</li>
+                  <li>Process payments and refunds through Stripe</li>
+                  <li>Securely store your payment method for future transactions (with your consent)</li>
+                  <li>Send transaction receipts and payment confirmations</li>
                   <li>Send important account and competition updates</li>
                   <li>Improve our platform and user experience</li>
                   <li>Comply with legal obligations</li>
@@ -77,8 +87,17 @@ export default function PrivacyPage() {
                   <li>With your explicit consent</li>
                   <li>To comply with legal requirements</li>
                   <li>To protect our rights and safety</li>
-                  <li>With service providers (under strict confidentiality)</li>
+                  <li>With trusted service providers (under strict confidentiality agreements), including:
+                    <ul className="list-circle list-inside ml-6 mt-2 space-y-1">
+                      <li><strong>Stripe, Inc.</strong> - Our payment processor for secure payment processing and storage</li>
+                      <li><strong>Supabase</strong> - Our secure database and authentication provider</li>
+                    </ul>
+                  </li>
                 </ul>
+                <p className="text-sm italic mt-4">
+                  <strong>Payment Security:</strong> When you save a payment method, your card details are tokenized and securely stored by Stripe. 
+                  We only store a reference token, the last 4 digits, and card brand for display purposes. We never have access to your full card details.
+                </p>
               </div>
             </section>
 
@@ -88,10 +107,16 @@ export default function PrivacyPage() {
                 <p>We implement industry-standard security measures:</p>
                 <ul className="list-disc list-inside ml-4 space-y-2">
                   <li>Encrypted data transmission (SSL/TLS)</li>
-                  <li>Secure database storage</li>
+                  <li>Secure database storage with encryption at rest</li>
+                  <li>PCI-DSS Level 1 compliant payment processing through Stripe</li>
+                  <li>Tokenization of payment information (no storage of full card details)</li>
                   <li>Regular security audits</li>
-                  <li>Limited access to personal data</li>
+                  <li>Limited access to personal data (role-based access controls)</li>
+                  <li>Secure authentication and session management</li>
                 </ul>
+                <p className="text-sm italic mt-4">
+                  All payment transactions are processed in compliance with the Payment Card Industry Data Security Standard (PCI-DSS).
+                </p>
               </div>
             </section>
 
@@ -103,9 +128,14 @@ export default function PrivacyPage() {
                   <li>Access your personal information</li>
                   <li>Correct inaccurate data</li>
                   <li>Delete your account and data</li>
-                  <li>Withdraw consent at any time</li>
-                  <li>Data portability</li>
+                  <li>View, update, or delete your saved payment methods at any time via your profile</li>
+                  <li>Withdraw consent for storing payment information</li>
+                  <li>Request a copy of your data (data portability)</li>
+                  <li>Object to certain data processing activities</li>
                 </ul>
+                <p className="text-sm italic mt-4">
+                  To exercise these rights, visit your profile settings or contact us at support@babawina.co.za
+                </p>
               </div>
             </section>
 
@@ -152,8 +182,7 @@ export default function PrivacyPage() {
               <div className="bg-blue-50 p-4 rounded-lg">
                 <p className="text-gray-700">
                   If you have any questions about this Privacy Policy, please contact us:<br />
-                  <strong>Email:</strong> support@babawina.co.za<br />
-                  <strong>Address:</strong> South Africa
+                  <strong>Email:</strong> support@babawina.co.za
                 </p>
               </div>
             </section>

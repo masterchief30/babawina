@@ -366,32 +366,44 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
       })
       
       if (!response.ok) {
-        // If unauthorized, try refreshing token
+        // If unauthorized, try refreshing token (with timeout)
         if (response.status === 401) {
           console.log('💳 Token expired, refreshing...')
-          const { data: refreshData } = await supabase.auth.refreshSession()
-          if (refreshData?.session) {
-            accessToken = refreshData.session.access_token
-            localStorage.setItem('sb-auth-token', JSON.stringify(refreshData.session))
+          try {
+            const refreshPromise = supabase.auth.refreshSession()
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Token refresh timeout')), 5000)
+            )
             
-            // Retry with new token
-            const retryResponse = await fetch(url, {
-              headers: {
-                'apikey': supabaseKey!,
-                'Authorization': `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-              },
-            })
+            const { data: refreshData } = await Promise.race([refreshPromise, timeoutPromise]) as any
             
-            if (!retryResponse.ok) {
-              throw new Error(`HTTP ${retryResponse.status}`)
+            if (refreshData?.session) {
+              accessToken = refreshData.session.access_token
+              localStorage.setItem('sb-auth-token', JSON.stringify(refreshData.session))
+              console.log('💳 Token refreshed successfully')
+              
+              // Retry with new token
+              const retryResponse = await fetch(url, {
+                headers: {
+                  'apikey': supabaseKey!,
+                  'Authorization': `Bearer ${accessToken}`,
+                  'Content-Type': 'application/json',
+                },
+              })
+              
+              if (!retryResponse.ok) {
+                throw new Error(`HTTP ${retryResponse.status}`)
+              }
+              
+              const data = await retryResponse.json()
+              console.log('💳 Payment methods fetched (after refresh):', data)
+              console.log('💳 Number of payment methods:', data?.length || 0)
+              setPaymentMethods(data || [])
+              return
             }
-            
-            const data = await retryResponse.json()
-            console.log('💳 Payment methods fetched (after refresh):', data)
-            console.log('💳 Number of payment methods:', data?.length || 0)
-            setPaymentMethods(data || [])
-            return
+          } catch (refreshError) {
+            console.error('💳 Token refresh failed:', refreshError)
+            // Fall through to show error to user
           }
         }
         throw new Error(`HTTP ${response.status}`)

@@ -336,6 +336,162 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
         </div>
       </section>
 
+      {/* Testimonials Section - SUPER COOL */}
+      <section className="py-16 md:py-20 px-4 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }} />
+        </div>
+
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-5xl font-black text-white mb-4">
+              Meet Our Winners!
+            </h2>
+            <p className="text-base md:text-xl text-blue-100 max-w-2xl mx-auto">
+              We started 3rd November and already have 3 winners
+            </p>
+          </motion.div>
+
+          {/* Testimonials Grid */}
+          <div className="grid md:grid-cols-3 gap-6 md:gap-8">
+            {[
+              {
+                image: "/images/hero/001.jpg",
+                name: "Carey",
+                location: "Cape Town",
+                prize: "PS5",
+                quote: "Won my PS5 last month. Took about 2 weeks to arrive. Pretty happy with it.",
+                rating: 5
+              },
+              {
+                image: "/images/hero/003.jpeg",
+                name: "Nomsa",
+                location: "Cape Town",
+                prize: "PS5",
+                quote: "Tried it out and actually won. Good way to spend R15.",
+                rating: 5
+              },
+              {
+                image: "/images/hero/002.jpeg",
+                name: "Andrew",
+                location: "Cape Town",
+                prize: "PS5",
+                quote: "Was skeptical at first but it's legit. Got lucky on my third entry.",
+                rating: 5
+              }
+            ].map((testimonial, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="group"
+              >
+                <div className="bg-white rounded-3xl overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-2">
+                  {/* Image */}
+                  <div className="relative h-64 md:h-72 overflow-hidden bg-gradient-to-br from-amber-400 to-amber-500">
+                    <Image
+                      src={testimonial.image}
+                      alt={`${testimonial.name} - Winner`}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      style={{
+                        filter: 'contrast(1.1) saturate(0.9) brightness(0.95)',
+                        imageRendering: 'auto',
+                        objectPosition: testimonial.image.includes('003.jpeg') ? 'center 25%' : 'center center'
+                      }}
+                      quality={60}
+                    />
+                    {/* Grainy Overlay for Authentic Look */}
+                    <div 
+                      className="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay"
+                      style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                        backgroundSize: '200px 200px'
+                      }}
+                    />
+                    {/* Winner Badge */}
+                    <div className="absolute top-4 right-4 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg flex items-center gap-1.5">
+                      <Trophy className="w-3 h-3" />
+                      WINNER
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    {/* Stars */}
+                    <div className="flex gap-1 mb-3">
+                      {[...Array(testimonial.rating)].map((_, starIndex) => (
+                        <svg
+                          key={starIndex}
+                          className="w-5 h-5 text-amber-400 fill-current"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                        </svg>
+                      ))}
+                    </div>
+
+                    {/* Quote */}
+                    <p className="text-gray-700 text-sm md:text-base leading-relaxed mb-4 italic">
+                      "{testimonial.quote}"
+                    </p>
+
+                    {/* Author */}
+                    <div className="border-t border-gray-100 pt-4">
+                      <div className="font-bold text-gray-900 text-base md:text-lg">
+                        {testimonial.name}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1.5 mt-1">
+                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        {testimonial.location}
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">
+                        <Sparkles className="w-3 h-3" />
+                        Won: {testimonial.prize}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <p className="text-white text-lg md:text-xl font-semibold mb-4">
+              Your turn to win! 🎉
+            </p>
+            <Button
+              onClick={handlePlayNow}
+              size="lg"
+              className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold px-10 py-6 rounded-full text-lg shadow-2xl inline-flex items-center gap-3 group"
+            >
+              <Trophy className="w-5 h-5" />
+              Start Playing Now
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
+
       {/* How It Works - CLEANER */}
       <section className="py-14 md:py-16 px-4 bg-white">
         <div className="container mx-auto max-w-5xl">
