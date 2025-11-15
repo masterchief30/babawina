@@ -20,6 +20,8 @@ interface TrackSessionRequest {
   deviceType?: string
   browser?: string
   os?: string
+  ipAddress?: string
+  country?: string
 }
 
 interface TrackEventRequest {
@@ -28,6 +30,61 @@ interface TrackEventRequest {
   eventName: string
   pagePath?: string
   eventData?: Record<string, any>
+}
+
+// Extract IP address from request headers
+function getIpAddress(request: NextRequest): string {
+  // Try multiple header sources (Vercel, Cloudflare, standard)
+  const forwarded = request.headers.get('x-forwarded-for')
+  const realIp = request.headers.get('x-real-ip')
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  
+  if (forwarded) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwarded.split(',')[0].trim()
+  }
+  
+  if (cfConnectingIp) {
+    return cfConnectingIp
+  }
+  
+  if (realIp) {
+    return realIp
+  }
+  
+  return 'unknown'
+}
+
+// Get country from IP address using free geolocation API
+async function getCountryFromIp(ipAddress: string): Promise<string | null> {
+  // Skip for localhost or unknown IPs
+  if (!ipAddress || ipAddress === 'unknown' || ipAddress.startsWith('127.') || ipAddress.startsWith('192.168.') || ipAddress === '::1') {
+    return null
+  }
+
+  try {
+    // Use ipapi.co free tier (no API key needed, 30k requests/month)
+    const response = await fetch(`https://ipapi.co/${ipAddress}/json/`, {
+      headers: {
+        'User-Agent': 'BabaWina Analytics',
+      },
+      signal: AbortSignal.timeout(3000), // 3 second timeout
+    })
+
+    if (!response.ok) {
+      console.warn(`Geolocation API error: ${response.status}`)
+      return null
+    }
+
+    const data = await response.json()
+    
+    // Return country name (e.g., "South Africa")
+    return data.country_name || null
+  } catch (error) {
+    // Silently fail - don't block analytics if geolocation fails
+    console.warn('Failed to get country from IP:', error)
+    return null
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -42,8 +99,17 @@ export async function POST(request: NextRequest) {
       },
     })
 
+    // Capture IP address from request
+    const ipAddress = getIpAddress(request)
+
     if (type === 'session') {
-      return await trackSession(supabase, data as TrackSessionRequest)
+      // Get country from IP (only for new sessions to avoid rate limits)
+      let country: string | null = null
+      if (ipAddress && ipAddress !== 'unknown') {
+        country = await getCountryFromIp(ipAddress)
+      }
+      
+      return await trackSession(supabase, { ...data, ipAddress, country } as TrackSessionRequest)
     } else if (type === 'event') {
       return await trackEvent(supabase, data as TrackEventRequest)
     } else {
@@ -70,6 +136,8 @@ async function trackSession(supabase: any, data: TrackSessionRequest) {
     deviceType,
     browser,
     os,
+    ipAddress,
+    country,
   } = data
 
   // Check if session exists
@@ -121,6 +189,8 @@ async function trackSession(supabase: any, data: TrackSessionRequest) {
       device_type: deviceType || 'unknown',
       browser: browser || 'unknown',
       os: os || 'unknown',
+      ip_address: ipAddress || null,
+      country: country || null,
     })
 
     if (error) {
