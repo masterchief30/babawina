@@ -169,14 +169,14 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
                 <Link href="/login">
                   <Button 
                     variant="outline"
-                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold px-4 lg:px-6 py-2 rounded-full text-sm transition-all hidden sm:block"
+                    className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white font-semibold px-3 lg:px-6 py-2 rounded-full text-xs sm:text-sm transition-all"
                   >
-                    Login
+                    Log In
                   </Button>
                 </Link>
                 <Link href="/signup">
                   <Button 
-                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-4 lg:px-6 py-2 rounded-full shadow-lg text-sm"
+                    className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-semibold px-3 lg:px-6 py-2 rounded-full shadow-lg text-xs sm:text-sm"
                   >
                     Sign Up
                   </Button>

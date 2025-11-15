@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, Trophy, Target, Minus, ShoppingCart, Gift, Check, CreditCard } from "lucide-react"
+import { ArrowLeft, Trophy, Target, ShoppingCart, Gift, Check, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -455,11 +455,11 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
           <div className="lg:col-span-3">
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div className="p-6 border-b">
-                <p className="text-gray-600">
+                <p className="text-gray-900 font-bold">
                   Click anywhere on the image to place your guess where the ball is hidden!
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  You can place multiple guesses - they'll be listed on the right.
+                  You can place multiple guesses.
                 </p>
               </div>
 
@@ -528,8 +528,8 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
               </div>
 
               <div className="p-4">
-                {/* Prize Display */}
-                <div className="mb-4">
+                {/* Prize Display - Hidden on mobile */}
+                <div className="mb-4 hidden lg:block">
                   <div className="mb-2">
                     <img
                       src={getProductImageUrl()}
@@ -545,8 +545,8 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
                 {/* Entries List */}
                 {gameEntries.length > 0 ? (
                   <div className="border-t pt-3 mb-3">
-                    <h4 className="font-semibold text-gray-900 mb-2 text-xs uppercase tracking-wide">ENTRIES ({gameEntries.length})</h4>
-                    <div className="space-y-1 max-h-64 overflow-y-auto">
+                    <h4 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">ENTRIES ({gameEntries.length})</h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
                       {gameEntries.map((entry, index) => {
                         // Simple pricing - all entries are paid
                         const isSubmitted = entry.submitted === true
@@ -554,39 +554,39 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
                         return (
                           <div 
                             key={entry.id} 
-                            className={`flex items-center justify-between text-xs px-2 py-1.5 rounded ${
+                            className={`flex items-center justify-between px-3 py-3 rounded-lg ${
                               isSubmitted 
-                                ? 'bg-green-50 border border-green-200' 
-                                : 'bg-gray-50'
+                                ? 'bg-green-50 border-2 border-green-200' 
+                                : 'bg-gray-50 border border-gray-200'
                             }`}
                           >
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-2">
                               {isSubmitted && (
-                                <Check className="w-3 h-3 text-green-600" />
+                                <Check className="w-4 h-4 text-green-600" />
                               )}
-                              <span className={`font-medium ${isSubmitted ? 'text-green-700' : 'text-gray-600'}`}>
+                              <span className={`font-bold text-sm ${isSubmitted ? 'text-green-700' : 'text-gray-700'}`}>
                                 #{index + 1}
                               </span>
                               {isSubmitted && (
-                                <span className="text-[9px] uppercase tracking-wide text-green-600 font-bold">
+                                <span className="text-[10px] uppercase tracking-wide text-green-600 font-bold">
                                   Saved
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-2">
                               {!isSubmitted && (
-                                <span className="text-gray-900 font-semibold text-xs">
+                                <span className="text-gray-900 font-bold text-sm">
                                   {formatPrice(competition.entry_price_rand)}
                                 </span>
                               )}
                               {!isSubmitted && (
                                 <Button
-                                  variant="ghost"
+                                  variant="destructive"
                                   size="sm"
-                                  className="h-5 w-5 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  className="h-7 px-2 text-xs font-semibold bg-red-500 hover:bg-red-600 text-white transition-colors"
                                   onClick={() => removeEntry(entry.id)}
                                 >
-                                  <Minus className="w-3 h-3" />
+                                  Delete
                                 </Button>
                               )}
                             </div>
