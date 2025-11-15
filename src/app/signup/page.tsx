@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -12,7 +12,7 @@ import { entryPreservation, saveTempEntriesToDB } from '@/lib/entry-preservation
 import { supabase } from '@/lib/supabase'
 import { useAnalytics } from '@/hooks/useAnalytics'
 
-export default function SignupPage() {
+function SignupContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const { trackEvent } = useAnalytics()
@@ -381,5 +381,13 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400" />}>
+      <SignupContent />
+    </Suspense>
   )
 }

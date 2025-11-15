@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
@@ -12,7 +12,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowLeft, CheckCircle, XCircle } from 'lucide
 import { motion } from 'framer-motion'
 import { useAnalytics } from '@/hooks/useAnalytics'
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter()
   const { user, loading } = useAuth()
   const { trackEvent } = useAnalytics()
@@ -283,5 +283,13 @@ export default function LoginPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400" />}>
+      <LoginContent />
+    </Suspense>
   )
 }
