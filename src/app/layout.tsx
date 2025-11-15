@@ -17,6 +17,12 @@ export const metadata: Metadata = {
   creator: "BabaWina",
   publisher: "BabaWina",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.babawina.co.za"),
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -64,8 +70,8 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <head>
         <link rel="manifest" href="/site.webmanifest" />
-        <meta name="theme-color" content="#FFD700" />
-        <meta name="msapplication-TileColor" content="#FFD700" />
+        <meta name="theme-color" content="#FFFFFF" />
+        <meta name="msapplication-TileColor" content="#2563EB" />
       </head>
       <body className="font-sans antialiased">
         <AuthProvider>

@@ -95,7 +95,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
+    <div className="min-h-screen bg-white overflow-x-hidden w-full max-w-full">
       
       {/* Promo Banner - Simple Pricing */}
       <motion.div 
