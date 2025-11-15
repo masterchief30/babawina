@@ -4,9 +4,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { ArrowLeft } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
-import { Suspense } from 'react'
 
-function TermsContent() {
+export default function TermsPage() {
   // Track page view
   useAnalytics()
   
@@ -267,13 +266,5 @@ function TermsContent() {
         </div>
       </main>
     </div>
-  )
-}
-
-export default function TermsPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400" />}>
-      <TermsContent />
-    </Suspense>
   )
 }

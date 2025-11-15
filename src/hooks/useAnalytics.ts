@@ -5,7 +5,7 @@
 
 import { useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { usePathname, useSearchParams } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 // Generate or retrieve session ID
 function getSessionId(): string {
@@ -64,7 +64,7 @@ function getUTMParams() {
 export function useAnalytics() {
   const { user } = useAuth()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  // Note: searchParams intentionally NOT used to avoid Suspense boundary requirement
   const lastTrackedPath = useRef<string | null>(null)
   const lastTrackTime = useRef<number>(0)
 
@@ -130,7 +130,7 @@ export function useAnalytics() {
         pagePath: pathname,
       }),
     }).catch((err) => console.error('Analytics page view tracking failed:', err))
-  }, [pathname, searchParams, user?.id])
+  }, [pathname, user?.id])  // searchParams removed - not used in tracking logic
 
   // Function to track custom events
   const trackEvent = useCallback(
