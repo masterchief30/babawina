@@ -57,7 +57,7 @@ export function CompetitionTilesGrid({ initialCompetitions }: CompetitionTilesGr
   return (
     <div className="w-full">
       {/* Competition Grid - Mobile-optimized */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {/* Live Competitions */}
         {initialCompetitions.map((competition, index) => (
           <motion.div
