@@ -1,6 +1,10 @@
 import { createClient } from "@supabase/supabase-js"
 import { AnalyticsDashboardClient } from "@/components/admin/analytics-dashboard-client"
 
+// Force dynamic rendering - no caching
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Create admin client with service role key
 function createAdminClient() {
   return createClient(
