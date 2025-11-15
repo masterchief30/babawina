@@ -46,15 +46,16 @@ export function CompetitionTile({
   featured = false
 }: CompetitionTileProps) {
   const { user } = useAuth()
-  const [, setTimeRemaining] = useState<TimeRemaining>({
+  const [timeRemaining, setTimeRemaining] = useState<TimeRemaining>({
     days: 0,
     hours: 0,
     minutes: 0,
     seconds: 0,
     isExpired: false
   })
+  const [countdownText, setCountdownText] = useState('')
 
-  // Calculate time remaining
+  // Calculate time remaining and update countdown text
   useEffect(() => {
     const calculateTimeRemaining = () => {
       const now = new Date().getTime()
@@ -69,6 +70,7 @@ export function CompetitionTile({
           seconds: 0,
           isExpired: true
         })
+        setCountdownText('ENDED')
         return
       }
 
@@ -78,6 +80,15 @@ export function CompetitionTile({
       const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
       setTimeRemaining({ days, hours, minutes, seconds, isExpired: false })
+      
+      // Update countdown text
+      if (days > 0) {
+        setCountdownText(`${days}d ${hours}h ${minutes}m`)
+      } else if (hours > 0) {
+        setCountdownText(`${hours}h ${minutes}m`)
+      } else {
+        setCountdownText(`${minutes}m ${seconds}s LEFT`)
+      }
     }
 
     calculateTimeRemaining()
@@ -94,12 +105,6 @@ export function CompetitionTile({
     return `R${price}`
   }
 
-  // Format time display - show day name
-  const formatTimeDisplay = () => {
-    const endDate = new Date(ends_at)
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-    return `Ends ${dayNames[endDate.getDay()]}`
-  }
 
   // Image URL - prioritize display photo over inpainted/game photo
   const getImageUrl = () => {
@@ -135,9 +140,43 @@ export function CompetitionTile({
         className="group relative bg-white rounded-lg overflow-hidden cursor-pointer transition-shadow duration-300 hover:shadow-2xl h-full mx-auto shadow-lg"
         style={{ maxWidth: '336px' }}
       >
-        {/* Time Badge - Green gradient */}
-        <div className="absolute top-3 left-3 z-10 bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shadow-lg">
-          {formatTimeDisplay().toUpperCase()}
+        {/* Grey Overlay - Appears on hover */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10 pointer-events-none" />
+        
+        {/* BabaWina Lion - Takes over the whole tile on hover! */}
+        <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-700 ease-out">
+          <motion.div
+            initial={{ rotate: -20, scale: 0.8 }}
+            whileInView={{ 
+              rotate: [0, 5, -5, 0],
+              scale: 1,
+            }}
+            transition={{
+              rotate: {
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              },
+              scale: {
+                duration: 0.5,
+                ease: "easeOut"
+              }
+            }}
+            className="drop-shadow-2xl"
+          >
+            <Image
+              src="/images/hero/mascot_full02.png"
+              alt="BabaWina Lion Champion!"
+              width={280}
+              height={280}
+              className="w-64 h-64 lg:w-72 lg:h-72 object-contain"
+            />
+          </motion.div>
+        </div>
+        {/* Countdown Timer Badge - URGENCY (stays on top) */}
+        <div className="absolute top-3 left-3 z-30 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded text-xs font-bold uppercase tracking-wider shadow-lg flex items-center gap-1.5">
+          <span className="text-sm">⏰</span>
+          {countdownText || 'Loading...'}
         </div>
 
         {/* Image Section - Full width, auto height to preserve aspect ratio */}
@@ -155,7 +194,7 @@ export function CompetitionTile({
         {/* Title - Green background with gradient, white text - Fixed height */}
         <div className="bg-gradient-to-r from-green-600 to-green-500 px-2 py-2 h-8 lg:h-14 flex items-center justify-center">
           <h3 className="text-white font-bold text-xs lg:text-base uppercase tracking-wide text-center drop-shadow-sm leading-tight">
-            {title.replace(/^Win (a|an) /i, 'WIN ')}
+            {title}
           </h3>
         </div>
 

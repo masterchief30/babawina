@@ -27,14 +27,14 @@ interface CropArea {
   y: number  // pixels from top
 }
 
-// CORRECT aspect ratio for competition tiles
+// UPGRADED: HD resolution for competition tiles
 // Using 16:9 aspect ratio which is standard for wide displays
 const TILE_SPECS = {
   aspectRatio: 16/9,
-  outputWidth: 640,   // Higher res for retina displays
-  outputHeight: 360,  // 640 / (16/9) = 360
-  previewWidth: 480,  // Preview size in modal
-  previewHeight: 270  // 480 / (16/9) = 270
+  outputWidth: 1280,   // 720p HD resolution
+  outputHeight: 720,   // 1280 / (16/9) = 720
+  previewWidth: 640,   // Preview size in modal
+  previewHeight: 360   // 640 / (16/9) = 360
 }
 
 export function DisplayPhotoCropper({ 

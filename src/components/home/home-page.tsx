@@ -6,7 +6,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { CompetitionTilesGrid } from "@/components/landing/competition-tiles-grid"
 import { useAuth } from "@/contexts/AuthContext"
-import { Trophy, Target, Users, ArrowRight, Rocket, Zap, CheckCircle, Sparkles, TrendingUp } from "lucide-react"
+import { Trophy, Target, Users, ArrowRight, Rocket, Zap, CheckCircle, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
 
 
@@ -31,7 +31,40 @@ interface HomePageProps {
 
 export function HomePage({ initialCompetitions }: HomePageProps) {
   const [scrolled, setScrolled] = useState(false)
+  const [entryCount, setEntryCount] = useState(0)
   const { user, loading, signOut } = useAuth()
+
+  // Real visit counter - increments on each page visit, resets at midnight
+  useEffect(() => {
+    const incrementVisitCounter = async () => {
+      try {
+        // Call API to increment today's visit count
+        const response = await fetch('/api/increment-visit', {
+          method: 'POST',
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          setEntryCount(data.count || 0)
+        } else {
+          // Fallback: just display current count without incrementing
+          const fallbackResponse = await fetch('/api/increment-visit', {
+            method: 'GET',
+          })
+          if (fallbackResponse.ok) {
+            const data = await fallbackResponse.json()
+            setEntryCount(data.count || 0)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching visit count:', error)
+        // Silent fail - don't show counter if error
+        setEntryCount(0)
+      }
+    }
+
+    incrementVisitCounter()
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -187,17 +220,6 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
         <div className="relative z-40 container mx-auto px-4 sm:px-6 lg:px-8 min-h-[85vh] md:min-h-[90vh] flex items-center justify-center">
           <div className="w-full max-w-3xl mx-auto text-center py-20 sm:py-24">
             
-            {/* Mini Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg mb-8"
-            >
-              <TrendingUp className="w-4 h-4 text-green-600" />
-              <span className="text-xs sm:text-sm font-bold text-gray-900">Live Competitions Now!</span>
-            </motion.div>
-
             {/* Main Headline - CLEANER */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
@@ -263,6 +285,27 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
                 <span>Real Prizes</span>
               </div>
             </motion.div>
+
+            {/* Live Entry Counter - URGENCY */}
+            {entryCount > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.7 }}
+                className="mt-6 inline-flex items-center gap-2 bg-red-500 text-white px-5 py-2.5 rounded-full shadow-lg"
+              >
+                <motion.span
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-xl"
+                >
+                  🔥
+                </motion.span>
+                <span className="font-black text-base sm:text-lg">
+                  {entryCount} {entryCount === 1 ? 'person' : 'people'} playing today!
+                </span>
+              </motion.div>
+            )}
 
           </div>
         </div>

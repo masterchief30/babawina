@@ -1,6 +1,7 @@
 "use client"
 
 import { CompetitionTile } from "./competition-tile"
+import { ComingSoonTile } from "./coming-soon-tile"
 import { motion } from "framer-motion"
 import { Sparkles } from "lucide-react"
 
@@ -57,6 +58,7 @@ export function CompetitionTilesGrid({ initialCompetitions }: CompetitionTilesGr
     <div className="w-full">
       {/* Competition Grid - Mobile-optimized */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {/* Live Competitions */}
         {initialCompetitions.map((competition, index) => (
           <motion.div
             key={competition.id}
@@ -80,6 +82,27 @@ export function CompetitionTilesGrid({ initialCompetitions }: CompetitionTilesGr
             />
           </motion.div>
         ))}
+        
+        {/* Coming Soon Tiles */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: initialCompetitions.length * 0.1 }}
+        >
+          <ComingSoonTile
+            title="NEXT BIG PRIZE"
+          />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: (initialCompetitions.length + 1) * 0.1 }}
+        >
+          <ComingSoonTile
+            title="MORE TO COME"
+          />
+        </motion.div>
       </div>
 
       {/* View All Button - Mobile-friendly */}

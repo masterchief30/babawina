@@ -12,6 +12,7 @@ import {
   validateMobileUpload,
   validateMobileDimensions,
   normalizedToUnitCoords,
+  GAME_CANVAS_SIZE,
   type NormalizationTransform,
   type ImageDimensions,
 } from "@/lib/image-utils"
@@ -157,6 +158,46 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
       }
 
       setImageDimensions(dimensions)
+      
+      // Check if image is EXACT match for target size (no crop needed!)
+      if (dimensions.width === GAME_CANVAS_SIZE.width && dimensions.height === GAME_CANVAS_SIZE.height) {
+        // Image is perfect size - use full area (no crop!)
+        setCropPosition({ top: 0, left: 0, width: 100, height: 100 })
+        toast({
+          title: "Perfect match! 🎯",
+          description: `Image is exactly ${GAME_CANVAS_SIZE.width}×${GAME_CANVAS_SIZE.height} - no cropping needed!`,
+        })
+      } else {
+        // Image needs cropping - calculate best-fit 16:9 area
+        const targetAspectRatio = GAME_CANVAS_SIZE.width / GAME_CANVAS_SIZE.height // 16:9
+        const imageAspectRatio = dimensions.width / dimensions.height
+        
+        let cropWidthPercent: number
+        let cropHeightPercent: number
+        let cropLeftPercent: number
+        let cropTopPercent: number
+        
+        if (imageAspectRatio > targetAspectRatio) {
+          // Image is wider than 16:9, crop horizontally (center)
+          cropHeightPercent = 100
+          cropWidthPercent = (targetAspectRatio / imageAspectRatio) * 100
+          cropLeftPercent = (100 - cropWidthPercent) / 2
+          cropTopPercent = 0
+        } else {
+          // Image is taller than 16:9, crop vertically (center)
+          cropWidthPercent = 100
+          cropHeightPercent = (imageAspectRatio / targetAspectRatio) * 100
+          cropLeftPercent = 0
+          cropTopPercent = (100 - cropHeightPercent) / 2
+        }
+        
+        setCropPosition({
+          top: cropTopPercent,
+          left: cropLeftPercent,
+          width: cropWidthPercent,
+          height: cropHeightPercent
+        })
+      }
       
       // Generate competition ID
       const competitionId = `comp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
@@ -462,9 +503,9 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     if (!croppedArea) return
 
     const rect = croppedArea.getBoundingClientRect()
-    // Calculate coordinates within the cropped area (0-960, 0-540)
-    const x = ((e.clientX - rect.left) / rect.width) * 960
-    const y = ((e.clientY - rect.top) / rect.height) * 540
+    // Calculate coordinates within the cropped area (Full HD: 1920×1080)
+    const x = ((e.clientX - rect.left) / rect.width) * GAME_CANVAS_SIZE.width
+    const y = ((e.clientY - rect.top) / rect.height) * GAME_CANVAS_SIZE.height
 
     setManualCoords({ x, y })
     // Clear AI result when manual coordinates are set
@@ -482,8 +523,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
     if (!croppedArea) return
 
     const rect = croppedArea.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 960
-    const y = ((e.clientY - rect.top) / rect.height) * 540
+    const x = ((e.clientX - rect.left) / rect.width) * GAME_CANVAS_SIZE.width
+    const y = ((e.clientY - rect.top) / rect.height) * GAME_CANVAS_SIZE.height
 
     setMouseCoords({ x, y })
   }
@@ -574,6 +615,14 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
           {/* Step 2: Crop Interface */}
           {currentStep === 2 && imageUrl && imageDimensions && !isProcessing && (
             <div className="flex flex-col items-center justify-center space-y-6">
+              {/* Perfect Size Indicator */}
+              {cropPosition.top === 0 && cropPosition.left === 0 && cropPosition.width === 100 && cropPosition.height === 100 && (
+                <div className="bg-emerald-100 border-2 border-emerald-500 text-emerald-800 px-6 py-3 rounded-lg flex items-center gap-3 font-semibold shadow-lg">
+                  <CheckCircle className="w-6 h-6 text-emerald-600" />
+                  <span>✅ Perfect size ({GAME_CANVAS_SIZE.width}×{GAME_CANVAS_SIZE.height}) - No cropping needed!</span>
+                </div>
+              )}
+              
               <div className="relative">
                 <Image
                   src={imageUrl}
@@ -583,33 +632,39 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                   className="object-contain"
                   style={{ borderRadius: 0 }}
                 />
-                {/* Full overlay with cutout effect */}
-                <div 
-                  className="absolute inset-0 pointer-events-none"
-                  style={{
-                    background: `
-                      linear-gradient(to bottom, 
-                        rgba(0,0,0,0.6) 0%, 
-                        rgba(0,0,0,0.6) ${cropPosition.top}%, 
-                        transparent ${cropPosition.top}%, 
-                        transparent ${cropPosition.top + cropPosition.height}%, 
-                        rgba(0,0,0,0.6) ${cropPosition.top + cropPosition.height}%, 
-                        rgba(0,0,0,0.6) 100%
-                      ),
-                      linear-gradient(to right, 
-                        rgba(0,0,0,0.6) 0%, 
-                        rgba(0,0,0,0.6) ${cropPosition.left}%, 
-                        transparent ${cropPosition.left}%, 
-                        transparent ${cropPosition.left + cropPosition.width}%, 
-                        rgba(0,0,0,0.6) ${cropPosition.left + cropPosition.width}%, 
-                        rgba(0,0,0,0.6) 100%
-                      )
-                    `
-                  }}
-                ></div>
+                {/* Full overlay with cutout effect (only show if cropping is needed) */}
+                {!(cropPosition.top === 0 && cropPosition.left === 0 && cropPosition.width === 100 && cropPosition.height === 100) && (
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: `
+                        linear-gradient(to bottom, 
+                          rgba(0,0,0,0.6) 0%, 
+                          rgba(0,0,0,0.6) ${cropPosition.top}%, 
+                          transparent ${cropPosition.top}%, 
+                          transparent ${cropPosition.top + cropPosition.height}%, 
+                          rgba(0,0,0,0.6) ${cropPosition.top + cropPosition.height}%, 
+                          rgba(0,0,0,0.6) 100%
+                        ),
+                        linear-gradient(to right, 
+                          rgba(0,0,0,0.6) 0%, 
+                          rgba(0,0,0,0.6) ${cropPosition.left}%, 
+                          transparent ${cropPosition.left}%, 
+                          transparent ${cropPosition.left + cropPosition.width}%, 
+                          rgba(0,0,0,0.6) ${cropPosition.left + cropPosition.width}%, 
+                          rgba(0,0,0,0.6) 100%
+                        )
+                      `
+                    }}
+                  ></div>
+                )}
                 
                 <div 
-                  className="absolute border-4 border-emerald-500 cursor-move pointer-events-auto select-none"
+                  className={`absolute border-4 cursor-move pointer-events-auto select-none ${
+                    cropPosition.top === 0 && cropPosition.left === 0 && cropPosition.width === 100 && cropPosition.height === 100
+                      ? 'border-green-500' 
+                      : 'border-emerald-500'
+                  }`}
                   style={{
                     top: `${cropPosition.top}%`,
                     left: `${cropPosition.left}%`,
@@ -691,8 +746,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                     <div
                       className="absolute pointer-events-none z-10"
                       style={{
-                        left: `${cropPosition.left + ((manualCoords?.x || aiResult?.centroid?.x || 0) / 960) * cropPosition.width}%`,
-                        top: `${cropPosition.top + ((manualCoords?.y || aiResult?.centroid?.y || 0) / 540) * cropPosition.height}%`,
+                        left: `${cropPosition.left + ((manualCoords?.x || aiResult?.centroid?.x || 0) / GAME_CANVAS_SIZE.width) * cropPosition.width}%`,
+                        top: `${cropPosition.top + ((manualCoords?.y || aiResult?.centroid?.y || 0) / GAME_CANVAS_SIZE.height) * cropPosition.height}%`,
                         transform: 'translate(-50%, -50%)'
                       }}
                     >
@@ -707,8 +762,8 @@ export function PhotoWizardModal({ isOpen, onClose, file, onComplete }: PhotoWiz
                     <div
                       className="absolute pointer-events-none z-10 opacity-60"
                       style={{
-                        left: `${cropPosition.left + (mouseCoords.x / 960) * cropPosition.width}%`,
-                        top: `${cropPosition.top + (mouseCoords.y / 540) * cropPosition.height}%`,
+                        left: `${cropPosition.left + (mouseCoords.x / GAME_CANVAS_SIZE.width) * cropPosition.width}%`,
+                        top: `${cropPosition.top + (mouseCoords.y / GAME_CANVAS_SIZE.height) * cropPosition.height}%`,
                         transform: 'translate(-50%, -50%)'
                       }}
                     >

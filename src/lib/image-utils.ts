@@ -23,23 +23,24 @@ export interface NormalizationTransform {
   normalized_height: number
 }
 
-// Mobile-optimized game canvas size (16:9 aspect ratio)
+// HD 720p game canvas size (16:9 aspect ratio)
+// Native resolution extraction - NO downscaling!
 export const GAME_CANVAS_SIZE = {
-  width: 960,
-  height: 540
-} as const
-
-// High-tier size for tablets/retina displays
-export const GAME_CANVAS_SIZE_HD = {
   width: 1280,
   height: 720
 } as const
 
+// Legacy mobile size (deprecated)
+export const GAME_CANVAS_SIZE_MOBILE = {
+  width: 960,
+  height: 540
+} as const
+
 // Responsive breakpoints for image delivery
 export const RESPONSIVE_SIZES = {
-  small: { width: 640, height: 360 }, // 480w
-  medium: { width: 960, height: 540 }, // 960w  
-  large: { width: 1280, height: 720 } // 1280w
+  small: { width: 640, height: 360 },   // 480w - mobile
+  medium: { width: 1280, height: 720 }, // 960w - tablet
+  large: { width: 1920, height: 1080 }  // 1920w - desktop/HD
 } as const
 
 /**
@@ -105,7 +106,8 @@ export function calculateBestFitCrop(imageWidth: number, imageHeight: number): C
 }
 
 /**
- * Crop and resize image to mobile-optimized normalized size (960×540)
+ * Crop and extract image at NATIVE HD 720p resolution (1280×720)
+ * NO DOWNSCALING - extracts exact pixels from original image!
  */
 export function cropAndNormalizeImage(
   file: File,
@@ -120,7 +122,7 @@ export function cropAndNormalizeImage(
       return
     }
 
-    // Set canvas to mobile-optimized normalized size
+    // Set canvas to 720p HD size for native resolution extraction
     canvas.width = GAME_CANVAS_SIZE.width
     canvas.height = GAME_CANVAS_SIZE.height
 
@@ -324,20 +326,21 @@ export function validateMobileUpload(file: File): { valid: boolean; error?: stri
 }
 
 /**
- * Validate image dimensions for mobile upload
+ * Validate image dimensions for HD upload
+ * Requires HD 720p minimum for native resolution extraction
  */
 export function validateMobileDimensions(width: number, height: number): { valid: boolean; error?: string } {
-  if (width < 1024 || height < 576) {
+  if (width < 1280 || height < 720) {
     return {
       valid: false,
-      error: "Minimum resolution: 1024×576 pixels."
+      error: "Minimum resolution: 1280×720 pixels (720p HD) required for best quality."
     }
   }
   
-  if (width > 5000 || height > 5000) {
+  if (width > 8000 || height > 8000) {
     return {
       valid: false,
-      error: "Maximum resolution: 5000×5000 pixels. Image will be auto-downscaled."
+      error: "Maximum resolution: 8000×8000 pixels."
     }
   }
 
