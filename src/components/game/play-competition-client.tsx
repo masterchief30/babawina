@@ -16,6 +16,7 @@ import { PaymentSuccessModal, PaymentProcessingModal } from "../payment/payment-
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
+import { useAnalytics } from "@/hooks/useAnalytics"
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,7 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
   const { toast } = useToast()
   const router = useRouter()
   const { user } = useAuth() // Get user from AuthContext (client-side)
+  const { trackEvent } = useAnalytics()
   
   // Use AuthContext user if available, otherwise fall back to server prop
   const userId = user?.id || serverUserId
@@ -78,12 +80,20 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
     hasPaymentMethod: boolean
   } | null>(null)
 
-  // Log user authentication status on mount
+  // Log user authentication status on mount & track competition view
   useEffect(() => {
     console.log('🎮 PlayCompetitionClient mounted')
     console.log('👤 User ID from props:', userId)
     console.log('🔐 User authenticated:', userId ? 'YES' : 'NO')
-  }, [userId])
+    
+    // Track competition view with detailed metadata
+    trackEvent('competition_viewed', {
+      competition_id: competition.id,
+      competition_title: competition.title,
+      competition_ends: competition.ends_at,
+      page_title: `${competition.title} (Ends: ${new Date(competition.ends_at).toLocaleDateString('en-ZA')})`,
+    })
+  }, [userId, competition.id, competition.title, trackEvent])
 
   // Load existing entries from database if user is logged in
   useEffect(() => {
@@ -364,6 +374,13 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
       setSuccessData({
         amountCharged: result.totalCharged || 0,
         entryCount: result.entriesSubmitted || 0
+      })
+      
+      // Track bet placement
+      trackEvent('bet_placed', {
+        competition_id: competition.id,
+        entry_count: result.entriesSubmitted,
+        amount_charged: result.totalCharged,
       })
       
       // Show the success modal with confetti & lion animation

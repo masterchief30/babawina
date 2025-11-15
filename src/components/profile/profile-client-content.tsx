@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { PaymentMethodModal } from '@/components/payment/payment-method-modal'
 import { useToast } from '@/hooks/use-toast'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 interface Competition {
   id: string
@@ -80,6 +81,9 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [isLoadingPayments, setIsLoadingPayments] = useState(false)
   const [showAddPaymentModal, setShowAddPaymentModal] = useState(false)
+  
+  // Analytics tracking
+  const { trackEvent } = useAnalytics()
   
   console.log('💾 userCompetitions state:', userCompetitions)
   console.log('📊 State length:', userCompetitions?.length || 0)
@@ -690,7 +694,10 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
               <div className="lg:w-64 bg-gray-50 border-r border-gray-200">
                 <nav className="p-4 space-y-2">
                   <button
-                    onClick={() => setActiveTab('account')}
+                    onClick={() => {
+                      setActiveTab('account')
+                      trackEvent('profile_tab_click', { tab: 'account' })
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                       activeTab === 'account'
                         ? 'bg-blue-600 text-white shadow-md'
@@ -702,7 +709,10 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   </button>
                   
                   <button
-                    onClick={() => setActiveTab('competitions')}
+                    onClick={() => {
+                      setActiveTab('competitions')
+                      trackEvent('profile_tab_click', { tab: 'competitions' })
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                       activeTab === 'competitions'
                         ? 'bg-blue-600 text-white shadow-md'
@@ -714,7 +724,10 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   </button>
                   
                   <button
-                    onClick={() => setActiveTab('payment')}
+                    onClick={() => {
+                      setActiveTab('payment')
+                      trackEvent('profile_tab_click', { tab: 'payment' })
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                       activeTab === 'payment'
                         ? 'bg-blue-600 text-white shadow-md'
@@ -726,7 +739,10 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   </button>
                   
                   <button
-                    onClick={() => setActiveTab('password')}
+                    onClick={() => {
+                      setActiveTab('password')
+                      trackEvent('profile_tab_click', { tab: 'password' })
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                       activeTab === 'password'
                         ? 'bg-blue-600 text-white shadow-md'
@@ -738,7 +754,10 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
                   </button>
                   
                   <button
-                    onClick={() => setActiveTab('delete')}
+                    onClick={() => {
+                      setActiveTab('delete')
+                      trackEvent('profile_tab_click', { tab: 'delete' })
+                    }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors cursor-pointer ${
                       activeTab === 'delete'
                         ? 'bg-red-600 text-white shadow-md'

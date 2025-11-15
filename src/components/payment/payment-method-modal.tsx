@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast'
 import { CardElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js'
 import { getStripe } from '@/lib/stripe-client'
 import { Loader2, CreditCard, Lock } from 'lucide-react'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 interface PaymentMethodModalProps {
   isOpen: boolean
@@ -30,6 +31,7 @@ function PaymentForm({
   const stripe = useStripe()
   const elements = useElements()
   const { toast } = useToast()
+  const { trackEvent } = useAnalytics()
   const [isProcessing, setIsProcessing] = useState(false)
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -116,6 +118,11 @@ function PaymentForm({
       }
 
       const saveData = await saveResponse.json()
+
+      // Track payment method added
+      trackEvent('payment_added', {
+        user_id: userId,
+      })
 
       // Silently close modal - no success notification needed
       onSuccess()

@@ -8,6 +8,7 @@ import { CompetitionTilesGrid } from "@/components/landing/competition-tiles-gri
 import { useAuth } from "@/contexts/AuthContext"
 import { Trophy, Target, Users, ArrowRight, Rocket, Zap, CheckCircle, Sparkles } from "lucide-react"
 import { motion } from "framer-motion"
+import { useAnalytics } from "@/hooks/useAnalytics"
 
 
 interface Competition {
@@ -33,6 +34,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
   const [scrolled, setScrolled] = useState(false)
   const [entryCount, setEntryCount] = useState(0)
   const { user, loading, signOut } = useAuth()
+  const { trackEvent } = useAnalytics()
 
   // Real visit counter - increments on each page visit, resets at midnight
   useEffect(() => {
@@ -76,6 +78,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
   }, [])
 
   const handlePlayNow = () => {
+    trackEvent('click_play_now')
     const competitionsSection = document.getElementById('competitions')
     if (competitionsSection) {
       competitionsSection.scrollIntoView({ behavior: 'smooth' })

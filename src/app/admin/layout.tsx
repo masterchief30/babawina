@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isManagePage = pathname === '/admin/manage';
   const isWinnersPage = pathname === '/admin/winners';
   const isUsersPage = pathname === '/admin/users';
+  const isAnalyticsPage = pathname === '/admin/analytics';
 
   return (
     <>
@@ -120,6 +121,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 }`}
               >
                 <span className="font-medium">Users</span>
+              </Link>
+
+              <Link 
+                href="/admin/analytics"
+                className={`flex items-center px-4 py-3 rounded-lg text-white transition-all duration-300 ${
+                  isAnalyticsPage 
+                    ? 'bg-emerald-600 shadow-lg transform scale-105' 
+                    : 'hover:bg-slate-800 hover:transform hover:scale-105'
+                }`}
+              >
+                <span className="font-medium">Traffic & Analytics</span>
               </Link>
             </nav>
 

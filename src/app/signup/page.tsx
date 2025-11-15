@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Mail, Lock, Check } from 'lucide-react'
 import { entryPreservation, saveTempEntriesToDB } from '@/lib/entry-preservation'
 import { supabase } from '@/lib/supabase'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function SignupPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const { trackEvent } = useAnalytics()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -165,6 +167,11 @@ export default function SignupPage() {
         } else {
           console.warn('⚠️ No session in signup response - user may not be logged in!')
         }
+        
+        // Track signup event
+        trackEvent('signup', {
+          user_id: data?.user?.id,
+        })
         
         // Redirect to success page
         console.log('↪️ Redirecting to /signup-successful')

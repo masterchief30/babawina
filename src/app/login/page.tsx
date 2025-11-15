@@ -10,10 +10,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useAnalytics } from '@/hooks/useAnalytics'
 
 export default function LoginPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
+  const { trackEvent } = useAnalytics()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -81,6 +83,9 @@ export default function LoginPage() {
         console.log('✅ Login successful!', data.user.email)
         console.log('🔐 Session:', !!data.session)
         
+        // Track successful login
+        trackEvent('login_success', { email })
+        
         // Store session in localStorage for fast loading
         try {
           const sessionData = {
@@ -115,6 +120,13 @@ export default function LoginPage() {
     } catch (error: unknown) {
       console.error('💥 Login error:', error)
       const errorMessage = error instanceof Error ? error.message : 'Login failed'
+      
+      // Track failed login
+      trackEvent('login_failed', { 
+        email, 
+        error: errorMessage 
+      })
+      
       showNotification('error', errorMessage)
     } finally {
       setIsLoading(false)
