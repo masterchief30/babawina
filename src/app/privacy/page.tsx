@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { useAnalytics } from '@/hooks/useAnalytics'
+import { Suspense } from 'react'
 
-export default function PrivacyPage() {
+function PrivacyContent() {
   // Track page view
   useAnalytics()
   
@@ -197,5 +198,13 @@ export default function PrivacyPage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function PrivacyPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400" />}>
+      <PrivacyContent />
+    </Suspense>
   )
 }
