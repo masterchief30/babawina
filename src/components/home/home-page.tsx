@@ -416,7 +416,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
               },
               {
                 image: "/images/hero/003.jpeg",
-                name: "Nomsa",
+                name: "Thando",
                 location: "Cape Town",
                 prize: "PS5",
                 quote: "Tried it out and actually won. Good way to spend R15.",

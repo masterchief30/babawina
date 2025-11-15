@@ -55,6 +55,9 @@ interface DashboardMetrics {
 async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = createAdminClient()
   
+  // Go-live date: Nov 15, 2025 11:00 AM German time (10:00 UTC)
+  const GO_LIVE_DATE = '2025-11-15T10:00:00Z'
+  
   const now = new Date()
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const weekAgo = new Date(today)
@@ -63,11 +66,13 @@ async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
   monthAgo.setDate(monthAgo.getDate() - 30)
 
   try {
-    // Fetch Revenue Data
+    // Fetch Revenue Data - Only real Stripe transactions from go-live onwards
     const { data: allTransactions } = await supabase
       .from('transactions')
-      .select('amount_rand, stripe_fee_rand, created_at')
+      .select('amount_rand, created_at')
       .eq('status', 'succeeded')
+      .not('stripe_payment_intent_id', 'is', null) // Only real Stripe transactions
+      .gte('created_at', GO_LIVE_DATE)
 
     const todayTransactions = allTransactions?.filter(t => 
       new Date(t.created_at) >= today
@@ -81,30 +86,35 @@ async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
       new Date(t.created_at) >= monthAgo
     ) || []
 
+    const totalRevenue = allTransactions?.reduce((sum, t) => sum + (t.amount_rand || 0), 0) || 0
+    
     const revenue = {
       today: todayTransactions.reduce((sum, t) => sum + (t.amount_rand || 0), 0),
       week: weekTransactions.reduce((sum, t) => sum + (t.amount_rand || 0), 0),
       month: monthTransactions.reduce((sum, t) => sum + (t.amount_rand || 0), 0),
-      allTime: allTransactions?.reduce((sum, t) => sum + (t.amount_rand || 0), 0) || 0,
+      allTime: totalRevenue,
       todayTransactions: todayTransactions.length,
       weekTransactions: weekTransactions.length,
       monthTransactions: monthTransactions.length,
       allTimeTransactions: allTransactions?.length || 0,
-      stripeFees: allTransactions?.reduce((sum, t) => sum + (t.stripe_fee_rand || 0), 0) || 0,
+      stripeFees: totalRevenue * 0.26, // 26% of gross revenue
     }
 
-    // Fetch User Data
+    // Fetch User Data - Only from go-live onwards
     const { data: allUsers } = await supabase
       .from('profiles')
       .select('created_at')
+      .gte('created_at', GO_LIVE_DATE)
 
     const { data: usersWithPayment } = await supabase
       .from('user_payment_methods')
       .select('user_id')
+      .gte('created_at', GO_LIVE_DATE)
 
     const { data: activeUsers } = await supabase
       .from('competition_entries')
       .select('user_id')
+      .gte('created_at', GO_LIVE_DATE)
 
     const uniqueActiveUsers = new Set(activeUsers?.map(e => e.user_id) || [])
 
@@ -126,6 +136,7 @@ async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
     const { data: allEntries } = await supabase
       .from('competition_entries')
       .select('created_at, was_free_entry, competition_id')
+      .gte('created_at', GO_LIVE_DATE) // Only entries from go-live onwards
 
     const todayEntries = allEntries?.filter(e => new Date(e.created_at) >= today) || []
     const weekEntries = allEntries?.filter(e => new Date(e.created_at) >= weekAgo) || []

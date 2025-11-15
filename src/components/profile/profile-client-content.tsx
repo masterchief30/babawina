@@ -624,7 +624,7 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400 flex items-center justify-center overflow-x-hidden w-full max-w-full">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -639,7 +639,7 @@ export default function ProfileClientContent({ initialCompetitions }: ProfileCli
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400">
+    <div className="min-h-screen bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-400 overflow-x-hidden w-full max-w-full">
       {/* Header */}
       <header className="bg-white/95 backdrop-blur-xl shadow-md">
         <div className="container mx-auto px-4 py-3 md:py-4">
