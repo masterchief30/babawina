@@ -7,15 +7,34 @@ import { useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePathname } from 'next/navigation'
 
-// Generate or retrieve session ID
+// Generate or retrieve session ID (expires after 30 minutes of inactivity)
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes
+
 function getSessionId(): string {
   if (typeof window === 'undefined') return ''
   
+  const now = Date.now()
   let sessionId = localStorage.getItem('bw_session_id')
+  const lastActivity = localStorage.getItem('bw_session_last_activity')
+  
+  // Check if session expired (30 min of inactivity)
+  if (sessionId && lastActivity) {
+    const timeSinceActivity = now - parseInt(lastActivity, 10)
+    if (timeSinceActivity > SESSION_TIMEOUT_MS) {
+      // Session expired, create new one
+      sessionId = null
+    }
+  }
+  
+  // Create new session if needed
   if (!sessionId) {
     sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`
     localStorage.setItem('bw_session_id', sessionId)
   }
+  
+  // Update last activity timestamp
+  localStorage.setItem('bw_session_last_activity', now.toString())
+  
   return sessionId
 }
 
