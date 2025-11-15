@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/lib/supabase"
 import { useAuth } from "@/contexts/AuthContext"
 import { useAnalytics } from "@/hooks/useAnalytics"
+import { entryPreservation } from "@/lib/entry-preservation"
 import {
   Dialog,
   DialogContent,
@@ -110,6 +111,7 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
         console.log('👤 User ID:', userId)
         console.log('🎯 Competition ID:', competition.id)
         
+        // ONLY load confirmed/paid entries from competition_entries table
         const { data, error } = await supabase
           .from('competition_entries')
           .select('id, guess_x, guess_y, created_at')
@@ -138,16 +140,40 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
 
           setGameEntries(existingEntries)
           setSubmittedEntriesCount(existingEntries.length)
-          console.log('💾 Loaded into game state:', existingEntries.length, 'bets')
-          
-          // Clear localStorage now that entries are loaded from database
-          const { entryPreservation } = await import('@/lib/entry-preservation')
-          entryPreservation.clearEntries()
-          console.log('🧹 Cleared localStorage (bets now in DB)')
+          console.log('💾 Loaded into game state:', existingEntries.length, 'confirmed bets')
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
         } else {
-          console.log('ℹ️ No existing bets found in database')
+          console.log('ℹ️ No existing confirmed bets found in database')
           console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+        }
+        
+        // NOW load pending bets from pending_bets table (as NEW unpaid entries)
+        const submissionToken = localStorage.getItem('submissionToken')
+        if (submissionToken) {
+          console.log('🎫 Found submission token, loading pending bets:', submissionToken)
+          const { data: pendingBets, error: pendingError } = await supabase
+            .from('pending_bets')
+            .select('guess_x, guess_y, created_at, entry_number')
+            .eq('submission_token', submissionToken)
+            .eq('status', 'pending_confirmation')
+            .order('entry_number', { ascending: true })
+          
+          if (!pendingError && pendingBets && pendingBets.length > 0) {
+            console.log('✅ Loaded', pendingBets.length, 'pending bets - adding as NEW entries')
+            
+            const pendingEntries = pendingBets.map((bet, index) => ({
+              id: `pending-${Date.now()}-${index}`,
+              x: bet.guess_x,
+              y: bet.guess_y,
+              timestamp: new Date(bet.created_at).getTime(),
+              submitted: false // NOT submitted - they can delete/submit these
+            }))
+            
+            setGameEntries(prev => [...prev, ...pendingEntries])
+            console.log('💾 Added', pendingEntries.length, 'pending bets to game state')
+          } else if (pendingError) {
+            console.warn('⚠️ Could not load pending bets:', pendingError)
+          }
         }
       } catch (error) {
         console.error('❌ Error loading existing entries:', error)
@@ -253,7 +279,48 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
 
     // Check if user is authenticated
     if (!userId) {
-      console.log('❌ NO USER ID - REDIRECTING TO SIGNUP')
+      console.log('❌ NO USER ID - SAVING BETS AND REDIRECTING TO SIGNUP')
+      console.log('📦 Game entries to save:', gameEntries)
+      
+      // Save the bets to localStorage before redirecting
+      const imageUrl = competition.display_photo_path 
+        ? `/competition-images/${competition.display_photo_path}`
+        : competition.image_inpainted_path 
+        ? `/competition-images/${competition.image_inpainted_path}`
+        : '/placeholder.jpg'
+      
+      const dataToSave = {
+        competitionId: competition.id,
+        competitionTitle: competition.title,
+        prizeShort: competition.prize_short,
+        entryPrice: competition.entry_price_rand,
+        entries: gameEntries,
+        imageUrl: imageUrl
+      }
+      
+      console.log('💾 Saving this data:', dataToSave)
+      entryPreservation.saveEntries(dataToSave)
+      
+      // Also save to pending_bets table with token
+      try {
+        const { saveBetsWithToken } = await import('@/lib/entry-preservation')
+        const submissionToken = await saveBetsWithToken(dataToSave)
+        
+        if (submissionToken) {
+          localStorage.setItem('submissionToken', submissionToken)
+          console.log('✅ Bets saved to pending_bets table with token:', submissionToken)
+        } else {
+          console.warn('⚠️ Could not save to pending_bets, using localStorage only')
+        }
+      } catch (error) {
+        console.warn('⚠️ Error saving to pending_bets:', error)
+      }
+      
+      // Verify localStorage save
+      const loaded = entryPreservation.loadEntries()
+      console.log('✅ Verified localStorage data:', loaded)
+      
+      console.log('🔄 Redirecting to signup...')
       window.location.href = '/signup'
       return
     }

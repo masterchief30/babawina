@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { AdminWinnersClient } from '@/components/admin/admin-winners-client'
 
+// Disable caching to always show fresh data
+export const revalidate = 0
+
 export default async function AdminWinnersPage() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!

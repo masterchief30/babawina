@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { AdminManageClient } from '@/components/admin/admin-manage-client'
 
+// Disable caching to always show fresh data
+export const revalidate = 0
+
 // Server component - fetches data server-side like Winners/Users pages
 export default async function ManageCompetitionsPage() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

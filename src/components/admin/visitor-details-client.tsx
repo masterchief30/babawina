@@ -28,8 +28,8 @@ interface Props {
 }
 
 export function VisitorDetailsClient({ visitors }: Props) {
-  const [sortBy, setSortBy] = useState<keyof VisitorData>('userId')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [sortBy, setSortBy] = useState<keyof VisitorData>('lastVisit')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterCountry, setFilterCountry] = useState<string>('all')
 

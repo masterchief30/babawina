@@ -45,11 +45,17 @@ export default function SignupSuccessfulPage() {
     setLargeConfettiPositions(generateLargeConfettiPositions(15))
     
     // Check for preserved entries
+    console.log('🎉 Signup successful page loaded, checking for preserved entries...')
     const preserved = entryPreservation.loadEntries()
+    console.log('📦 Loaded preserved data in signup-successful:', preserved)
+    
     if (preserved && preserved.entries.length > 0) {
       setHasPreservedEntries(true)
       setPreservedData(preserved)
       console.log('✅ Found preserved entries during signup success:', preserved)
+      console.log('   - Will redirect to:', `/play/${preserved.competitionId}`)
+    } else {
+      console.log('ℹ️ No preserved entries found in signup-successful page')
     }
     
     // Stop confetti after 5 seconds
@@ -57,9 +63,14 @@ export default function SignupSuccessfulPage() {
       setShowConfetti(false)
     }, 5000)
 
-    // Countdown timer - just decrement the counter
+    // Countdown timer - only if no preserved entries
     const countdownInterval = setInterval(() => {
-      setCountdown((prev) => Math.max(0, prev - 1))
+      // Only decrement if we don't have preserved entries
+      if (!preserved || preserved.entries.length === 0) {
+        setCountdown((prev) => Math.max(0, prev - 1))
+      } else {
+        console.log('⏸️ Countdown paused - waiting for AuthContext to redirect')
+      }
     }, 1000)
 
     return () => {
@@ -68,18 +79,18 @@ export default function SignupSuccessfulPage() {
     }
   }, [])
 
-  // Separate effect for navigation when countdown reaches 0
+  // Don't auto-redirect at all - AuthContext handles all redirects
+  // The countdown is just for show
   useEffect(() => {
-    if (countdown === 0) {
-      // Redirect to preserved competition or home
-      if (preservedData && preservedData.competitionId) {
-        console.log('🎯 Redirecting to competition:', preservedData.competitionId)
-        router.push(`/play/${preservedData.competitionId}`)
-      } else {
-        console.log('🏠 Redirecting to home')
-        router.push('/')
-      }
+    // Check if we have a submission token instead of preserved data
+    const submissionToken = localStorage.getItem('submissionToken')
+    
+    if (countdown === 0 && !submissionToken && !preservedData) {
+      // Only redirect to home if there's truly nothing to redirect to
+      console.log('🏠 No submission token or preserved data, redirecting to home')
+      router.push('/')
     }
+    // AuthContext will handle the redirect if there's a submission token
   }, [countdown, preservedData, router])
 
   return (

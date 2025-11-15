@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { AdminUsersClient } from '@/components/admin/admin-users-client'
 
+// Disable caching to always show fresh data
+export const revalidate = 0
+
 // Server component that fetches users with admin privileges
 export default async function UsersPage() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!

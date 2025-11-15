@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js"
 import { AdminDashboardClient } from "@/components/admin/admin-dashboard-client"
 
+// Disable caching to always show fresh data
+export const revalidate = 0
+
 // Create admin client with service role key
 function createAdminClient() {
   return createClient(

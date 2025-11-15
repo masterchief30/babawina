@@ -151,8 +151,8 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
       }
     })
 
-    // Sort by first visit (earliest first = lowest user number)
-    return visitors.sort((a, b) => a.userId - b.userId)
+    // Sort by last visit (most recent first = newest visitors at top)
+    return visitors.sort((a, b) => new Date(b.lastVisit).getTime() - new Date(a.lastVisit).getTime())
 
   } catch (error) {
     console.error('Error fetching visitor data:', error)

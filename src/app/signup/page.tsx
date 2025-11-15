@@ -28,13 +28,16 @@ export default function SignupPage() {
     email: '',
     password: ''
   })
+  const [isSigningUp, setIsSigningUp] = useState(false) // Track if signup is in progress
+  const [isRedirecting, setIsRedirecting] = useState(false) // Track if redirecting to competition
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not during signup process)
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && !isSigningUp) {
+      console.log('👤 Already authenticated, redirecting to home')
       window.location.href = '/'
     }
-  }, [user, loading])
+  }, [user, loading, isSigningUp])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -90,6 +93,7 @@ export default function SignupPage() {
     }
     
     setIsLoading(true)
+    setIsSigningUp(true) // Prevent redirect during signup
     
     try {
       // Import Supabase client
@@ -126,6 +130,7 @@ export default function SignupPage() {
 
       if (error) {
         console.error('Signup error:', error)
+        setIsSigningUp(false) // Reset on error
         
         // Handle specific error cases with user-friendly messages
         if (error.message.includes('email rate limit exceeded')) {
@@ -156,11 +161,13 @@ export default function SignupPage() {
           try {
             localStorage.setItem('sb-auth-token', JSON.stringify({
               access_token: data.session.access_token,
+              refresh_token: data.session.refresh_token,
+              expires_at: data.session.expires_at,
               currentSession: data.session,
               user: data.user
             }))
             console.log('💾 Session stored in localStorage')
-            console.log('✅ User IS logged in - proceeding to success page')
+            console.log('✅ User IS logged in - session ready for redirect')
           } catch (e) {
             console.error('Failed to store session:', e)
           }
@@ -173,13 +180,44 @@ export default function SignupPage() {
           user_id: data?.user?.id,
         })
         
-        // Redirect to success page
+        // Check if there's a submission token - if yes, redirect to competition
+        const submissionToken = localStorage.getItem('submissionToken')
+        if (submissionToken) {
+          console.log('🎫 Found submission token, loading competition...')
+          try {
+            const { data: pendingBet } = await supabase
+              .from('pending_bets')
+              .select('competition_id')
+              .eq('submission_token', submissionToken)
+              .limit(1)
+              .single()
+            
+            if (pendingBet?.competition_id) {
+              console.log('✅ Redirecting directly to competition:', pendingBet.competition_id)
+              
+              // Show loading modal
+              setIsRedirecting(true)
+              
+              // Wait longer for session to be fully persisted
+              console.log('⏳ Waiting 2 seconds for session to persist...')
+              await new Promise(resolve => setTimeout(resolve, 2000))
+              console.log('🔄 Now redirecting...')
+              window.location.href = `/play/${pendingBet.competition_id}`
+              return
+            }
+          } catch (error) {
+            console.warn('⚠️ Could not load competition, going to success page')
+          }
+        }
+        
+        // Default: redirect to success page
         console.log('↪️ Redirecting to /signup-successful')
         window.location.href = '/signup-successful'
       }
     } catch (error) {
       console.error('Unexpected error:', error)
       alert('An unexpected error occurred. Please try again.')
+      setIsSigningUp(false) // Reset on error
     } finally {
       setIsLoading(false)
     }
@@ -380,6 +418,32 @@ export default function SignupPage() {
         </div>
         </div>
       </div>
+      
+      {/* Loading Modal - Shows immediately on Sign Up click */}
+      {isLoading && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-3xl p-12 shadow-2xl max-w-md mx-4 text-center">
+            {/* Fidget Spinner */}
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 relative">
+                <div className="absolute inset-0 border-4 border-amber-200 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-transparent border-t-amber-500 rounded-full animate-spin"></div>
+                <div className="absolute inset-2 border-4 border-transparent border-t-amber-400 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1s' }}></div>
+                {/* Center dot */}
+                <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-amber-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+              </div>
+            </div>
+            
+            {/* Text */}
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              {isRedirecting ? 'Account Created! 🎉' : 'Creating your account...'}
+            </h3>
+            <p className="text-gray-600">
+              {isRedirecting ? 'Taking you to your competition...' : 'Please wait...'}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
