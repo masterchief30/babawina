@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { 
   Users, 
   Eye, 
@@ -45,7 +47,8 @@ interface Props {
 }
 
 export function AnalyticsDashboardClient({ metrics }: Props) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'sources' | 'funnel' | 'pages'>('overview')
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState<'overview' | 'sources' | 'funnel' | 'pages' | 'visitors'>('overview')
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -96,19 +99,35 @@ export function AnalyticsDashboardClient({ metrics }: Props) {
             { id: 'sources', label: 'Traffic Sources' },
             { id: 'funnel', label: 'Conversion Funnel' },
             { id: 'pages', label: 'Top Pages' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors cursor-pointer ${
-                activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'visitors', label: 'Visitor Details' },
+          ].map((tab) => {
+            if (tab.id === 'visitors') {
+              // Special case: Visitor Details navigates to separate page
+              return (
+                <Link
+                  key={tab.id}
+                  href="/admin/analytics/visitors"
+                  className="flex items-center gap-2 px-4 py-3 border-b-2 border-transparent text-gray-600 hover:text-gray-900 transition-colors cursor-pointer font-medium"
+                >
+                  {tab.label}
+                </Link>
+              )
+            }
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'border-blue-600 text-blue-600'
+                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
       </div>
 

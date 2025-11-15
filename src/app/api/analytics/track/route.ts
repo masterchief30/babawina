@@ -22,6 +22,7 @@ interface TrackSessionRequest {
   os?: string
   ipAddress?: string
   country?: string
+  city?: string
 }
 
 interface TrackEventRequest {
@@ -55,11 +56,11 @@ function getIpAddress(request: NextRequest): string {
   return 'unknown'
 }
 
-// Get country from IP address using free geolocation API
-async function getCountryFromIp(ipAddress: string): Promise<string | null> {
+// Get location (country and city) from IP address using free geolocation API
+async function getLocationFromIp(ipAddress: string): Promise<{ country: string | null; city: string | null }> {
   // Skip for localhost or unknown IPs
   if (!ipAddress || ipAddress === 'unknown' || ipAddress.startsWith('127.') || ipAddress.startsWith('192.168.') || ipAddress === '::1') {
-    return null
+    return { country: null, city: null }
   }
 
   try {
@@ -73,17 +74,20 @@ async function getCountryFromIp(ipAddress: string): Promise<string | null> {
 
     if (!response.ok) {
       console.warn(`Geolocation API error: ${response.status}`)
-      return null
+      return { country: null, city: null }
     }
 
     const data = await response.json()
     
-    // Return country name (e.g., "South Africa")
-    return data.country_name || null
+    // Return country and city (e.g., "South Africa", "Cape Town")
+    return {
+      country: data.country_name || null,
+      city: data.city || null,
+    }
   } catch (error) {
     // Silently fail - don't block analytics if geolocation fails
-    console.warn('Failed to get country from IP:', error)
-    return null
+    console.warn('Failed to get location from IP:', error)
+    return { country: null, city: null }
   }
 }
 
@@ -103,13 +107,16 @@ export async function POST(request: NextRequest) {
     const ipAddress = getIpAddress(request)
 
     if (type === 'session') {
-      // Get country from IP (only for new sessions to avoid rate limits)
+      // Get location (country and city) from IP (only for new sessions to avoid rate limits)
       let country: string | null = null
+      let city: string | null = null
       if (ipAddress && ipAddress !== 'unknown') {
-        country = await getCountryFromIp(ipAddress)
+        const location = await getLocationFromIp(ipAddress)
+        country = location.country
+        city = location.city
       }
       
-      return await trackSession(supabase, { ...data, ipAddress, country } as TrackSessionRequest)
+      return await trackSession(supabase, { ...data, ipAddress, country, city } as TrackSessionRequest)
     } else if (type === 'event') {
       return await trackEvent(supabase, data as TrackEventRequest)
     } else {
@@ -138,6 +145,7 @@ async function trackSession(supabase: any, data: TrackSessionRequest) {
     os,
     ipAddress,
     country,
+    city,
   } = data
 
   // Check if session exists
@@ -191,6 +199,7 @@ async function trackSession(supabase: any, data: TrackSessionRequest) {
       os: os || 'unknown',
       ip_address: ipAddress || null,
       country: country || null,
+      city: city || null,
     })
 
     if (error) {
