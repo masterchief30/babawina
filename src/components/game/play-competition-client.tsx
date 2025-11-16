@@ -63,6 +63,18 @@ export function PlayCompetitionClient({ competition, userId: serverUserId }: Pla
   // Use AuthContext user if available, otherwise fall back to server prop
   const userId = user?.id || serverUserId
   
+  // Increment visit counter when competition page loads
+  useEffect(() => {
+    const incrementCounter = async () => {
+      try {
+        await fetch('/api/increment-visit', { method: 'POST' })
+      } catch (error) {
+        console.error('Failed to increment visit counter:', error)
+      }
+    }
+    incrementCounter()
+  }, []) // Run once on mount
+  
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showCoordinates, setShowCoordinates] = useState(false)
   const [gameEntries, setGameEntries] = useState<GameEntry[]>([])

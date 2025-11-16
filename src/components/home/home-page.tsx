@@ -36,7 +36,7 @@ export function HomePage({ initialCompetitions }: HomePageProps) {
   const { user, loading, signOut } = useAuth()
   const { trackEvent } = useAnalytics()
 
-  // Real visit counter - increments on each page visit, resets at midnight
+  // Real visit counter - increments on landing/competition page visits, resets at midnight
   useEffect(() => {
     const incrementVisitCounter = async () => {
       try {

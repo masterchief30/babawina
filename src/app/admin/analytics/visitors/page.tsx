@@ -24,7 +24,13 @@ export const metadata = {
   description: "Detailed visitor tracking with IP addresses and geographic data",
 }
 
-interface VisitorData {
+export interface PageVisit {
+  path: string
+  timestamp: string
+  timeSpent: number // seconds spent on this page
+}
+
+export interface VisitorData {
   userId: number
   firstVisit: string
   lastVisit: string
@@ -40,6 +46,7 @@ interface VisitorData {
   conversionStatus: 'converted' | 'engaged' | 'browsing'
   trafficSource: string
   lastPage: string
+  pageJourney: PageVisit[] // NEW: Track their page-by-page journey
 }
 
 async function fetchVisitorData(): Promise<VisitorData[]> {
@@ -62,7 +69,7 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
     // Get all events for conversion tracking
     const { data: events, error: eventsError } = await supabase
       .from('analytics_events')
-      .select('session_id, event_name, page_path, created_at')
+      .select('session_id, event_name, page_path, created_at, event_data')
       .gte('created_at', GO_LIVE_DATE)
 
     if (eventsError) {
@@ -112,9 +119,12 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         visitor.sessionIds.includes(e.session_id)
       ) || []
       
-      const pageViews = visitorEvents.filter(e => e.event_name === 'page_view')
+      // Include both 'page_view' and 'competition_viewed' events as page views
+      const pageViews = visitorEvents.filter(e => 
+        e.event_name === 'page_view' || e.event_name === 'competition_viewed'
+      )
       const lastPageEvent = pageViews[pageViews.length - 1]
-
+      
       // Calculate total session duration
       const visitorSessions = sessions?.filter(s => 
         visitor.sessionIds.includes(s.session_id)
@@ -132,6 +142,70 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         conversionStatus = 'engaged'
       }
 
+      // Build page journey (ordered page visits with time spent on each)
+      const sortedPageViews = pageViews.sort((a, b) => 
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      )
+      
+      const pageJourney: PageVisit[] = sortedPageViews.map((pv, index) => {
+        // Calculate time spent: difference between this page view and the next one
+        let timeSpent = 0
+        if (index < sortedPageViews.length - 1) {
+          const currentTime = new Date(pv.created_at).getTime()
+          const nextTime = new Date(sortedPageViews[index + 1].created_at).getTime()
+          timeSpent = Math.round((nextTime - currentTime) / 1000) // convert to seconds
+        } else {
+          // For the last page, calculate remaining time from total duration
+          // Sum up all previous page times
+          const previousPagesTime = sortedPageViews
+            .slice(0, index)
+            .reduce((sum, _, idx) => {
+              if (idx < sortedPageViews.length - 1) {
+                const curr = new Date(sortedPageViews[idx].created_at).getTime()
+                const next = new Date(sortedPageViews[idx + 1].created_at).getTime()
+                return sum + Math.round((next - curr) / 1000)
+              }
+              return sum
+            }, 0)
+          
+          // Remaining time = total duration - time spent on previous pages
+          timeSpent = Math.max(0, totalDuration - previousPagesTime)
+        }
+        
+        // Get friendly page name from event data if available (for competitions)
+        let displayPath = pv.page_path || '/'
+        if (pv.event_data?.competition_title) {
+          // Competition page with title and end date
+          const endDate = pv.event_data.end_date 
+            ? new Date(pv.event_data.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+            : ''
+          displayPath = endDate 
+            ? `🎮 ${pv.event_data.competition_title} (Ends: ${endDate})`
+            : `🎮 ${pv.event_data.competition_title}`
+        } else if (pv.event_data?.page_title) {
+          displayPath = pv.event_data.page_title
+        }
+        
+        return {
+          path: displayPath,
+          timestamp: pv.created_at,
+          timeSpent
+        }
+      })
+
+      // Format last page name
+      let lastPageDisplay = lastPageEvent?.page_path || '/'
+      if (lastPageEvent?.event_data?.competition_title) {
+        const endDate = lastPageEvent.event_data.end_date 
+          ? new Date(lastPageEvent.event_data.end_date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })
+          : ''
+        lastPageDisplay = endDate 
+          ? `🎮 ${lastPageEvent.event_data.competition_title} (Ends: ${endDate})`
+          : `🎮 ${lastPageEvent.event_data.competition_title}`
+      } else if (lastPageEvent?.event_data?.page_title) {
+        lastPageDisplay = lastPageEvent.event_data.page_title
+      }
+
       return {
         userId: visitor.userId,
         firstVisit: visitor.firstVisit,
@@ -147,7 +221,8 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         sessionDuration: totalDuration,
         conversionStatus,
         trafficSource: visitor.trafficSource,
-        lastPage: lastPageEvent?.page_path || '/',
+        lastPage: lastPageDisplay,
+        pageJourney, // NEW: Include page journey
       }
     })
 

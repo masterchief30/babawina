@@ -50,6 +50,9 @@ interface AnalyticsMetrics {
   topPages: {
     path: string
     views: number
+    avgTimeSeconds: number
+    exitRate: number
+    bounceRate: number
   }[]
 }
 

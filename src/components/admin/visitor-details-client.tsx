@@ -1,27 +1,10 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, Fragment } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-
-interface VisitorData {
-  userId: number
-  firstVisit: string
-  lastVisit: string
-  ipAddress: string
-  country: string | null
-  city: string | null
-  visitType: 'first' | 'returning'
-  totalVisits: number
-  device: string
-  browser: string
-  pagesViewed: number
-  sessionDuration: number
-  conversionStatus: 'converted' | 'engaged' | 'browsing'
-  trafficSource: string
-  lastPage: string
-}
+import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react'
+import type { VisitorData, PageVisit } from '@/app/admin/analytics/visitors/page'
 
 interface Props {
   visitors: VisitorData[]
@@ -32,6 +15,7 @@ export function VisitorDetailsClient({ visitors }: Props) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [filterCountry, setFilterCountry] = useState<string>('all')
+  const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set())
 
   // Format duration helper
   const formatDuration = (seconds: number) => {
@@ -56,6 +40,34 @@ export function VisitorDetailsClient({ visitors }: Props) {
   const formatIp = (ip: string) => {
     if (ip === 'unknown') return 'Unknown'
     return ip
+  }
+
+  // Toggle expanded row
+  const toggleRow = (userId: number) => {
+    const newExpanded = new Set(expandedRows)
+    if (newExpanded.has(userId)) {
+      newExpanded.delete(userId)
+    } else {
+      newExpanded.add(userId)
+    }
+    setExpandedRows(newExpanded)
+  }
+
+  // Format page name for display
+  const formatPageName = (path: string) => {
+    // If it's already formatted (contains "Ends:" or looks like a title), return as-is
+    if (path.includes('(Ends:') || (!path.startsWith('/') && !path.includes('/'))) {
+      return path
+    }
+    
+    // Otherwise format based on path
+    if (path === '/' || path === '') return '🏠 Landing Page'
+    if (path.startsWith('/play/')) return `🎮 Competition Page`
+    if (path === '/profile') return '👤 Profile'
+    if (path === '/signup') return '✍️ Sign Up'
+    if (path === '/login') return '🔐 Login'
+    if (path === '/signup-successful') return '✅ Signup Success'
+    return path
   }
 
   // Get unique countries for filter
@@ -290,56 +302,120 @@ export function VisitorDetailsClient({ visitors }: Props) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredVisitors.map((visitor) => (
-                  <motion.tr
-                    key={visitor.userId}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="font-semibold text-gray-900">
-                        User {visitor.userId}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {formatDate(visitor.firstVisit)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                      {formatDate(visitor.lastVisit)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-700">
-                      {formatIp(visitor.ipAddress)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                      {visitor.country || 'Unknown'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
-                      {visitor.city || 'Unknown'}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {getVisitTypeBadge(visitor.visitType)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-gray-900">
-                      {visitor.totalVisits}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
-                      {visitor.device}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
-                      {visitor.pagesViewed}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
-                      {formatDuration(visitor.sessionDuration)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      {getStatusBadge(visitor.conversionStatus)}
-                    </td>
-                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
-                      {visitor.trafficSource}
-                    </td>
-                  </motion.tr>
-                ))}
+                {filteredVisitors.map((visitor) => {
+                  const isExpanded = expandedRows.has(visitor.userId)
+                  return (
+                    <Fragment key={visitor.userId}>
+                      <motion.tr
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        onClick={() => toggleRow(visitor.userId)}
+                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? (
+                              <ChevronDown className="w-4 h-4 text-gray-500" />
+                            ) : (
+                              <ChevronRight className="w-4 h-4 text-gray-500" />
+                            )}
+                            <span className="font-semibold text-gray-900">
+                              User {visitor.userId}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(visitor.firstVisit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(visitor.lastVisit)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-mono text-gray-700">
+                          {formatIp(visitor.ipAddress)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          {visitor.country || 'Unknown'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">
+                          {visitor.city || 'Unknown'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {getVisitTypeBadge(visitor.visitType)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-center text-sm font-semibold text-gray-900">
+                          {visitor.totalVisits}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
+                          {visitor.device}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-900">
+                          {visitor.pagesViewed}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                          {formatDuration(visitor.sessionDuration)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          {getStatusBadge(visitor.conversionStatus)}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
+                          {visitor.trafficSource}
+                        </td>
+                      </motion.tr>
+                      
+                      {/* Expanded Page Journey Row */}
+                      {isExpanded && (
+                        <tr>
+                          <td colSpan={13} className="px-4 py-4 bg-gray-50">
+                            <div className="space-y-2">
+                              <h4 className="font-semibold text-gray-900 mb-3">
+                                📊 Page Journey ({visitor.pageJourney?.length || 0} pages visited)
+                              </h4>
+                              {visitor.pageJourney && visitor.pageJourney.length > 0 ? (
+                                <div className="space-y-2">
+                                  {visitor.pageJourney.map((page, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200"
+                                    >
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-xs font-semibold text-gray-400 min-w-[30px]">
+                                          #{idx + 1}
+                                        </span>
+                                        <div>
+                                          <div className="font-medium text-gray-900">
+                                            {formatPageName(page.path)}
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            {formatDate(page.timestamp)}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-4">
+                                        <div className="text-right">
+                                          <div className="text-sm font-semibold text-gray-700">
+                                            {formatDuration(page.timeSpent)}
+                                          </div>
+                                          <div className="text-xs text-gray-500">time spent</div>
+                                        </div>
+                                        {idx === visitor.pageJourney.length - 1 && (
+                                          <span className="px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-800">
+                                            EXIT
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-gray-500 text-sm">No page journey data available</p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </div>
