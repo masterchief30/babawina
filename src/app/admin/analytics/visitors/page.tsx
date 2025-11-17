@@ -47,6 +47,7 @@ export interface VisitorData {
   trafficSource: string
   lastPage: string
   pageJourney: PageVisit[] // NEW: Track their page-by-page journey
+  email: string | null // NEW: Email for converted users only
 }
 
 async function fetchVisitorData(): Promise<VisitorData[]> {
@@ -99,6 +100,7 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
           didSignup: session.did_signup || false,
           didPlaceBet: session.did_place_bet || false,
           didAddPayment: session.did_add_payment || false,
+          supabaseUserId: session.user_id || null, // Track Supabase user ID for email lookup
         })
       } else {
         // Returning visitor
@@ -109,8 +111,29 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         visitor.didSignup = visitor.didSignup || session.did_signup || false
         visitor.didPlaceBet = visitor.didPlaceBet || session.did_place_bet || false
         visitor.didAddPayment = visitor.didAddPayment || session.did_add_payment || false
+        // Update user ID if we found one
+        visitor.supabaseUserId = visitor.supabaseUserId || session.user_id || null
       }
     })
+
+    // Fetch emails for converted users
+    const userIds = Array.from(visitorMap.values())
+      .filter(v => v.supabaseUserId && (v.didSignup || v.didPlaceBet || v.didAddPayment))
+      .map(v => v.supabaseUserId)
+    
+    const emailMap = new Map<string, string>()
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, email')
+        .in('id', userIds)
+      
+      users?.forEach(user => {
+        if (user.email) {
+          emailMap.set(user.id, user.email)
+        }
+      })
+    }
 
     // Calculate pages viewed and session duration for each visitor
     const visitors: VisitorData[] = Array.from(visitorMap.values()).map(visitor => {
@@ -206,6 +229,11 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         lastPageDisplay = lastPageEvent.event_data.page_title
       }
 
+      // Get email if user converted
+      const email = (conversionStatus === 'converted' && visitor.supabaseUserId) 
+        ? emailMap.get(visitor.supabaseUserId) || null 
+        : null
+
       return {
         userId: visitor.userId,
         firstVisit: visitor.firstVisit,
@@ -223,6 +251,7 @@ async function fetchVisitorData(): Promise<VisitorData[]> {
         trafficSource: visitor.trafficSource,
         lastPage: lastPageDisplay,
         pageJourney, // NEW: Include page journey
+        email, // NEW: Email for converted users only
       }
     })
 

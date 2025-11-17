@@ -297,6 +297,9 @@ export function VisitorDetailsClient({ visitors }: Props) {
                     Status
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                     Source
                   </th>
                 </tr>
@@ -357,6 +360,13 @@ export function VisitorDetailsClient({ visitors }: Props) {
                         <td className="px-4 py-3 whitespace-nowrap">
                           {getStatusBadge(visitor.conversionStatus)}
                         </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm font-mono">
+                          {visitor.email ? (
+                            <span className="text-blue-600">{visitor.email}</span>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 capitalize">
                           {visitor.trafficSource}
                         </td>
@@ -365,7 +375,7 @@ export function VisitorDetailsClient({ visitors }: Props) {
                       {/* Expanded Page Journey Row */}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={13} className="px-4 py-4 bg-gray-50">
+                          <td colSpan={14} className="px-4 py-4 bg-gray-50">
                             <div className="space-y-2">
                               <h4 className="font-semibold text-gray-900 mb-3">
                                 📊 Page Journey ({visitor.pageJourney?.length || 0} pages visited)
