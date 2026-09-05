@@ -1,0 +1,61 @@
+{
+  "exported_at": "2026-09-05T08:34:03.825146+00:00",
+  "source": "Live Supabase SQL Editor dump",
+  "enums": [
+    { "name": "competition_status", "values": ["draft", "live", "closed", "judged"] },
+    { "name": "processing_status", "values": ["idle", "processing", "ready", "needs_review", "ready_for_ai", "coords_saved"] },
+    { "name": "user_role", "values": ["user", "admin"] }
+  ],
+  "tables": [
+    "analytics_events",
+    "analytics_sessions",
+    "competition_entries",
+    "competitions",
+    "daily_visit_counter",
+    "entries",
+    "pending_bets",
+    "profiles",
+    "transactions",
+    "user_payment_methods",
+    "user_submission_counters",
+    "winners"
+  ],
+  "functions": [
+    "auto_close_expired_competitions",
+    "calculate_competition_winners",
+    "calculate_distance_normalized",
+    "calculate_entry_distance",
+    "calculate_winners",
+    "check_and_determine_winners",
+    "cleanup_expired_pending_bets",
+    "close_expired_competitions",
+    "delete_user",
+    "determine_winners_after_end_time",
+    "get_competition_entries",
+    "get_competition_winner",
+    "get_competition_winners",
+    "get_daily_visits",
+    "handle_new_user",
+    "increment_daily_visits",
+    "increment_submission_counter",
+    "pixel_to_unit_coords",
+    "recalculate_all_distances_on_judging",
+    "set_competition_end_time",
+    "unit_to_pixel_coords",
+    "update_competition_winners",
+    "update_updated_at_column"
+  ],
+  "storage_buckets": [
+    { "id": "competition-display", "public": true, "file_size_limit": 6291456 },
+    { "id": "competition-images", "public": true },
+    { "id": "competition-inpainted", "public": true },
+    { "id": "competition-raw", "public": false },
+    { "id": "masks", "public": false },
+    { "id": "winner-media", "public": true }
+  ],
+  "notes": [
+    "Full restorable DDL is in schema.sql",
+    "temp_entries does not exist in the live database",
+    "determine_winners_after_end_time originally referenced competitions.end_date; restore SQL uses ends_at"
+  ]
+}

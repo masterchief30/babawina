@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BabaWina - Win Big with Spot-the-Ball Competition",
-  description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
+  title: "BabaWina — Taking a little break",
+  description: "BabaWina is pausing for a short while. We'll be back with updates soon.",
   keywords: ["spot the ball", "south africa competition", "win prizes", "gaming competition", "online games", "win cars", "daily competitions", "babawina", "south african games", "prize competitions", "skill games", "win money"],
   authors: [{ name: "BabaWina" }],
   creator: "BabaWina",
@@ -39,14 +37,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_ZA",
     url: "/",
-    title: "BabaWina - Win Big with Spot-the-Ball Competition",
-    description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
+    title: "BabaWina — Taking a little break",
+    description: "BabaWina is pausing for a short while. We'll be back with updates soon.",
     siteName: "BabaWina",
   },
   twitter: {
     card: "summary_large_image",
-    title: "BabaWina - Win Big with Spot-the-Ball Competition",
-    description: "Play Spot-the-Ball. Get closest to the ball's true position and win the prize. Proudly South African.",
+    title: "BabaWina — Taking a little break",
+    description: "BabaWina is pausing for a short while. We'll be back with updates soon.",
   },
   robots: {
     index: true,
@@ -74,10 +72,7 @@ export default function RootLayout({
         <meta name="msapplication-TileColor" content="#2563EB" />
       </head>
       <body className="font-sans antialiased">
-        <AuthProvider>
-          {children}
-          <Toaster />
-        </AuthProvider>
+        {children}
       </body>
     </html>
   );
